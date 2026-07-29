@@ -175,7 +175,7 @@ export default function BusinessProfileForm({
           </div>
 
           <div className="flex items-center justify-between sm:justify-end shrink-0">
-            <span className="text-[10px] sm:text-xs font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100/80 shadow-2xs">
+            <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100/80 shadow-2xs">
               Step {step} of 2
             </span>
           </div>

@@ -7,11 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-export interface CreateOrderParams {
-  amount: number; // in INR rupees or paise
-  currency?: string;
-  notes?: Record<string, string>;
-}
+import type { CreateOrderParams, VerifyPaymentParams } from "@/types";
 
 export async function createRazorpayOrderAction({
   amount,
@@ -71,14 +67,6 @@ export async function createRazorpayOrderAction({
       error: error?.error?.description || error?.message || "Failed to create payment order.",
     };
   }
-}
-
-export interface VerifyPaymentParams {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-  applicationIds: string[];
-  amount: number;
 }
 
 export async function verifyRazorpayPaymentAction({

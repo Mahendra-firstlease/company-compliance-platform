@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ApplicationStatus } from "@prisma/client";
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { updateApplicationSchema } from "@/schemas/api-schemas";
+import { handleApiError, handleValidationError } from "@/lib/api-response";
+import { formatApplicationDocuments } from "@/lib/applications";
+import { sendApplicationNotification } from "@/lib/notifications-dispatcher";
 
 export async function GET(
   request: Request,
@@ -24,29 +29,16 @@ export async function GET(
       );
     }
 
-    const uploadedDocs: Record<string, { name: string; size: string; type: string }> = {};
-    application.documents.forEach((doc) => {
-      uploadedDocs[doc.docName] = {
-        name: doc.fileName,
-        size: doc.fileSize,
-        type: doc.fileType,
-      };
-    });
-
     const formatted = {
       ...application,
       query: application.queryText || undefined,
       assignedExecutive: application.assignedExecutive?.name || application.assignedExecutiveId || undefined,
-      uploadedDocs,
+      uploadedDocs: formatApplicationDocuments(application.documents),
     };
 
     return NextResponse.json(formatted, { status: 200 });
   } catch (error) {
-    console.error("Error fetching application by id from MySQL:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch application" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to fetch application by ID.");
   }
 }
 
@@ -55,43 +47,52 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(`patch_app:${ip}`, RATE_LIMIT_CONFIGS.userApi);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment." },
+        { status: 429 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
 
-    const updateData: any = {};
-    if (body.status) updateData.status = body.status as ApplicationStatus;
-    if (body.customerName) updateData.customerName = body.customerName;
-    if (body.customerPhone) updateData.customerPhone = body.customerPhone;
-    if (body.address) updateData.address = body.address;
-    if (body.query !== undefined) updateData.queryText = body.query;
+    const validation = updateApplicationSchema.safeParse(body);
+    if (!validation.success) {
+      return handleValidationError(validation.error);
+    }
 
-    // Handle assigned executive safely to prevent Foreign Key constraint errors
-    if (body.assignedExecutive !== undefined) {
-      if (!body.assignedExecutive || body.assignedExecutive === "Unassigned") {
+    const payload = validation.data;
+    const updateData: any = {};
+
+    if (payload.status) updateData.status = payload.status as ApplicationStatus;
+    if (payload.customerName) updateData.customerName = payload.customerName;
+    if (payload.customerPhone) updateData.customerPhone = payload.customerPhone;
+    if (payload.address) updateData.address = payload.address;
+    if (payload.query !== undefined) updateData.queryText = payload.query;
+
+    if (payload.assignedExecutive !== undefined) {
+      if (!payload.assignedExecutive || payload.assignedExecutive === "Unassigned") {
         updateData.assignedExecutiveId = null;
       } else {
-        let execUser = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { id: body.assignedExecutive },
-              { name: body.assignedExecutive },
-              { name: body.assignedExecutive.split(",")[0].trim() },
-            ],
+        const cleanName = payload.assignedExecutive.split(",")[0].trim();
+        const slugName = cleanName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const execEmail = `${slugName}@firstlease.com`;
+
+        // Atomically upsert executive user to prevent concurrency duplicate key exceptions
+        const execUser = await prisma.user.upsert({
+          where: { email: execEmail },
+          update: { name: cleanName },
+          create: {
+            id: `exec_${slugName}_${Date.now()}`,
+            name: cleanName,
+            email: execEmail,
+            role: "EXECUTIVE",
           },
         });
-
-        if (!execUser) {
-          const cleanName = body.assignedExecutive.split(",")[0].trim();
-          const slugName = cleanName.toLowerCase().replace(/[^a-z0-9]/g, "");
-          execUser = await prisma.user.create({
-            data: {
-              id: `exec_${slugName}_${Date.now()}`,
-              name: cleanName,
-              email: `${slugName}@firstlease.com`,
-              role: "EXECUTIVE",
-            },
-          });
-        }
 
         updateData.assignedExecutiveId = execUser.id;
       }
@@ -103,32 +104,53 @@ export async function PATCH(
       include: {
         documents: true,
         assignedExecutive: true,
+        user: true,
       },
     });
 
-    const uploadedDocs: Record<string, { name: string; size: string; type: string }> = {};
-    updatedApp.documents.forEach((doc) => {
-      uploadedDocs[doc.docName] = {
-        name: doc.fileName,
-        size: doc.fileSize,
-        type: doc.fileType,
-      };
-    });
+    // Invoke Notification Dispatcher for status changes or query alerts
+    if (payload.query) {
+      await sendApplicationNotification({
+        applicationId: updatedApp.id,
+        serviceTitle: updatedApp.serviceTitle,
+        customerName: updatedApp.customerName,
+        customerPhone: updatedApp.customerPhone,
+        userEmail: updatedApp.user?.email || undefined,
+        type: "QUERY_RAISED",
+        queryText: payload.query,
+      });
+    } else if (payload.status === "APPROVED") {
+      await sendApplicationNotification({
+        applicationId: updatedApp.id,
+        serviceTitle: updatedApp.serviceTitle,
+        customerName: updatedApp.customerName,
+        customerPhone: updatedApp.customerPhone,
+        userEmail: updatedApp.user?.email || undefined,
+        type: "APPROVED",
+        newStatus: "APPROVED",
+      });
+    } else if (payload.status) {
+      await sendApplicationNotification({
+        applicationId: updatedApp.id,
+        serviceTitle: updatedApp.serviceTitle,
+        customerName: updatedApp.customerName,
+        customerPhone: updatedApp.customerPhone,
+        userEmail: updatedApp.user?.email || undefined,
+        type: "STATUS_CHANGE",
+        newStatus: payload.status as ApplicationStatus,
+      });
+    }
 
     const formatted = {
       ...updatedApp,
       query: updatedApp.queryText || undefined,
       assignedExecutive: updatedApp.assignedExecutive?.name || updatedApp.assignedExecutiveId || undefined,
-      uploadedDocs,
+      uploadedDocs: formatApplicationDocuments(updatedApp.documents),
     };
 
     return NextResponse.json(formatted, { status: 200 });
   } catch (error) {
-    console.error("Error updating application in MySQL:", error);
-    return NextResponse.json(
-      { error: (error as any)?.message || "Failed to update application" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to update application.");
   }
 }
 
@@ -145,10 +167,6 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Application deleted successfully" }, { status: 200 });
   } catch (error) {
-    console.error("Error deleting application from MySQL:", error);
-    return NextResponse.json(
-      { error: "Failed to delete application" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to delete application.");
   }
 }

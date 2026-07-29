@@ -177,6 +177,7 @@ export default function MultiServiceCheckoutModal({
         },
         modal: {
           ondismiss: () => {
+            notify.dismiss();
             setIsSubmitting(false);
             const cancelMsg = "You closed the payment popup before completing checkout.";
             setLastError(cancelMsg);
@@ -223,9 +224,9 @@ export default function MultiServiceCheckoutModal({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between">
+      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200/80 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+          <div className="size-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold">
             <ShoppingBag className="size-5" />
           </div>
           <div>
@@ -241,7 +242,7 @@ export default function MultiServiceCheckoutModal({
 
       {/* Error Alert Banner (Shown after payment error/cancellation) */}
       {lastError && (
-        <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2.5 animate-in fade-in duration-200">
+        <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2.5 animate-in fade-in duration-200">
           <AlertCircle className="size-4 text-red-600 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <p className="font-bold text-red-900">Batch Payment Attempt Unsuccessful</p>
@@ -261,14 +262,14 @@ export default function MultiServiceCheckoutModal({
         {selectedServices.map((s) => (
           <div
             key={s.id || s.slug}
-            className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl text-xs"
+            className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg text-xs"
           >
             <div>
               <p className="font-bold text-slate-800">{s.title}</p>
               <p className="text-[11px] text-slate-400">Target Time: {s.duration}</p>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-extrabold text-slate-900">₹{s.price}</span>
+              <span className="font-bold text-slate-900">₹{s.price}</span>
               {onRemoveService && selectedServices.length > 1 && (
                 <button
                   type="button"
@@ -285,14 +286,14 @@ export default function MultiServiceCheckoutModal({
       </div>
 
       {/* Pricing Summary Block */}
-      <div className="p-4 bg-indigo-50/60 rounded-xl border border-indigo-100 space-y-1">
+      <div className="p-4 bg-indigo-50/60 rounded-lg border border-indigo-100 space-y-1">
         <div className="flex justify-between items-center text-xs text-slate-600">
           <span>Subtotal ({selectedServices.length} services):</span>
           <span className="font-bold text-slate-900">₹{totalFee}</span>
         </div>
         <div className="flex justify-between items-center text-sm font-black text-indigo-950 pt-1 border-t border-indigo-100">
           <span>Total Investment:</span>
-          <span className="text-lg font-extrabold text-indigo-700">₹{totalFee}</span>
+          <span className="text-lg font-bold text-indigo-700">₹{totalFee}</span>
         </div>
       </div>
 

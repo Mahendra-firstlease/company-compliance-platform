@@ -1,6 +1,8 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogBackdrop,
@@ -9,15 +11,24 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
-import { ChevronDownIcon, XMarkIcon, UserIcon, ArrowRightStartOnRectangleIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
+import {
+  ChevronDownIcon,
+  XMarkIcon,
+  ArrowRightStartOnRectangleIcon,
+  SquaresPlusIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import Button from "@/components/common/Button";
 import type { NavItem, NavLink } from "./header.data";
-import { useModal } from "@/components/ui/overlay";
-import LoginForm from "@/features/auth/LoginForm";
-import RegisterForm from "@/features/auth/RegisterForm";
 import CompanyLogo from "@/components/common/CompanyLogo";
 import { useSession, signOut } from "next-auth/react";
 import { notify } from "@/lib/notify";
+import { MobileMenuSkeleton } from "@/components/ui/skeletons";
+import apiFetch from "@/lib/apiClient";
+
+interface DynamicMobileServiceLink extends NavLink {
+  description?: string;
+}
 
 interface MobileNavProps {
   open: boolean;
@@ -25,9 +36,38 @@ interface MobileNavProps {
   items: NavItem[];
 }
 
-export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
-  const modal = useModal();
+export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
+  const router = useRouter();
   const { data: session, status } = useSession();
+  const [dynamicServices, setDynamicServices] = useState<DynamicMobileServiceLink[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch dynamic services from MySQL backend API for mobile menu (matching Desktop MegaMenu)
+  useEffect(() => {
+    let active = true;
+    apiFetch<any[]>("/services")
+      .then((data) => {
+        if (active && Array.isArray(data) && data.length > 0) {
+          setDynamicServices(
+            data.map((s: any) => ({
+              label: s.title,
+              href: `/services/${s.slug}`,
+              description: s.shortDescription || s.title,
+            }))
+          );
+        } else if (active) {
+          setDynamicServices([]);
+        }
+      })
+      .catch((err) => console.error("Mobile nav services error:", err))
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -50,7 +90,7 @@ export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
     <Dialog open={open} onClose={setOpen} className="relative z-50 lg:hidden">
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition duration-300 ease-out data-closed:opacity-0"
       />
 
       <div className="fixed inset-0 overflow-hidden">
@@ -62,8 +102,9 @@ export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
                 w-screen
                 max-w-sm
                 bg-white
-                shadow-xl
+                shadow-2xl
                 duration-300
+                ease-in-out
                 data-closed:translate-x-full
               "
             >
@@ -74,7 +115,7 @@ export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
 
                   <button
                     onClick={() => setOpen(false)}
-                    className="rounded-lg p-2 hover:bg-gray-100"
+                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -111,9 +152,12 @@ export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
                               rounded-lg
                               px-4
                               py-3
-                              font-medium
-                              text-gray-700
-                              hover:bg-gray-50
+                              font-bold
+                              text-sm
+                              text-slate-700
+                              hover:bg-slate-50
+                              hover:text-primary
+                              transition-colors
                             "
                             onClick={() => setOpen(false)}
                           >
@@ -123,48 +167,85 @@ export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
                       }
 
                       return (
-                        <Disclosure key={item.label}>
-                          <DisclosureButton
-                            className="
-                              flex
-                              w-full
-                              items-center
-                              justify-between
-                              rounded-lg
-                              px-4
-                              py-3
-                              font-medium
-                              text-gray-700
-                              hover:bg-gray-50
-                            "
-                          >
-                            {item.label}
-                            <ChevronDownIcon className="h-4 w-4" />
-                          </DisclosureButton>
-
-                          <DisclosurePanel className="pl-4 pb-2">
-                            <div className="space-y-1 my-2">
-                              {item.links?.map((link: NavLink) => (
-                                <Link
-                                  key={link.label}
-                                  href={link.href}
-                                  className="block rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                                  onClick={() => setOpen(false)}
-                                >
-                                  {link.label}
-                                </Link>
-                              ))}
-                            </div>
-                            <div className="pt-2 px-4 pb-2 border-t border-slate-100 mt-2">
-                              <Link
-                                href="/services"
-                                className="flex items-center justify-between font-bold text-xs text-primary py-2 px-3 bg-primary-light border border-primary-border rounded-lg"
-                                onClick={() => setOpen(false)}
+                        <Disclosure key={item.label} defaultOpen={true}>
+                          {({ open: isOpen }) => (
+                            <>
+                              <DisclosureButton
+                                className="
+                                  group
+                                  flex
+                                  w-full
+                                  items-center
+                                  justify-between
+                                  rounded-lg
+                                  px-4
+                                  py-3
+                                  font-bold
+                                  text-sm
+                                  text-slate-700
+                                  hover:bg-slate-50
+                                  hover:text-primary
+                                  transition-colors
+                                "
                               >
-                                <span>View All Services Catalog →</span>
-                              </Link>
-                            </div>
-                          </DisclosurePanel>
+                                <span>{item.label}</span>
+                                <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""}`} />
+                              </DisclosureButton>
+
+                              {/* Accordion Smooth Animated Transition Panel */}
+                              <DisclosurePanel
+                                transition
+                                className="pl-2 pb-2 transition-all duration-300 ease-in-out data-closed:-translate-y-2 data-closed:opacity-0 overflow-hidden"
+                              >
+                                <div className="space-y-1.5 my-2 pl-2 border-l-2 border-slate-100">
+                                  {isLoading ? (
+                                    <MobileMenuSkeleton />
+                                  ) : dynamicServices.length > 0 ? (
+                                    dynamicServices.map((link: DynamicMobileServiceLink) => (
+                                      <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className="group flex items-start gap-2.5 rounded-lg p-2.5 hover:bg-indigo-50/60 transition-colors"
+                                        onClick={() => setOpen(false)}
+                                      >
+                                        <div className="flex size-7 flex-none items-center justify-center rounded-md bg-slate-100 group-hover:bg-white text-slate-500 group-hover:text-indigo-600 border border-slate-200/50 transition-colors mt-0.5">
+                                          <SquaresPlusIcon className="size-3.5" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                          <span className="text-xs font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                                            {link.label}
+                                          </span>
+                                          {link.description && (
+                                            <span className="text-[10px] text-slate-400 font-medium line-clamp-1">
+                                              {link.description}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </Link>
+                                    ))
+                                  ) : (
+                                    <p className="text-xs text-slate-500 font-medium py-2 px-3">
+                                      No active services in catalog at the moment.
+                                    </p>
+                                  )}
+                                </div>
+
+                                <div className="pt-2 px-2 pb-2">
+                                  <Link
+                                    href="/services"
+                                    className="flex items-center justify-between font-bold text-xs text-indigo-700 py-2.5 px-3.5 bg-indigo-50/80 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
+                                    onClick={() => setOpen(false)}
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      <SparklesIcon className="size-3.5 text-indigo-600" />
+                                      <span>View All Services Catalog</span>
+                                    </span>
+                                    <span>→</span>
+                                  </Link>
+                                </div>
+                              </DisclosurePanel>
+                            </>
+                          )}
                         </Disclosure>
                       );
                     })}
@@ -178,63 +259,46 @@ export default function MobileMenu({ open, setOpen, items }: MobileNavProps) {
                       <Link
                         href="/dashboard"
                         onClick={() => setOpen(false)}
-                        className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-hover transition-colors shadow-xs w-full"
+                        className="block w-full text-center font-bold text-xs py-2.5 px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs"
                       >
-                        <Squares2X2Icon className="size-4" />
-                        Go to Dashboard
-                      </Link>
-
-                      <Link
-                        href="/profile"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors w-full"
-                      >
-                        <UserIcon className="size-4" />
-                        My Profile
+                        Client Dashboard
                       </Link>
 
                       <button
-                        type="button"
                         onClick={handleLogout}
-                        className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold text-red-600 bg-red-50 border border-red-100 hover:bg-red-100 transition-colors w-full cursor-pointer mt-2"
+                        className="w-full font-bold text-xs py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
-                        <ArrowRightStartOnRectangleIcon className="size-4 text-red-500" />
-                        Sign Out
+                        <ArrowRightStartOnRectangleIcon className="size-4" />
+                        <span>Sign Out</span>
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <Button
-                        label="Login"
-                        variant="secondary"
-                        size="md"
-                        className="w-full"
-                        onClick={() => {
-                          setOpen(false);
-                          modal.open({
-                            title: "Sign In",
-                            description: "Access your dashboard and services.",
-                            content: <LoginForm />,
-                            size: "sm",
-                          });
-                        }}
-                      />
-
-                      <Button
-                        label="Sign Up"
+                        fullWidth
                         variant="primary"
                         size="md"
-                        className="w-full"
+                        className="rounded-xl font-bold"
                         onClick={() => {
                           setOpen(false);
-                          modal.open({
-                            title: "Create Account",
-                            description: "Register to get started with our services.",
-                            content: <RegisterForm />,
-                            size: "md",
-                          });
+                          router.push("/login");
                         }}
-                      />
+                      >
+                        Log In
+                      </Button>
+
+                      <Button
+                        fullWidth
+                        variant="outline"
+                        size="md"
+                        className="rounded-xl font-bold border-slate-200"
+                        onClick={() => {
+                          setOpen(false);
+                          router.push("/register");
+                        }}
+                      >
+                        Register Business
+                      </Button>
                     </div>
                   )}
                 </div>

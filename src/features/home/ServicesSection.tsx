@@ -4,7 +4,6 @@ import SectionHeading from "@/components/common/Heading";
 import { prisma } from "@/lib/prisma";
 import ServiceCard from "@/components/cards/ServicesCard";
 import { Service } from "@/types/services";
-import { services as fallbackServices } from "@/data/services";
 
 export default async function ServicesSection() {
   let servicesList: Service[] = [];
@@ -13,15 +12,16 @@ export default async function ServicesSection() {
       take: 6,
       orderBy: { featured: "desc" },
     });
-    
+
     if (dbServices && dbServices.length > 0) {
       servicesList = dbServices as any[];
-    } else {
-      servicesList = fallbackServices.slice(0, 6);
     }
   } catch (error) {
-    console.error("Prisma error in ServicesSection, using fallback catalog:", error);
-    servicesList = fallbackServices.slice(0, 6);
+    console.error("Prisma error in ServicesSection:", error);
+  }
+
+  if (servicesList.length === 0) {
+    return null; // Gracefully hide homepage catalog section if database returns 0 services
   }
 
   return (
@@ -37,7 +37,7 @@ export default async function ServicesSection() {
 
         <div className="grid w-full max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-2">
           {servicesList.map((service) => (
-            <ServiceCard key={service.id} service={service} />
+            <ServiceCard key={service.id || service.slug} service={service} />
           ))}
         </div>
       </Container>

@@ -1,20 +1,24 @@
+import Image from "next/image";
 import { testimonialsData } from "@/data/testimonial.data";
-import { Testimonial } from "@/types/feature";
+import { Testimonial } from "@/types";
+
 export default function TestimonialsCarousel() {
   const CreateCard = ({ card }: { card: Testimonial }) => (
-    <div className="p-4 rounded-lg mx-4 shadow hover:shadow-lg transition-all duration-200 w-72 shrink-0">
-      <div className="flex gap-2">
-        <img
-          className="size-11 rounded-full"
+    <div className="p-4 rounded-lg mx-4 shadow hover:shadow-lg transition-all duration-200 w-72 shrink-0 bg-white border border-slate-100">
+      <div className="flex gap-2 items-center">
+        <Image
+          className="size-11 rounded-full object-cover shrink-0"
           src={card.image}
-          alt="User Image"
+          alt={card.name}
+          width={44}
+          height={44}
         />
 
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-1">
-            <p>{card.name}</p>
+            <p className="text-xs font-bold text-slate-900 truncate">{card.name}</p>
             <svg
-              className="mt-0.5 fill-blue-500"
+              className="mt-0.5 fill-blue-500 shrink-0"
               width="12"
               height="12"
               viewBox="0 0 12 12"
@@ -27,10 +31,10 @@ export default function TestimonialsCarousel() {
               />
             </svg>
           </div>
-          <span className="text-xs text-slate-500">{card.handle}</span>
+          <span className="text-[11px] text-slate-500 truncate">{card.handle}</span>
         </div>
       </div>
-      <p className="text-sm py-4 text-gray-800">{card.description}</p>
+      <p className="text-xs py-3 text-slate-600 font-medium leading-relaxed">{card.description}</p>
     </div>
   );
 

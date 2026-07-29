@@ -70,7 +70,7 @@ export default function Drawer({
           {/* Header section */}
           <div className="px-6 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="space-y-1 text-left">
-              <DrawerRoot.Title className="text-slate-800 font-extrabold text-sm md:text-base tracking-tight leading-none">
+              <DrawerRoot.Title className="text-slate-800 font-bold text-sm md:text-base tracking-tight leading-none">
                 {title || "Processor Console"}
               </DrawerRoot.Title>
               {description && (

@@ -3,10 +3,44 @@ import { prisma } from "@/lib/prisma";
 import { ApplicationStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { createApplicationSchema } from "@/schemas/api-schemas";
+import { handleApiError, handleValidationError } from "@/lib/api-response";
+import { formatApplicationDocuments } from "@/lib/applications";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
+    const userId = (session.user as any).id as string;
+    const userRole = (session.user as any).role as string;
+    const isAdminOrExec = userRole === "ADMIN" || userRole === "EXECUTIVE";
+
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(`get_apps:${ip}`, RATE_LIMIT_CONFIGS.userApi);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a minute." },
+        { status: 429 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
+    const skip = (page - 1) * limit;
+
+    // Regular users see ONLY their own applications; Admins/Execs see all applications
+    const whereCondition = isAdminOrExec ? {} : { userId };
+
     const applications = await prisma.application.findMany({
+      where: whereCondition,
+      take: limit,
+      skip: skip,
       orderBy: {
         createdAt: "desc",
       },
@@ -16,80 +50,78 @@ export async function GET() {
       },
     });
 
-    // Format documents map for client components compatibility
     const formatted = applications.map((app) => {
-      const uploadedDocs: Record<string, { name: string; size: string; type: string }> = {};
-      app.documents.forEach((doc) => {
-        uploadedDocs[doc.docName] = {
-          name: doc.fileName,
-          size: doc.fileSize,
-          type: doc.fileType,
-        };
-      });
-
       return {
         ...app,
         query: app.queryText || undefined,
         assignedExecutive: app.assignedExecutive?.name || app.assignedExecutiveId || undefined,
-        uploadedDocs,
+        uploadedDocs: formatApplicationDocuments(app.documents),
       };
     });
 
     return NextResponse.json(formatted, { status: 200 });
   } catch (error) {
-    console.error("Error fetching applications from MySQL:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch applications" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to fetch applications.");
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(`post_app:${ip}`, RATE_LIMIT_CONFIGS.userApi);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
+    const validation = createApplicationSchema.safeParse(body);
+
+    if (!validation.success) {
+      return handleValidationError(validation.error);
+    }
+
+    const payload = validation.data;
     const session = await getServerSession(authOptions);
 
     let targetUser: any = null;
 
-    // 1. Try finding user by body.userId passed from client session
-    if (body.userId) {
+    if (payload.userId) {
       targetUser = await prisma.user.findUnique({
-        where: { id: body.userId },
+        where: { id: payload.userId },
       });
     }
 
-    // 2. Try finding user by server session email or user ID
     if (!targetUser && session?.user?.email) {
       targetUser = await prisma.user.findUnique({
         where: { email: session.user.email },
       });
     }
 
-    // 3. Try finding user by body.userEmail
-    if (!targetUser && body.userEmail) {
+    if (!targetUser && payload.userEmail) {
       targetUser = await prisma.user.findUnique({
-        where: { email: body.userEmail },
+        where: { email: payload.userEmail },
       });
     }
 
-    // 4. Try finding user by phone number
-    if (!targetUser && body.customerPhone) {
+    if (!targetUser && payload.customerPhone) {
       targetUser = await prisma.user.findFirst({
-        where: { phone: body.customerPhone },
+        where: { phone: payload.customerPhone },
       });
     }
 
-    // 5. Fallback to guest user ONLY if no user is found in database
     if (!targetUser) {
       targetUser = await prisma.user.upsert({
         where: { email: "guest@firstlease.com" },
         update: {},
         create: {
           id: "guest-user",
-          name: body.customerName || "Guest User",
+          name: payload.customerName || "Guest User",
           email: "guest@firstlease.com",
-          phone: body.customerPhone || "0000000000",
+          phone: payload.customerPhone || "0000000000",
           role: "CLIENT",
         },
       });
@@ -97,12 +129,10 @@ export async function POST(request: Request) {
 
     const finalUserId = targetUser.id;
 
-    // Find target service or fallback to creating service definition in DB
     let targetService = await prisma.service.findFirst({
       where: {
         OR: [
-          { slug: body.serviceSlug },
-          { id: body.serviceId || "non-existent-id" },
+          { slug: payload.serviceSlug },
         ],
       },
     });
@@ -110,15 +140,15 @@ export async function POST(request: Request) {
     if (!targetService) {
       targetService = await prisma.service.create({
         data: {
-          id: body.serviceId || body.serviceSlug || `service-${Date.now()}`,
-          slug: body.serviceSlug || "company-incorporation",
-          title: body.serviceTitle || "Statutory Service",
-          shortDescription: body.serviceTitle || "Statutory Service Application",
-          description: body.serviceTitle || "Statutory Service Application",
+          id: payload.serviceSlug || `service-${Date.now()}`,
+          slug: payload.serviceSlug,
+          title: payload.serviceTitle || "Statutory Service",
+          shortDescription: payload.serviceTitle || "Statutory Service Application",
+          description: payload.serviceTitle || "Statutory Service Application",
           image: "/images/services/incorporation.jpg",
-          price: body.totalFee || 2999,
-          governmentFee: body.governmentFee || 1000,
-          professionalFee: body.professionalFee || 1999,
+          price: payload.totalFee,
+          governmentFee: payload.governmentFee || 1000,
+          professionalFee: payload.professionalFee || 1999,
           duration: "5-7 Days",
         },
       });
@@ -126,27 +156,23 @@ export async function POST(request: Request) {
 
     const newApp = await prisma.application.create({
       data: {
-        id: body.id || `COMP-${targetService.id}0${Math.floor(1000 + Math.random() * 9000)}`,
+        id: payload.id || `COMP-${targetService.id}0${Math.floor(1000 + Math.random() * 9000)}`,
         userId: finalUserId,
         serviceId: targetService.id,
         serviceSlug: targetService.slug,
-        serviceTitle: targetService.title || body.serviceTitle,
-        status: (body.status as ApplicationStatus) || "DOCUMENTS_PENDING",
-        customerName: body.customerName,
-        customerPhone: body.customerPhone,
-        address: body.address || "",
-        governmentFee: body.governmentFee || targetService.governmentFee,
-        professionalFee: body.professionalFee || targetService.professionalFee,
-        totalFee: body.totalFee || targetService.price,
+        serviceTitle: targetService.title || payload.serviceTitle,
+        status: (payload.status as ApplicationStatus) || "DOCUMENTS_PENDING",
+        customerName: payload.customerName,
+        customerPhone: payload.customerPhone,
+        address: payload.address || "",
+        governmentFee: payload.governmentFee || targetService.governmentFee,
+        professionalFee: payload.professionalFee || targetService.professionalFee,
+        totalFee: payload.totalFee || targetService.price,
       },
     });
 
     return NextResponse.json(newApp, { status: 201 });
   } catch (error) {
-    console.error("Error creating application in MySQL:", error);
-    return NextResponse.json(
-      { error: "Failed to create application" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to create application.");
   }
 }

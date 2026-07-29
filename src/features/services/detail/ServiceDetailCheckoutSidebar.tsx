@@ -11,14 +11,14 @@ export default function ServiceDetailCheckoutSidebar({
  
 
   return (
-    <aside className="sticky top-24 rounded-xl border border-gray-200 bg-white p-6 shadow-xs space-y-5">
+    <aside className="sticky top-24 rounded-lg border border-gray-200 bg-white p-6 shadow-xs space-y-5">
       {/* Price Block */}
       <div className="space-y-1 pb-4 border-b border-gray-100">
         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider block">
           Total Fee ({service.title})
         </span>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-extrabold text-gray-900">
+          <span className="text-3xl font-bold text-gray-900">
             ₹{service.price}
           </span>
           {service.originalPrice && (

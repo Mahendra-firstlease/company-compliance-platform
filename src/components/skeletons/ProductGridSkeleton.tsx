@@ -6,7 +6,7 @@ export default function ProductGridSkeleton() {
       {Array.from({ length: 6 }).map((_, idx) => (
         <div
           key={idx}
-          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-xs animate-pulse space-y-4"
+          className="flex flex-col justify-between rounded-lg border border-slate-200 bg-white p-6 shadow-xs animate-pulse space-y-4"
         >
           <div className="space-y-3">
             <div className="flex items-center justify-between">

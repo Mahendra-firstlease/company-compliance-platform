@@ -56,7 +56,7 @@ export default function UserDashboardPage() {
       <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-primary to-primary-hover p-6 md:p-8 text-white shadow-md">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-white/10 to-transparent pointer-events-none" />
         <div className="relative z-10 space-y-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white/90 text-xs font-extrabold uppercase tracking-widest backdrop-blur-md">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white/90 text-xs font-bold uppercase tracking-widest backdrop-blur-md">
              🚀 Welcome Back, {session?.user?.name || "User"}
           </span>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight mt-2">

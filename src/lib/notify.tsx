@@ -63,10 +63,12 @@ function showNotification(
 
 export const notify = {
   success(input: NotifyInput) {
+    toast.dismiss(); // Clear persistent loading spinners before showing success
     return showNotification("success", input);
   },
 
   error(input: NotifyInput) {
+    toast.dismiss(); // Clear persistent loading spinners before showing error
     return showNotification("error", input);
   },
 
@@ -75,6 +77,7 @@ export const notify = {
   },
 
   info(input: NotifyInput) {
+    toast.dismiss(); // Clear persistent loading spinners before showing info
     return showNotification("info", input);
   },
 

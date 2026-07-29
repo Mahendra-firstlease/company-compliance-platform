@@ -47,7 +47,7 @@ export default function FAQPage() {
             <HelpCircle size={14} />
             <span>FAQ Helpdesk</span>
           </div>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
             Frequently Asked Questions
           </h1>
           <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">

@@ -1,13 +1,19 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import Button from "@/components/common/Button";
 import { useModal } from "@/components/ui/overlay";
-import MultiServiceCheckoutModal from "./MultiServiceCheckoutModal";
 import { notify } from "@/lib/notify";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Service } from "@/types/services";
+
+// Lazy load checkout modal only when triggered (improves First Load JS & INP)
+const MultiServiceCheckoutModal = dynamic(
+  () => import("./MultiServiceCheckoutModal"),
+  { ssr: false }
+);
 
 export default function ApplyNowButton({ service }: { service: Service }) {
   const modal = useModal();

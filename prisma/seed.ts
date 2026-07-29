@@ -7,10 +7,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Starting database seed...");
 
-  // 1. Seed Admin User Account
-  const adminPasswordHash = await bcrypt.hash("Admin@12345", 10);
+  // 1. Seed Admin User Account (Configurable via environment variables for SEC-3 compliance)
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@firstlease.com";
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+
   const adminUser = await prisma.user.upsert({
-    where: { email: "admin@firstlease.com" },
+    where: { email: adminEmail },
     update: {
       role: "ADMIN",
       passwordHash: adminPasswordHash,
@@ -18,7 +21,7 @@ async function main() {
     create: {
       id: "usr_admin_master",
       name: "Master Admin Specialist",
-      email: "admin@firstlease.com",
+      email: adminEmail,
       phone: "+91 9999988888",
       passwordHash: adminPasswordHash,
       role: "ADMIN",

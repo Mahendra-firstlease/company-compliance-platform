@@ -18,7 +18,7 @@ export default function ServiceDetailError({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-20 text-center">
-      <div className="mx-auto max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-xs space-y-4">
+      <div className="mx-auto max-w-md bg-white border border-slate-200 rounded-lg p-8 shadow-xs space-y-4">
         <div className="size-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto">
           <AlertTriangle size={24} />
         </div>

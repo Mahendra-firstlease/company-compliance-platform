@@ -1,43 +1,47 @@
-import axios from "axios";
-const apiUrl = process.env.BASE_API_URL || "http://localhost:3001";
+/**
+ * Lightweight Native Fetch Client for Next.js App Router
+ * Standardized on native browser & Node fetch API (no Axios dependency).
+ */
+
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-const apiClient = axios.create({
-  baseURL:
-    typeof window === "undefined"
-      ? apiUrl // Server-side hits json-server directly
-      : baseUrl, // Client-side routes through Next.js proxy
-  withCredentials: true,
-  timeout: 10000,
-});
 
-// Inject JWT token
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+export async function apiFetch<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+
+  // Inject Authorization Bearer token on client side
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+  }
 
-// Global error handler
-apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  },
-);
+  const response = await fetch(url, {
+    cache: "no-store",
+    ...options,
+    headers,
+  });
 
-export default apiClient;
+  // Global 401 Unauthorized handling on client
+  if (response.status === 401 && typeof window !== "undefined") {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export default apiFetch;

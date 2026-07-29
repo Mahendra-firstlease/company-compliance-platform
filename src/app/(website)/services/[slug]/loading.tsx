@@ -10,10 +10,10 @@ export default function ServiceDetailLoading() {
           <div className="h-6 w-32 rounded-full bg-slate-200" />
           <div className="h-10 w-3/4 rounded-lg bg-slate-200" />
           <div className="h-20 w-full rounded-lg bg-slate-100" />
-          <div className="h-64 w-full rounded-xl bg-slate-100" />
+          <div className="h-64 w-full rounded-lg bg-slate-100" />
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6 animate-pulse">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-6 animate-pulse">
           <div className="h-8 w-1/2 rounded-md bg-slate-200" />
           <div className="h-12 w-full rounded-lg bg-slate-100" />
           <div className="h-10 w-full rounded-lg bg-slate-200" />

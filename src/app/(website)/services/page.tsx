@@ -1,9 +1,7 @@
-import React from "react";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import ServicesPage from "@/features/services/ServicesPage";
 import { Service } from "@/types/services";
-import { services as fallbackServices } from "@/data/services";
 import { ServiceFilterSchema } from "@/schemas/service.schema";
 
 interface ServicesPageProps {
@@ -68,11 +66,12 @@ export default async function Page({ searchParams }: ServicesPageProps) {
         };
       }) as any[];
     } else {
-      allServices = fallbackServices;
+      // Do not use mock fallback services if DB returns empty
+      allServices = [];
     }
   } catch (error) {
-    console.error("Database query failed, using fallback catalog:", error);
-    allServices = fallbackServices;
+    console.error("Database query failed:", error);
+    allServices = [];
   }
 
   // Server-side filtering
@@ -103,10 +102,9 @@ export default async function Page({ searchParams }: ServicesPageProps) {
   if (selectedDelivery.length > 0) {
     filtered = filtered.filter((s) =>
       selectedDelivery.some((d) => {
-        const dur = s.duration.toLowerCase();
-        if (d === "24") return dur.includes("24") || dur.includes("1 day");
-        if (d === "3days") return dur.includes("3") || dur.includes("2") || dur.includes("4");
-        if (d === "7days") return dur.includes("7") || dur.includes("5") || dur.includes("10");
+        if (d === "1-2") return s.duration.includes("24") || s.duration.includes("1-2");
+        if (d === "3-7") return s.duration.includes("3") || s.duration.includes("5-7") || s.duration.includes("7");
+        if (d === "7+") return s.duration.includes("10") || s.duration.includes("15") || s.duration.includes("30");
         return false;
       })
     );
@@ -117,40 +115,24 @@ export default async function Page({ searchParams }: ServicesPageProps) {
   } else if (sort === "price-high") {
     filtered.sort((a, b) => b.price - a.price);
   } else if (sort === "popular") {
-    filtered = filtered.filter((s) => s.popular);
+    filtered.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0));
   }
 
   const totalResults = filtered.length;
-  const totalPages = Math.ceil(totalResults / pageSize);
-  const paginatedServices = filtered.slice((page - 1) * pageSize, page * pageSize);
-
-  // JSON-LD Structural Schema
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "Compliance Services Catalog",
-    "numberOfItems": totalResults,
-    "itemListElement": paginatedServices.map((s, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": s.title,
-      "url": `https://compliance.in/services/${s.slug}`,
-    })),
-  };
+  const totalPages = Math.ceil(totalResults / pageSize) || 1;
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const paginatedServices = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <ServicesPage
-        services={paginatedServices}
-        totalResults={totalResults}
-        currentPage={page}
-        totalPages={totalPages}
-        search={search}
-      />
-    </>
+    <ServicesPage
+      services={paginatedServices}
+      totalResults={totalResults}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      search={search}
+    />
   );
 }

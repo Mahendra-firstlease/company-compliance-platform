@@ -15,6 +15,7 @@ import { services as fallbackServices } from "@/data/services";
 import { Service } from "@/types/services";
 import { getUserProfileWithBusinessAction } from "@/lib/actions/profile";
 import { useModal } from "@/components/ui/overlay";
+import { ProfileSkeleton } from "@/components/ui/skeletons";
 import {
   UserCircle,
   Building2,
@@ -75,9 +76,9 @@ export default function ProfilePage() {
     queryFn: async () => {
       try {
         const res = await servicesService.getServices();
-        return res && res.length > 0 ? res : fallbackServices;
+        return res || [];
       } catch (err) {
-        return fallbackServices;
+        return [];
       }
     },
   });
@@ -190,14 +191,10 @@ export default function ProfilePage() {
 
   if (status === "loading" || isProfileLoading) {
     return (
-      <Section className="py-16 bg-slate-50 min-h-screen">
+      <Section className="py-12 bg-slate-50 min-h-screen">
         <Container>
-          <div className="max-w-5xl mx-auto space-y-6 animate-pulse">
-            <div className="h-32 bg-white rounded-lg border border-slate-200" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-64 bg-white rounded-lg border border-slate-200" />
-              <div className="h-64 bg-white rounded-lg border border-slate-200" />
-            </div>
+          <div className="max-w-5xl mx-auto">
+            <ProfileSkeleton />
           </div>
         </Container>
       </Section>
@@ -225,7 +222,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-extrabold text-white tracking-tight">
+                    <h1 className="text-2xl font-bold text-white tracking-tight">
                       {session?.user?.name || "User Account"}
                     </h1>
                     <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider">
@@ -456,7 +453,7 @@ export default function ProfilePage() {
                         <span>{isSelected ? "Selected for Bundle" : "Click to Add to Bundle"}</span>
                       </div>
 
-                      <span className="font-extrabold text-indigo-700">₹{service.price}</span>
+                      <span className="font-bold text-indigo-700">₹{service.price}</span>
                     </div>
 
                     {/* Service Card Content */}
@@ -484,7 +481,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-900 truncate">
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 truncate">
                       {selectedServices.length} {selectedServices.length === 1 ? "Service" : "Services"} Selected
                     </span>
                     <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 shrink-0">

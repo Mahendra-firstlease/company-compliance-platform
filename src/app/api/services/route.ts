@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { services as fallbackServices } from "@/data/services";
 
 export async function GET() {
   try {
@@ -17,17 +16,17 @@ export async function GET() {
       const { details, ...base } = service;
       return {
         ...base,
-        benefits: details?.benefits || [],
-        eligibility: details?.eligibility || [],
-        requiredDocuments: details?.requiredDocuments || [],
-        faqs: details?.faqs || [],
+        benefits: (details?.benefits as string[]) || [],
+        eligibility: (details?.eligibility as string[]) || [],
+        requiredDocuments: (details?.requiredDocuments as string[]) || [],
+        faqs: (details?.faqs as any[]) || [],
       };
     });
 
     return NextResponse.json(formattedServices, { status: 200 });
   } catch (error) {
     console.error("Error fetching services from MySQL:", error);
-    // Return fallback catalog if database fails so client app never crashes with 500
-    return NextResponse.json(fallbackServices, { status: 200 });
+    // Return empty array if database query fails so client displays no services UI
+    return NextResponse.json([], { status: 200 });
   }
 }

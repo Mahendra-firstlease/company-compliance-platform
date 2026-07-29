@@ -1,8 +1,8 @@
 "use client";
 
 import React, { use, useState, useEffect } from "react";
-import { services } from "@/data/services";
 import { notFound } from "next/navigation";
+import { WorkspaceSkeleton } from "@/components/ui/skeletons";
 import Section from "@/components/common/Section";
 import Container from "@/components/common/Container";
 import Button from "@/components/common/Button";
@@ -35,6 +35,8 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useModal } from "@/components/ui/overlay";
+import { getServiceConfig } from "@/features/services/registry";
+import DynamicForm from "@/features/services/components/DynamicForm";
 import FileUpload, {
   validateFileSecurity,
   sanitizeFilename,
@@ -49,8 +51,8 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
   const modal = useModal();
 
   // Find corresponding service definitions
-  const service = services.find((s) => s.slug === slug);
-  if (!service) {
+  const serviceConfig = getServiceConfig(slug);
+  if (!serviceConfig) {
     notFound();
   }
 
@@ -58,27 +60,30 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
   const [appCase, setAppCase] = useState<ApplicationCase | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Poll mock API every 1 second to simulate live updates from back office admin team
+  // Sync application status from backend (polled gently every 10 seconds)
   useEffect(() => {
     let active = true;
-    
+
     const loadApp = async () => {
       try {
         const activeApp = await getApplicationBySlug(slug);
-        if (active) {
+        if (active && activeApp) {
           setAppCase(activeApp);
           setIsInitialLoading(false);
         }
       } catch (err) {
-        console.error(err);
+        // Silently handle rate limits or network issues without crashing UI
+        console.warn("Application fetch status:", err);
       }
     };
-    
+
     loadApp();
 
     const interval = setInterval(() => {
-      loadApp();
-    }, 1500);
+      if (document.visibilityState === "visible") {
+        loadApp();
+      }
+    }, 10000);
 
     return () => {
       active = false;
@@ -87,11 +92,15 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
   }, [slug]);
 
   // Upload simulation states
-  const requiredDocs = service.requiredDocuments || [
-    "PAN Card",
-    "Aadhaar Card",
-    "Office Address Proof",
-  ];
+  const requiredDocs =
+    serviceConfig?.sections
+      .flatMap((s) => s.fields)
+      .filter((f) => f.type === "file" || f.type === "front-back-file")
+      .map((f) => f.label) || [
+      "PAN Card",
+      "Aadhaar Card",
+      "Office Address Proof",
+    ];
   const [isSubmittingDocs, setIsSubmittingDocs] = useState(false);
 
   // Simulation loading states
@@ -150,7 +159,9 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
     }
   };
 
-  const currentStepIndex = appCase ? getEffectiveActiveIndex(appCase.status) : 1;
+  const currentStepIndex = appCase
+    ? getEffectiveActiveIndex(appCase.status)
+    : 1;
 
   // Remove file attachments
   const handleDeleteFile = async (docName: string) => {
@@ -182,7 +193,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
             <FileText size={24} />
           </div>
           <div className="space-y-1.5">
-            <h3 className="font-extrabold text-slate-900 text-base">
+            <h3 className="font-bold text-slate-900 text-base">
               {docName}
             </h3>
             <p className="text-xs text-slate-500 font-semibold truncate max-w-sm mx-auto">
@@ -218,7 +229,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               <div className="h-1.5 w-16 bg-slate-200 rounded-full animate-pulse" />
               <div className="h-1.5 w-32 bg-slate-200 rounded-full animate-pulse" />
               <div className="h-1.5 w-24 bg-slate-200 rounded-full animate-pulse" />
-              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mt-4">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
                 Simulated Encryption Secure Sandbox Preview
               </p>
               <span className="text-xs text-slate-400 text-center max-w-xs leading-normal font-medium">
@@ -358,7 +369,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
   // Check if all required files are present
   const allFilesUploaded = appCase
-    ? requiredDocs.every((doc) => !!appCase.uploadedDocs[doc])
+    ? requiredDocs.every((doc: string) => !!appCase.uploadedDocs[doc])
     : false;
 
   // Simulate mock invoice generator
@@ -475,13 +486,10 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
   if (isInitialLoading) {
     return (
-      <Section className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="animate-spin text-primary" size={32} />
-          <span className="text-xs text-slate-400 font-semibold">
-            Synchronizing workspace...
-          </span>
-        </div>
+      <Section className="bg-slate-50/50 min-h-screen pt-8 pb-20">
+        <Container className="max-w-6xl">
+          <WorkspaceSkeleton />
+        </Container>
       </Section>
     );
   }
@@ -572,7 +580,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
         {/* Main Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200 p-6 rounded-lg shadow-xs">
           <div className="space-y-1">
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               {appCase.serviceTitle}
             </h1>
             <p className="text-xs text-slate-400">
@@ -586,28 +594,28 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               })}
             </p>
           </div>
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
-                appCase.status === "APPROVED"
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : appCase.status === "PAYMENT_CONFIRMED"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-3xs"
-                    : appCase.query
-                      ? "bg-amber-50 text-amber-600 border border-amber-100"
-                      : "bg-primary-light text-primary border-primary-border"
-              }`}
-            >
-              {appCase.status === "PAYMENT_CONFIRMED"
-                ? "✓ PAYMENT CONFIRMED"
-                : appCase.query
-                  ? "QUERY PENDING"
-                  : appCase.status.replace("_", " ")}
-            </span>
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
+              appCase.status === "APPROVED"
+                ? "bg-green-50 text-green-700 border-green-200"
+                : appCase.status === "PAYMENT_CONFIRMED"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-3xs"
+                  : appCase.query
+                    ? "bg-amber-50 text-amber-600 border border-amber-100"
+                    : "bg-primary-light text-primary border-primary-border"
+            }`}
+          >
+            {appCase.status === "PAYMENT_CONFIRMED"
+              ? "✓ PAYMENT CONFIRMED"
+              : appCase.query
+                ? "QUERY PENDING"
+                : appCase.status.replace("_", " ")}
+          </span>
         </div>
 
         {/* Dynamic Timeline Stepper (Step 8: Application Tracking) */}
         <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-lg shadow-xs relative overflow-hidden">
-          <h3 className="font-extrabold text-slate-900 text-sm mb-8 tracking-tight flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 text-sm mb-8 tracking-tight flex items-center gap-2">
             <span className="size-2 rounded-full bg-primary animate-pulse" />
             Application Progress Tracker
           </h3>
@@ -711,89 +719,36 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
         {/* Bottom Workspace Split */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Document Upload Portal (Step 5) */}
+          {/* Dynamic Schema-Driven Filing Form & Upload Portal */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white border border-slate-200 rounded-lg shadow-xs p-6 md:p-8 space-y-6">
-              <div>
-                <h3 className="text-base font-semibold text-slate-900">
-                  Secure Document Upload
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed mt-1">
-                  Upload copies of the mandatory documents requested below.
-                  Standard PDF, PNG, and JPG formats under 5MB are validated for
-                  processing.
-                </p>
-              </div>
-
-              <div className="space-y-4 divide-y divide-slate-100">
-                {requiredDocs.map((docName, idx) => {
-                  const file = appCase.uploadedDocs[docName];
-                  const canEdit =
-                    appCase.status === "DOCUMENTS_PENDING" ||
-                    appCase.status === "PAYMENT_CONFIRMED";
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`pt-4 ${idx === 0 ? "pt-0 border-t-0" : ""} flex flex-col md:flex-row md:items-center justify-between gap-4`}
-                    >
-                      <div className="space-y-1">
-                        <h4 className="font-semibold text-xs text-slate-700">
-                          {docName}
-                        </h4>
-                        <p className="text-xs text-slate-400">
-                          Mandatory verification attachment
-                        </p>
-                      </div>
-
-                      <div className="w-full md:max-w-xs">
-                        <FileUpload
-                          value={file}
-                          disabled={!canEdit}
-                          onView={() => handleViewFile(docName, file)}
-                          onChange={(newFile) => {
-                            if (newFile === null) {
-                              handleDeleteFile(docName);
-                            } else {
-                              const newUploads = {
-                                ...appCase.uploadedDocs,
-                                [docName]: newFile,
-                              };
-                              updateApplication(appCase.id, {
-                                uploadedDocs: newUploads,
-                              }).then(() => {
-                                getApplicationBySlug(slug).then(setAppCase);
-                              });
-                            }
-                          }}
-                          allowedTypes={["pdf", "png", "jpg", "jpeg"]}
-                          maxSizeMb={5}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Document Submission Buttons */}
-              {(appCase.status === "DOCUMENTS_PENDING" ||
-                appCase.status === "PAYMENT_CONFIRMED") && (
-                <div className="border-t border-slate-100 pt-6 flex justify-end">
-                  <Button
-                    onClick={handleSubmitDocuments}
-                    disabled={!allFilesUploaded || isSubmittingDocs}
-                    rightIcon={
-                      isSubmittingDocs ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <ArrowRight size={14} />
-                      )
-                    }
-                  >
-                    Submit Documents for Review
-                  </Button>
-                </div>
-              )}
+            {/* Dynamic Schema-Driven Form Engine */}
+            <div className="space-y-4">
+              <DynamicForm
+                config={serviceConfig}
+                initialValues={{
+                  applicantName: appCase.customerName,
+                  fullName: appCase.customerName,
+                  mobileNumber: appCase.customerPhone,
+                  registeredAddress: appCase.address,
+                }}
+                onSubmit={async (formData) => {
+                  notify.loading({
+                    title: "Submitting Filing Application...",
+                    description:
+                      "Transmitting dynamic form payload to backend.",
+                  });
+                  await updateApplication(appCase.id, {
+                    status: "UNDER_REVIEW",
+                    query: "",
+                  });
+                  const activeApp = await getApplicationBySlug(slug);
+                  setAppCase(activeApp);
+                  notify.success({
+                    title: "Filing Application Submitted! 🎉",
+                    description: "Updated workspace status to UNDER_REVIEW.",
+                  });
+                }}
+              />
             </div>
           </div>
 

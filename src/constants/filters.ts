@@ -1,4 +1,4 @@
-import { FilterGroup } from "@/types/filter";
+import { FilterGroup } from "@/types";
 
 export const filters: FilterGroup[] = [
   {

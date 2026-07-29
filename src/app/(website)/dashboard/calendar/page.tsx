@@ -86,8 +86,8 @@ export default function CalendarPage() {
             <Calendar size={22} />
           </div>
           <div className="space-y-1">
-            <h4 className="font-extrabold text-slate-900 text-base">{details}</h4>
-            <p className="text-xs font-extrabold text-primary uppercase tracking-widest">Due Date: {date}</p>
+            <h4 className="font-bold text-slate-900 text-base">{details}</h4>
+            <p className="text-xs font-bold text-primary uppercase tracking-widest">Due Date: {date}</p>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed px-2 font-medium">{instructions}</p>
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 mt-4">
@@ -132,8 +132,8 @@ export default function CalendarPage() {
             <Calendar size={22} />
           </div>
           <div className="space-y-1">
-            <h4 className="font-extrabold text-slate-900 text-base">{details}</h4>
-            <p className="text-xs font-extrabold text-primary uppercase tracking-widest">Due Date: 2026-06-{dateStr.split(" ")[1]}</p>
+            <h4 className="font-bold text-slate-900 text-base">{details}</h4>
+            <p className="text-xs font-bold text-primary uppercase tracking-widest">Due Date: 2026-06-{dateStr.split(" ")[1]}</p>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed px-2 font-medium">{instructions}</p>
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 mt-4">
@@ -165,15 +165,15 @@ export default function CalendarPage() {
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden p-6 md:p-8 space-y-6">
+      <div className="bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden p-6 md:p-8 space-y-6">
         
         {/* Top Toolbar Ribbons */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Filing Schedule</h3>
-            <h2 className="text-xl font-extrabold text-slate-900 mt-1">Compliance Registry Calendar</h2>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Filing Schedule</h3>
+            <h2 className="text-xl font-bold text-slate-900 mt-1">Compliance Registry Calendar</h2>
           </div>
-          <div className="flex items-center gap-2 text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>calendar</span>
             <span className="text-slate-300">&bull;</span>
             <span className="text-slate-455">reminders</span>
@@ -186,7 +186,7 @@ export default function CalendarPage() {
           {/* Left Column: Calendar View */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">Calendar View</span>
+              <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Calendar View</span>
               
               {/* Month Switcher controls */}
               <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 shadow-3xs">
@@ -202,7 +202,7 @@ export default function CalendarPage() {
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider min-w-20 text-center">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider min-w-20 text-center">
                   {activeMonthTitle}
                 </span>
                 <button 
@@ -221,7 +221,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Calendar Grid Container using @fullcalendar/react */}
-            <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50 p-4 shadow-3xs compliance-calendar-theme">
+            <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50/50 p-4 shadow-3xs compliance-calendar-theme">
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin]}
@@ -342,7 +342,7 @@ export default function CalendarPage() {
                       notify.success(`${filter.label} filter updated.`);
                     }}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest border transition-all cursor-pointer shadow-3xs",
+                      "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border transition-all cursor-pointer shadow-3xs",
                       isSelected 
                         ? "bg-primary text-white border-primary" 
                         : "bg-white text-slate-500 border-slate-200 hover:border-slate-350 hover:text-slate-800"
@@ -360,7 +360,7 @@ export default function CalendarPage() {
             
             {/* Upcoming Deadlines */}
             <div className="space-y-4">
-              <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider text-left">
+              <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider text-left">
                 Upcoming Tasks
               </h3>
               <div className="space-y-3">
@@ -373,7 +373,7 @@ export default function CalendarPage() {
 
                   if (visibleTasks.length === 0) {
                     return (
-                      <div className="text-center py-10 bg-slate-50 border border-slate-200 border-dashed rounded-xl text-xs text-slate-400 italic font-semibold px-4 leading-relaxed">
+                      <div className="text-center py-10 bg-slate-50 border border-slate-200 border-dashed rounded-lg text-xs text-slate-400 italic font-semibold px-4 leading-relaxed">
                         No upcoming tasks.<br/>Check filters below to restore schedule list.
                       </div>
                     );
@@ -386,18 +386,18 @@ export default function CalendarPage() {
                         key={idx} 
                         type="button"
                         onClick={() => handleTaskClick(task.title, task.date)}
-                        className="w-full bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between shadow-3xs hover:shadow-2xs hover:border-slate-350 transition-all duration-200 cursor-pointer"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between shadow-3xs hover:shadow-2xs hover:border-slate-350 transition-all duration-200 cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
                           <div className={cn("size-8 rounded-lg flex items-center justify-center shrink-0", task.color)}>
                             <Icon size={16} />
                           </div>
                           <div className="text-left">
-                            <h4 className="font-extrabold text-xs text-slate-850">{task.title}</h4>
+                            <h4 className="font-bold text-xs text-slate-850">{task.title}</h4>
                             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">{task.date}</p>
                           </div>
                         </div>
-                        <span className={cn("text-xs font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md", task.badgeColor)}>
+                        <span className={cn("text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-md", task.badgeColor)}>
                           {task.badge}
                         </span>
                       </button>
@@ -409,11 +409,11 @@ export default function CalendarPage() {
 
             {/* Notification Reminders manager */}
             <div className="space-y-4">
-              <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider text-left">
+              <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider text-left">
                 Reminder Management
               </h3>
               
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4 shadow-3xs text-left">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4 shadow-3xs text-left">
                 {[
                   { key: "email", label: "Email Reminder", desc: "Weekly digests and statutory deadline reminders", icon: Bell },
                   { key: "sms", label: "SMS Alerts", desc: "Real-time OTP logins and status change warnings", icon: AlertCircle },
@@ -428,7 +428,7 @@ export default function CalendarPage() {
                           <Icon size={15} />
                         </div>
                         <div>
-                          <span className="text-xs font-extrabold text-slate-800 block">{rem.label}</span>
+                          <span className="text-xs font-bold text-slate-800 block">{rem.label}</span>
                           <span className="text-xs text-slate-400 font-medium block mt-0.5 leading-relaxed">{rem.desc}</span>
                         </div>
                       </div>

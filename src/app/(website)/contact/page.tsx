@@ -42,7 +42,7 @@ function ContactUs() {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full border border-zinc-300 rounded-2xl p-8">
+        <div className="w-full border border-zinc-300 rounded-lg p-8">
           <h2 className="text-base font-medium text-zinc-800 mb-5.5">
             Send Message
           </h2>

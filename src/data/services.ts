@@ -1,4 +1,4 @@
-import { Service } from "@/types/services";
+import { Service } from "@/types";
 
 export const services: Service[] = [
   {
@@ -500,3 +500,5 @@ export const services: Service[] = [
     ]
   }
 ];
+
+

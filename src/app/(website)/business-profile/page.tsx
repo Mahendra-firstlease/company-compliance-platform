@@ -15,6 +15,7 @@ import { services as fallbackServices } from "@/data/services";
 import { Service } from "@/types/services";
 import { getUserProfileWithBusinessAction } from "@/lib/actions/profile";
 import { useModal } from "@/components/ui/overlay";
+import { ProfileSkeleton } from "@/components/ui/skeletons";
 import {
   Building2,
   Mail,
@@ -74,9 +75,9 @@ export default function BusinessProfilePage() {
     queryFn: async () => {
       try {
         const res = await servicesService.getServices();
-        return res && res.length > 0 ? res : fallbackServices;
+        return res || [];
       } catch (err) {
-        return fallbackServices;
+        return [];
       }
     },
   });
@@ -86,7 +87,7 @@ export default function BusinessProfilePage() {
 
   // 3. Dynamic Service Suggestions Algorithm based on Business Profile
   const suggestedServices = useMemo(() => {
-    const list = catalogServices || fallbackServices;
+    const list = catalogServices || [];
     if (!businessProfile) {
       return list.slice(0, 4);
     }
@@ -178,7 +179,9 @@ export default function BusinessProfilePage() {
   // Pre-select first 2 suggested services by default
   useEffect(() => {
     if (suggestedServices.length > 0 && selectedServiceSlugs.length === 0) {
-      setSelectedServiceSlugs(suggestedServices.slice(0, 2).map((s) => s.slug));
+      setSelectedServiceSlugs(
+        suggestedServices.slice(0, 2).map((s) => s.slug),
+      );
     }
   }, [suggestedServices]);
 
@@ -192,7 +195,7 @@ export default function BusinessProfilePage() {
   };
 
   const selectedServices = useMemo(() => {
-    const list = catalogServices || fallbackServices;
+    const list = catalogServices || [];
     return list.filter((s) => selectedServiceSlugs.includes(s.slug));
   }, [catalogServices, selectedServiceSlugs]);
 
@@ -232,11 +235,10 @@ export default function BusinessProfilePage() {
 
   if (status === "loading" || isProfileLoading) {
     return (
-      <Section className="py-16 bg-slate-50 min-h-screen">
+      <Section className="py-12 bg-slate-50 min-h-screen">
         <Container>
-          <div className="max-w-5xl mx-auto space-y-6 animate-pulse">
-            <div className="h-32 bg-white rounded-lg border border-slate-200" />
-            <div className="h-64 bg-white rounded-lg border border-slate-200" />
+          <div className="max-w-5xl mx-auto">
+            <ProfileSkeleton />
           </div>
         </Container>
       </Section>
@@ -462,7 +464,7 @@ export default function BusinessProfilePage() {
                           </span>
                         </div>
 
-                        <span className="font-extrabold text-indigo-700">
+                        <span className="font-bold text-indigo-700">
                           ₹{service.price}
                         </span>
                       </div>
@@ -487,12 +489,12 @@ export default function BusinessProfilePage() {
             <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               {/* Selected Services Info */}
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="size-9 sm:size-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                <div className="size-9 sm:size-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
                   <ShoppingBag className="size-4 sm:size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-900 truncate">
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 truncate">
                       {selectedServices.length}{" "}
                       {selectedServices.length === 1 ? "Service" : "Services"}{" "}
                       Selected

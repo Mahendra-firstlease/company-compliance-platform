@@ -1,53 +1,79 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { verifyPaymentSchema } from "@/schemas/api-schemas";
+import { handleApiError, handleValidationError } from "@/lib/api-response";
 
 export async function POST(req: Request) {
   try {
+    // 1. Rate Limiting Check
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(
+      `verify_payment:${ip}`,
+      RATE_LIMIT_CONFIGS.publicApi,
+    );
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error:
+            "Too many payment verification attempts. Please wait a minute and try again.",
+        },
+        { status: 429 },
+      );
+    }
+
+    // 2. Strict Credentials Check (No Fallback Secrets)
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!keySecret) {
       return NextResponse.json(
-        { error: "RAZORPAY_KEY_SECRET is missing in server environment variables." },
-        { status: 500 }
+        { error: "Server Configuration Error: Razorpay credentials missing." },
+        { status: 500 },
       );
     }
 
+    // 3. Strict Zod Input Validation
     const body = await req.json();
+    const validation = verifyPaymentSchema.safeParse(body);
+
+    if (!validation.success) {
+      return handleValidationError(validation.error);
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      applicationIds = [],
+      applicationIds,
       amount = 0,
       userId = null,
-    } = body;
+    } = validation.data;
 
-    // Validate required fields
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return NextResponse.json(
-        { error: "Missing required payment fields (razorpay_order_id, razorpay_payment_id, razorpay_signature)." },
-        { status: 400 }
-      );
-    }
-
-    // HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+    // 4. HMAC-SHA256 Cryptographic Signature Check
     const expectedSignature = crypto
       .createHmac("sha256", keySecret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    const isSignatureValid = expectedSignature === razorpay_signature;
+    const isSignatureValid = crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, "utf-8"),
+      Buffer.from(razorpay_signature, "utf-8"),
+    );
 
     if (!isSignatureValid) {
       console.error("Razorpay signature verification mismatch!");
       return NextResponse.json(
-        { success: false, error: "Payment verification failed: Signature mismatch." },
-        { status: 400 }
+        {
+          success: false,
+          error: "Payment verification failed: Invalid Signature.",
+        },
+        { status: 400 },
       );
     }
 
-    // Signature matches! If database applications exist, record payment and update status
+    // 5. Update Database Records Atomically
     if (applicationIds.length > 0 && userId) {
       const perAppAmount = amount > 0 ? amount / applicationIds.length : amount;
 
@@ -78,10 +104,6 @@ export async function POST(req: Request) {
       message: "Payment verified successfully.",
     });
   } catch (error: any) {
-    console.error("Error verifying Razorpay Payment via /api/verify-payment:", error);
-    return NextResponse.json(
-      { error: error?.message || "Failed to verify Razorpay Payment." },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to verify Razorpay Payment.");
   }
 }

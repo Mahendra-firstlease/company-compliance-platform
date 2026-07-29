@@ -1,5 +1,5 @@
 import { LayoutDashboard, FolderLock, FileCheck, Calendar, Bell, Settings, ClipboardList } from "lucide-react";
-import { SidebarItem } from "@/types/sidebar";
+import { SidebarItem } from "@/types";
 
 // Sidebar navigation configuration
 export const menuItems: SidebarItem[] = [

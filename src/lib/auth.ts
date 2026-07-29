@@ -79,5 +79,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "fallback_compliance_secret_key_2026",
+  secret: process.env.NEXT_AUTH_SECRET || process.env.AUTH_SECRET,
 };

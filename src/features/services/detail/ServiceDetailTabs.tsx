@@ -21,7 +21,7 @@ export default function ServiceDetailTabs({ service }: { service: Service }) {
   >("overview");
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 shadow-xs">
+    <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 shadow-xs">
       {/* Clean Simple Underline Tabs Navigation */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto" aria-label="Tabs">

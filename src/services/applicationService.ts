@@ -1,12 +1,10 @@
-import apiClient from "@/lib/apiClient";
-import { ApplicationCase } from "@/lib/applications";
+import apiFetch from "@/lib/apiClient";
+import { ApplicationCase } from "@/types";
 
 export const applicationService = {
   // GET all applications
   async getApplications(): Promise<ApplicationCase[]> {
-    const { data } =
-      await apiClient.get<ApplicationCase[]>("/applications");
-    return data;
+    return apiFetch<ApplicationCase[]>("/applications");
   },
 
   // GET application by ID
@@ -30,27 +28,27 @@ export const applicationService = {
 
   // POST create/save application
   async saveApplication(app: ApplicationCase): Promise<ApplicationCase> {
-    const { data } = await apiClient.post<ApplicationCase>(
-      "/applications",
-      app,
-    );
-    return data;
+    return apiFetch<ApplicationCase>("/applications", {
+      method: "POST",
+      body: JSON.stringify(app),
+    });
   },
 
   // PATCH update application
   async updateApplication(
     id: string,
-    updates: Partial<ApplicationCase>,
+    updates: Partial<ApplicationCase>
   ): Promise<ApplicationCase> {
-    const { data } = await apiClient.patch<ApplicationCase>(
-      `/applications/${id}`,
-      updates,
-    );
-    return data;
+    return apiFetch<ApplicationCase>(`/applications/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
   },
 
   // DELETE application
   async deleteApplication(id: string): Promise<void> {
-    await apiClient.delete(`/applications/${id}`);
+    await apiFetch(`/applications/${id}`, {
+      method: "DELETE",
+    });
   },
 };

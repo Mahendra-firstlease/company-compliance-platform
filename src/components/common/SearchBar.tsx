@@ -24,8 +24,8 @@ const searchBarVariants = cva(
       size: {
         sm: "h-8 text-xs rounded-md",
         md: "h-10 text-sm rounded-lg",
-        lg: "h-12 text-base rounded-xl",
-        xl: "h-14 text-base rounded-2xl",
+        lg: "h-12 text-base rounded-lg",
+        xl: "h-14 text-base rounded-lg",
       },
       fullWidth: {
         true: "w-full",

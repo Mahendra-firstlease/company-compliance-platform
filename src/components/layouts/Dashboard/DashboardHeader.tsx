@@ -64,7 +64,7 @@ export default function DashboardHeader({
             <Shield size={16} />
           </div>
           <div>
-            <h1 className="font-extrabold text-sm text-slate-800 tracking-tight leading-none">
+            <h1 className="font-bold text-sm text-slate-800 tracking-tight leading-none">
               {title}
             </h1>
             <p className="text-[9px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">

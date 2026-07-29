@@ -1,88 +1,97 @@
-export interface UploadedFile {
-  name: string;
-  size: string;
-  type: string;
-}
+import {
+  UploadedFile,
+  IssuedCertificate,
+  ApplicationCase,
+  ApplicationStatus,
+} from "@/types";
+import apiFetch from "@/lib/apiClient";
 
-export interface ApplicationCase {
-  id: string;
-  userId?: string;
-  userEmail?: string;
-  serviceSlug: string;
-  serviceTitle: string;
-  status: "PAYMENT_CONFIRMED" | "DOCUMENTS_PENDING" | "UNDER_REVIEW" | "SUBMITTED" | "APPROVED";
-  customerName: string;
-  customerPhone: string;
-  address: string;
-  uploadedDocs: Record<string, UploadedFile>;
-  query?: string;
-  assignedExecutive?: string;
-  governmentFee: number;
-  professionalFee: number;
-  totalFee: number;
-  createdAt: string;
-}
+export type {
+  UploadedFile,
+  IssuedCertificate,
+  ApplicationCase,
+  ApplicationStatus,
+};
 
-// GET all applications
-export async function getApplications(): Promise<ApplicationCase[]> {
-  const res = await fetch("/api/applications", { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch applications: ${res.statusText}`);
-  }
-  return res.json();
-}
-
-// POST create/save application
-export async function saveApplication(app: ApplicationCase): Promise<ApplicationCase> {
-  const res = await fetch("/api/applications", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(app),
+/**
+ * Shared helper to format Prisma document relations into UploadedFile record map
+ */
+export function formatApplicationDocuments(
+  documents: Array<{ id?: string; docName: string; fileName: string; fileSize: string | number; fileType: string; fileUrl?: string }>
+): Record<string, UploadedFile> {
+  const uploadedDocs: Record<string, UploadedFile> = {};
+  documents.forEach((doc) => {
+    uploadedDocs[doc.docName] = {
+      id: doc.id || doc.docName,
+      name: doc.fileName,
+      url: doc.fileUrl || "",
+      size: typeof doc.fileSize === "number" ? doc.fileSize : 0,
+      type: doc.fileType,
+      uploadedAt: new Date().toISOString(),
+    };
   });
-  if (!res.ok) {
-    throw new Error(`Failed to save application: ${res.statusText}`);
-  }
-  return res.json();
+  return uploadedDocs;
 }
 
-// GET application by ID
-export async function getApplicationById(id: string): Promise<ApplicationCase | null> {
+/**
+ * Client-side fetch helper for user applications
+ */
+export async function getApplications(): Promise<ApplicationCase[]> {
   try {
-    const res = await fetch(`/api/applications/${id}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
+    const data = await apiFetch<ApplicationCase[]>("/applications");
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error("Failed to fetch applications:", err);
+    return [];
+  }
+}
+
+/**
+ * Client-side fetch helper for single application by ID or slug
+ */
+export async function getApplicationBySlug(idOrSlug: string): Promise<ApplicationCase | null> {
+  try {
+    const data = await apiFetch<ApplicationCase>(`/applications/${idOrSlug}`);
+    return data || null;
+  } catch (err) {
+    console.error(`Failed to fetch application ${idOrSlug}:`, err);
     return null;
   }
 }
 
-// GET application by Slug (gets latest matching)
-export async function getApplicationBySlug(slug: string): Promise<ApplicationCase | null> {
-  const list = await getApplications();
-  const matches = list.filter((item) => item.serviceSlug === slug);
-  if (matches.length === 0) return null;
-  
-  // Sort by createdAt descending to return the latest filing case
-  matches.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  return matches[0];
+/**
+ * Client-side save application helper
+ */
+export async function saveApplication(
+  payload: Partial<ApplicationCase>
+): Promise<{ success: boolean; data?: ApplicationCase; error?: string }> {
+  try {
+    const data = await apiFetch<ApplicationCase>("/applications", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (err: any) {
+    console.error("Failed to save application:", err);
+    return { success: false, error: err.message || "Network error" };
+  }
 }
 
-// PATCH update application status/fields
+/**
+ * Client-side update helper for application details/status
+ */
 export async function updateApplication(
   id: string,
-  updates: Partial<ApplicationCase>
-): Promise<ApplicationCase> {
-  const res = await fetch(`/api/applications/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updates),
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to update application: ${res.statusText}`);
+  payload: Partial<ApplicationCase>
+): Promise<{ success: boolean; data?: ApplicationCase; error?: string }> {
+  try {
+    const data = await apiFetch<ApplicationCase>(`/applications/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (err: any) {
+    console.error(`Failed to update application ${id}:`, err);
+    return { success: false, error: err.message || "Network error" };
   }
-  return res.json();
 }

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
-  UserCircleIcon,
   ArrowRightStartOnRectangleIcon,
   Squares2X2Icon,
   UserIcon,
@@ -12,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useSession, signOut } from "next-auth/react";
 import { notify } from "@/lib/notify";
+import { ROUTES } from "@/constants";
 
 export default function UserNavDropdown() {
   const { data: session, status } = useSession();
@@ -59,7 +59,7 @@ export default function UserNavDropdown() {
         </div>
         <span className="max-w-30 truncate">{userName.split(" ")[0]}</span>
         {isAdminOrExec && (
-          <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-extrabold uppercase">
+          <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-bold uppercase">
             Admin
           </span>
         )}
@@ -67,7 +67,7 @@ export default function UserNavDropdown() {
 
       <MenuItems
         transition
-        className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-white p-1.5 text-sm/6 border border-slate-200 shadow-xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-leave:duration-75"
+        className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-lg bg-white p-1.5 text-sm/6 border border-slate-200 shadow-xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-leave:duration-75"
       >
         <div className="px-3 py-2 border-b border-slate-100 mb-1">
           <div className="flex items-center justify-between">
@@ -75,7 +75,7 @@ export default function UserNavDropdown() {
               {userName}
             </p>
             {isAdminOrExec && (
-              <span className="text-[9px] font-extrabold bg-indigo-900 text-white px-1.5 py-0.5 rounded">
+              <span className="text-[9px] font-bold bg-indigo-900 text-white px-1.5 py-0.5 rounded">
                 ADMIN
               </span>
             )}
@@ -86,7 +86,7 @@ export default function UserNavDropdown() {
         {isAdminOrExec ? (
           <MenuItem>
             <Link
-              href="/admin"
+              href={ROUTES.ADMIN.DASHBOARD}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
             >
               <ShieldCheckIcon className="size-4 text-indigo-700" />
@@ -97,7 +97,7 @@ export default function UserNavDropdown() {
           <>
             <MenuItem>
               <Link
-                href="/business-profile"
+                href={ROUTES.BUSINESS_PROFILE}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors"
               >
                 <BuildingOfficeIcon className="size-4 text-indigo-600" />
@@ -107,7 +107,7 @@ export default function UserNavDropdown() {
 
             <MenuItem>
               <Link
-                href="/profile"
+                href={ROUTES.PROFILE}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <UserIcon className="size-4 text-slate-400" />
@@ -117,7 +117,7 @@ export default function UserNavDropdown() {
 
             <MenuItem>
               <Link
-                href="/dashboard"
+                href={ROUTES.DASHBOARD.HOME}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <Squares2X2Icon className="size-4 text-slate-400" />

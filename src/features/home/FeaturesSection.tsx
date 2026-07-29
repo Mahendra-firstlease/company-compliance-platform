@@ -19,9 +19,9 @@ export default function FeaturesSection() {
           <div className="flex flex-col md:flex-row gap-5">
             <div className="md:w-[60%] md:h-60 bg-primary-light border border-primary-border/60 rounded-lg hover:shadow-sm transition-all duration-300 p-5 flex flex-col md:flex-row gap-5">
               <Image
-                src="https://assets.prebuiltui.com/images/components/feature-sections/feature-workspace-img.png"
+                src="/images/home/hero-section/hero-rightsocial-image.png"
                 alt="Feature workspace"
-                className="w-full h-48 md:h-full md:w-[45%] object-cover rounded-2xl"
+                className="w-full h-48 md:h-full md:w-[45%] object-cover rounded-lg"
                 width={300}
                 height={200}
               />
@@ -132,7 +132,7 @@ export default function FeaturesSection() {
                 alt="Feature office"
                 width={300}
                 height={200}
-                className="w-full h-48 md:h-full md:w-[45%] object-cover rounded-2xl"
+                className="w-full h-48 md:h-full md:w-[45%] object-cover rounded-lg"
               />
 
               <div className="flex flex-col mt-2">

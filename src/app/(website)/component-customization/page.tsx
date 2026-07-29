@@ -12,11 +12,9 @@ import {
   Table,
   TableHeader,
   TableBody,
-  TableFooter,
   TableRow,
   TableHead,
   TableCell,
-  TableCaption,
 } from "@/components/ui/table";
 import {
   UISelect as Select,
@@ -49,7 +47,7 @@ import {
   CardDescription,
   CardAction,
   CardContent,
-  CardFooter
+  CardFooter,
 } from "@/components/ui/card";
 import { notify } from "@/lib/notify";
 import {
@@ -186,7 +184,7 @@ export default function ComponentCustomizationPage() {
       <Container className="max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           {/* Sticky Side Navigation (Left 25%) */}
-          <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm sticky top-6 space-y-4">
+          <div className="lg:col-span-1 bg-white border border-slate-200 rounded-lg p-5 shadow-sm sticky top-6 space-y-4">
             <div className="space-y-1">
               <h3 className="font-semibold text-slate-900 text-sm">
                 Documentation
@@ -213,8 +211,12 @@ export default function ComponentCustomizationPage() {
                 { id: "badge", label: "Badge Component", icon: Tag },
                 { id: "tabs", label: "Tabs (Navigation)", icon: Sliders },
                 { id: "card", label: "Card Component", icon: Layers },
-                { id: "accordion", label: "Accordion Component", icon: HelpCircle },
-                { id: "fileupload", label: "File Upload", icon: UploadCloud }
+                {
+                  id: "accordion",
+                  label: "Accordion Component",
+                  icon: HelpCircle,
+                },
+                { id: "fileupload", label: "File Upload", icon: UploadCloud },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -243,9 +245,9 @@ export default function ComponentCustomizationPage() {
           <div className="lg:col-span-3 space-y-6">
             {/* Overview Tab */}
             {activeTab === "overview" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-8">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-8">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     UI Design System Overview
                   </h1>
                   <p className="text-sm text-slate-500 leading-relaxed">
@@ -336,9 +338,9 @@ export default function ComponentCustomizationPage() {
 
             {/* Button Component Tab */}
             {activeTab === "button" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Button Component
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -394,9 +396,9 @@ export default function ComponentCustomizationPage() {
             {activeTab === "overlay" && (
               <div className="space-y-6">
                 {/* Modal Controller Showcase */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                   <div className="space-y-2">
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                       Programmatic Overlay API
                     </h1>
                     <p className="text-sm text-slate-500">
@@ -513,7 +515,7 @@ export default function MyComponent() {
                 </div>
 
                 {/* Interactive Declarative Sandbox */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                   <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                     <PlayCircle size={18} className="text-indigo-500" />
                     Declarative Customizer Sandbox
@@ -697,9 +699,9 @@ export default function MyComponent() {
 
             {/* Toast Notifications Tab */}
             {activeTab === "notification" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Toast Notifications System
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -783,9 +785,9 @@ notify.promise(myAsyncFunction(), {
 
             {/* Headings Tab */}
             {activeTab === "heading" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Section Heading Component
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -860,9 +862,9 @@ notify.promise(myAsyncFunction(), {
 
             {/* Breadcrumbs Tab */}
             {activeTab === "breadcrumb" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Breadcrumb Component
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -939,9 +941,9 @@ notify.promise(myAsyncFunction(), {
 
             {/* Pagination Tab */}
             {activeTab === "pagination" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Pagination Component
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -994,13 +996,16 @@ export default function ServicesCatalog() {
 
             {/* Search Bar Tab */}
             {activeTab === "search" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Search Bar Component
                   </h1>
                   <p className="text-sm text-slate-500">
-                    A type-safe search input built with Class Variance Authority (`cva`). Supports multiple sizes (`sm`, `md`, `lg`, `xl`), fullWidth layouts, loading spinners, shortcut badges, clear actions, and visual variants.
+                    A type-safe search input built with Class Variance Authority
+                    (`cva`). Supports multiple sizes (`sm`, `md`, `lg`, `xl`),
+                    fullWidth layouts, loading spinners, shortcut badges, clear
+                    actions, and visual variants.
                   </p>
                 </div>
 
@@ -1017,7 +1022,9 @@ export default function ServicesCatalog() {
                     </span>
                     <div className="space-y-3">
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Small (`size="sm"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Small (`size="sm"`)
+                        </span>
                         <SearchBar
                           size="sm"
                           value={searchQuery}
@@ -1026,7 +1033,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Medium Default (`size="md"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Medium Default (`size="md"`)
+                        </span>
                         <SearchBar
                           size="md"
                           value={searchQuery}
@@ -1036,7 +1045,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Large (`size="lg"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Large (`size="lg"`)
+                        </span>
                         <SearchBar
                           size="lg"
                           value={searchQuery}
@@ -1045,7 +1056,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Extra Large (`size="xl"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Extra Large (`size="xl"`)
+                        </span>
                         <SearchBar
                           size="xl"
                           value={searchQuery}
@@ -1063,7 +1076,9 @@ export default function ServicesCatalog() {
                     </span>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Bordered Variant (`variant="bordered"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Bordered Variant (`variant="bordered"`)
+                        </span>
                         <SearchBar
                           variant="bordered"
                           value={searchQuery}
@@ -1072,7 +1087,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Filled Variant (`variant="filled"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Filled Variant (`variant="filled"`)
+                        </span>
                         <SearchBar
                           variant="filled"
                           value={searchQuery}
@@ -1081,7 +1098,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Glassmorphism (`variant="glass"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Glassmorphism (`variant="glass"`)
+                        </span>
                         <SearchBar
                           variant="glass"
                           value={searchQuery}
@@ -1090,7 +1109,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Subtle Borderless (`variant="subtle"`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Subtle Borderless (`variant="subtle"`)
+                        </span>
                         <SearchBar
                           variant="subtle"
                           value={searchQuery}
@@ -1099,7 +1120,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Loading State (`loading={true}`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Loading State (`loading={true}`)
+                        </span>
                         <SearchBar
                           loading={true}
                           value="Searching database..."
@@ -1107,7 +1130,9 @@ export default function ServicesCatalog() {
                         />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">Full Width (`fullWidth={true}`)</span>
+                        <span className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          Full Width (`fullWidth={true}`)
+                        </span>
                         <SearchBar
                           fullWidth
                           value={searchQuery}
@@ -1152,9 +1177,9 @@ export default function ServicesCatalog() {
 
             {/* Data Table Tab */}
             {activeTab === "table" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Data Table Component
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -1249,9 +1274,9 @@ export default function ServicesCatalog() {
             )}
 
             {activeTab === "select" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Select (Compound Primitive)
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -1356,9 +1381,9 @@ const [selectedValue, setSelectedValue] = useState("");
             )}
 
             {activeTab === "badge" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Badge Component
                   </h1>
                   <p className="text-sm text-slate-500">
@@ -1392,7 +1417,9 @@ const [selectedValue, setSelectedValue] = useState("");
 
                   {/* Sizes */}
                   <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-slate-400">Sizes</h4>
+                    <h4 className="text-xs font-semibold text-slate-400">
+                      Sizes
+                    </h4>
                     <div className="flex flex-wrap items-center gap-2 p-4 bg-slate-50 rounded-lg border border-slate-100">
                       <Badge size="sm">Small (sm)</Badge>
                       <Badge size="md">Medium (md)</Badge>
@@ -1402,7 +1429,9 @@ const [selectedValue, setSelectedValue] = useState("");
 
                   {/* Shapes */}
                   <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-slate-400">Shapes</h4>
+                    <h4 className="text-xs font-semibold text-slate-400">
+                      Shapes
+                    </h4>
                     <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-lg border border-slate-100">
                       <Badge rounded="md">Rounded Md</Badge>
                       <Badge rounded="full">Rounded Full</Badge>
@@ -1432,19 +1461,22 @@ const [selectedValue, setSelectedValue] = useState("");
             )}
 
             {activeTab === "tabs" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Tabs Component
                   </h1>
                   <p className="text-sm text-slate-500">
-                    A clean, compound tabs navigator for rendering switcher sections reactively.
+                    A clean, compound tabs navigator for rendering switcher
+                    sections reactively.
                   </p>
                 </div>
 
                 {/* Previews */}
                 <div className="border-t border-slate-100 pt-6 space-y-4">
-                  <h3 className="font-semibold text-sm text-slate-800">Live Component Previews</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    Live Component Previews
+                  </h3>
                   <div className="bg-slate-50 p-8 rounded-lg border border-slate-100 flex flex-col items-center justify-center min-h-[250px]">
                     <UITabs defaultValue="tab1" className="max-w-md w-full">
                       <TabsList className="grid w-full grid-cols-3">
@@ -1452,22 +1484,40 @@ const [selectedValue, setSelectedValue] = useState("");
                         <TabsTrigger value="tab2">Indirect Taxes</TabsTrigger>
                         <TabsTrigger value="tab3">Corporate</TabsTrigger>
                       </TabsList>
-                      <TabsContent value="tab1" className="mt-4 p-4 bg-white border border-slate-200 rounded-lg space-y-2 text-left">
-                        <h4 className="font-semibold text-xs text-slate-800">Income Tax & GST Filing</h4>
+                      <TabsContent
+                        value="tab1"
+                        className="mt-4 p-4 bg-white border border-slate-200 rounded-lg space-y-2 text-left"
+                      >
+                        <h4 className="font-semibold text-xs text-slate-800">
+                          Income Tax & GST Filing
+                        </h4>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Process structural audits, GSTR-1, GSTR-3B filings, and individual ITR returns.
+                          Process structural audits, GSTR-1, GSTR-3B filings,
+                          and individual ITR returns.
                         </p>
                       </TabsContent>
-                      <TabsContent value="tab2" className="mt-4 p-4 bg-white border border-slate-200 rounded-lg space-y-2 text-left">
-                        <h4 className="font-semibold text-xs text-slate-800">FSSAI & MSME Registrations</h4>
+                      <TabsContent
+                        value="tab2"
+                        className="mt-4 p-4 bg-white border border-slate-200 rounded-lg space-y-2 text-left"
+                      >
+                        <h4 className="font-semibold text-xs text-slate-800">
+                          FSSAI & MSME Registrations
+                        </h4>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Apply for central and state food licenses, professional tax, and factory NOC approvals.
+                          Apply for central and state food licenses,
+                          professional tax, and factory NOC approvals.
                         </p>
                       </TabsContent>
-                      <TabsContent value="tab3" className="mt-4 p-4 bg-white border border-slate-200 rounded-lg space-y-2 text-left">
-                        <h4 className="font-semibold text-xs text-slate-800">MCA Corporate Filings</h4>
+                      <TabsContent
+                        value="tab3"
+                        className="mt-4 p-4 bg-white border border-slate-200 rounded-lg space-y-2 text-left"
+                      >
+                        <h4 className="font-semibold text-xs text-slate-800">
+                          MCA Corporate Filings
+                        </h4>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Incorporate private limited entities, handle LLP formations, and file annual ROC returns.
+                          Incorporate private limited entities, handle LLP
+                          formations, and file annual ROC returns.
                         </p>
                       </TabsContent>
                     </UITabs>
@@ -1476,7 +1526,9 @@ const [selectedValue, setSelectedValue] = useState("");
 
                 {/* Usage Code */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-sm text-slate-800">Code Usage Examples</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    Code Usage Examples
+                  </h3>
                   <CodeBlock
                     code={`import {
   Tabs,
@@ -1503,38 +1555,50 @@ const [selectedValue, setSelectedValue] = useState("");
             )}
 
             {activeTab === "card" && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                     Card Component
                   </h1>
                   <p className="text-sm text-slate-500">
-                    A clean, compound card layout for displaying chunked information and data grids.
+                    A clean, compound card layout for displaying chunked
+                    information and data grids.
                   </p>
                 </div>
 
                 {/* Previews */}
                 <div className="border-t border-slate-100 pt-6 space-y-4">
-                  <h3 className="font-semibold text-sm text-slate-800">Live Component Previews</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    Live Component Previews
+                  </h3>
                   <div className="bg-slate-50 p-8 rounded-lg border border-slate-100 flex flex-wrap gap-6 items-center justify-center min-h-[250px]">
-                    
                     {/* Standard Card */}
                     <Card className="w-80" enableHover>
                       <CardHeader>
                         <CardTitle>Company Registration</CardTitle>
-                        <CardDescription>Incorporate private limited & LLP firms</CardDescription>
+                        <CardDescription>
+                          Incorporate private limited & LLP firms
+                        </CardDescription>
                         <CardAction>
-                          <Badge variant="indigo" size="sm">POPULAR</Badge>
+                          <Badge variant="indigo" size="sm">
+                            POPULAR
+                          </Badge>
                         </CardAction>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Get your business incorporated within 7 days. Includes name approval, MoA/AoA preparation, PAN, TAN, and expert tax consultations.
+                          Get your business incorporated within 7 days. Includes
+                          name approval, MoA/AoA preparation, PAN, TAN, and
+                          expert tax consultations.
                         </p>
                       </CardContent>
                       <CardFooter>
-                        <span className="font-semibold text-slate-800">₹3,999 onwards</span>
-                        <Button size="sm" variant="primary">Apply Now</Button>
+                        <span className="font-semibold text-slate-800">
+                          ₹3,999 onwards
+                        </span>
+                        <Button size="sm" variant="primary">
+                          Apply Now
+                        </Button>
                       </CardFooter>
                     </Card>
 
@@ -1544,46 +1608,69 @@ const [selectedValue, setSelectedValue] = useState("");
                         <CardTitle>Compliance Audit</CardTitle>
                         <CardDescription>Annual filing check</CardDescription>
                         <CardAction>
-                          <Badge variant="green" size="sm">SMALL SIZE</Badge>
+                          <Badge variant="green" size="sm">
+                            SMALL SIZE
+                          </Badge>
                         </CardAction>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Ensure corporate safety through comprehensive compliance reviews, statutory audit assistance, and MCA registry maintenance services.
+                          Ensure corporate safety through comprehensive
+                          compliance reviews, statutory audit assistance, and
+                          MCA registry maintenance services.
                         </p>
                       </CardContent>
                       <CardFooter>
-                        <span className="font-semibold text-slate-800">₹5,000 / Year</span>
-                        <Button size="sm" variant="primary">Check Audit</Button>
+                        <span className="font-semibold text-slate-800">
+                          ₹5,000 / Year
+                        </span>
+                        <Button size="sm" variant="primary">
+                          Check Audit
+                        </Button>
                       </CardFooter>
                     </Card>
 
                     {/* Custom Spacing Card */}
-                    <Card className="w-80" style={{ "--card-spacing": "2.25rem" } as React.CSSProperties} enableHover>
+                    <Card
+                      className="w-80"
+                      style={
+                        { "--card-spacing": "2.25rem" } as React.CSSProperties
+                      }
+                      enableHover
+                    >
                       <CardHeader>
                         <CardTitle>IP & Trademark</CardTitle>
                         <CardDescription>Secure brand assets</CardDescription>
                         <CardAction>
-                          <Badge variant="yellow" size="sm">CUSTOM SPACING</Badge>
+                          <Badge variant="yellow" size="sm">
+                            CUSTOM SPACING
+                          </Badge>
                         </CardAction>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Register unique company logos, brand titles, and intellectual creations. Guaranteed prompt trademark filing within 24 working hours.
+                          Register unique company logos, brand titles, and
+                          intellectual creations. Guaranteed prompt trademark
+                          filing within 24 working hours.
                         </p>
                       </CardContent>
                       <CardFooter>
-                        <span className="font-semibold text-slate-800">₹1,999 + Govt. Fees</span>
-                        <Button size="sm" variant="primary">File TM</Button>
+                        <span className="font-semibold text-slate-800">
+                          ₹1,999 + Govt. Fees
+                        </span>
+                        <Button size="sm" variant="primary">
+                          File TM
+                        </Button>
                       </CardFooter>
                     </Card>
-
                   </div>
                 </div>
 
                 {/* Usage Code */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-sm text-slate-800">Code Usage Examples</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    Code Usage Examples
+                  </h3>
                   <CodeBlock
                     code={`import {
   Card,
@@ -1622,34 +1709,54 @@ import Button from "@/components/common/Button";
             {activeTab === "accordion" && (
               <div className="space-y-8 animate-in fade-in duration-300">
                 <div className="space-y-2">
-                  <h2 className="text-xl font-semibold text-slate-900">Accordion</h2>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    Accordion
+                  </h2>
                   <p className="text-xs text-slate-400 max-w-lg leading-normal">
-                    A vertically stacked set of interactive headings that each reveal a section of content. Built as a compound component with smooth transition effects.
+                    A vertically stacked set of interactive headings that each
+                    reveal a section of content. Built as a compound component
+                    with smooth transition effects.
                   </p>
                 </div>
 
                 {/* Live Sandbox */}
                 <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-2xs space-y-4">
-                  <h3 className="font-semibold text-xs text-slate-500 uppercase tracking-wider">Interactive Live Preview</h3>
-                  
+                  <h3 className="font-semibold text-xs text-slate-500 uppercase tracking-wider">
+                    Interactive Live Preview
+                  </h3>
+
                   <div className="border border-slate-150 rounded-lg p-6 max-w-xl mx-auto bg-slate-50/30">
                     <Accordion type="single">
                       <AccordionItem value="item-1">
-                        <AccordionTrigger>What is your business compliance structure?</AccordionTrigger>
+                        <AccordionTrigger>
+                          What is your business compliance structure?
+                        </AccordionTrigger>
                         <AccordionContent>
-                          We support standard corporate filing types in India including Private Limited Companies, LLPs, One Person Companies (OPC), Sole Proprietorships, and Partnership Firms.
+                          We support standard corporate filing types in India
+                          including Private Limited Companies, LLPs, One Person
+                          Companies (OPC), Sole Proprietorships, and Partnership
+                          Firms.
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem value="item-2">
-                        <AccordionTrigger>How secure is the document verification storage?</AccordionTrigger>
+                        <AccordionTrigger>
+                          How secure is the document verification storage?
+                        </AccordionTrigger>
                         <AccordionContent>
-                          We prioritize document security. All files uploaded through our secure portal are encrypted both in transit (SSL/TLS) and at rest, accessible only to assigned experts.
+                          We prioritize document security. All files uploaded
+                          through our secure portal are encrypted both in
+                          transit (SSL/TLS) and at rest, accessible only to
+                          assigned experts.
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem value="item-3">
-                        <AccordionTrigger>Are government registration fees transparent?</AccordionTrigger>
+                        <AccordionTrigger>
+                          Are government registration fees transparent?
+                        </AccordionTrigger>
                         <AccordionContent>
-                          Absolutely. We show the exact statutory fees charged by Ministry of Corporate Affairs or municipal bodies, as well as our professional filing assistance fees.
+                          Absolutely. We show the exact statutory fees charged
+                          by Ministry of Corporate Affairs or municipal bodies,
+                          as well as our professional filing assistance fees.
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>
@@ -1658,7 +1765,9 @@ import Button from "@/components/common/Button";
 
                 {/* Usage Code */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-sm text-slate-800">Code Usage Examples</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    Code Usage Examples
+                  </h3>
                   <CodeBlock
                     code={`import {
   Accordion,
@@ -1684,16 +1793,23 @@ import Button from "@/components/common/Button";
             {activeTab === "fileupload" && (
               <div className="space-y-8 animate-in fade-in duration-300">
                 <div className="space-y-2">
-                  <h2 className="text-xl font-semibold text-slate-900">File Upload</h2>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    File Upload
+                  </h2>
                   <p className="text-xs text-slate-400 max-w-lg leading-normal">
-                    A secure drag-and-drop file upload component built in compliance with OWASP guidelines. Features filename sanitization, extension validation, MIME type verification, and progress loaders.
+                    A secure drag-and-drop file upload component built in
+                    compliance with OWASP guidelines. Features filename
+                    sanitization, extension validation, MIME type verification,
+                    and progress loaders.
                   </p>
                 </div>
 
                 {/* Live Sandbox */}
                 <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-2xs space-y-4">
-                  <h3 className="font-semibold text-xs text-slate-500 uppercase tracking-wider">Interactive Live Preview</h3>
-                  
+                  <h3 className="font-semibold text-xs text-slate-500 uppercase tracking-wider">
+                    Interactive Live Preview
+                  </h3>
+
                   <div className="border border-slate-150 rounded-lg p-6 max-w-md mx-auto bg-slate-50/30">
                     <FileUploadDemo />
                   </div>
@@ -1701,7 +1817,9 @@ import Button from "@/components/common/Button";
 
                 {/* Usage Code */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-sm text-slate-800">Code Usage Examples</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    Code Usage Examples
+                  </h3>
                   <CodeBlock
                     code={`import FileUpload from "@/components/forms/FileUpload";
 
@@ -1717,7 +1835,9 @@ const [file, setFile] = useState(null);
 />`}
                   />
 
-                  <h3 className="font-semibold text-sm text-slate-800">React Hook Form & Zod Integration</h3>
+                  <h3 className="font-semibold text-sm text-slate-800">
+                    React Hook Form & Zod Integration
+                  </h3>
                   <CodeBlock
                     code={`import FileUploadField from "@/components/forms/fields/FileUploadField";
 import { fileUploadSchema } from "@/schemas/file.schema";

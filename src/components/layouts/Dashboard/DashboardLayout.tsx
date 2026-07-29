@@ -86,7 +86,7 @@ export default function DashboardLayout({
             {/* Page Header Ribbon */}
             <div className="flex justify-between items-center pb-4 border-b border-slate-200">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900 capitalize tracking-tight">
+                <h2 className="text-xl font-bold text-slate-900 capitalize tracking-tight">
                   {activeTab} Workspace
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">{description}</p>

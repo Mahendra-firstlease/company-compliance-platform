@@ -15,7 +15,7 @@ export default function ServicesLoading() {
 
       {/* Grid Skeleton */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-        <div className="hidden lg:block space-y-4 rounded-xl border border-slate-200 bg-white p-6 h-96 animate-pulse">
+        <div className="hidden lg:block space-y-4 rounded-lg border border-slate-200 bg-white p-6 h-96 animate-pulse">
           <div className="h-5 w-24 rounded-md bg-slate-200 mb-6" />
           <div className="space-y-3">
             <div className="h-4 w-full rounded-md bg-slate-100" />

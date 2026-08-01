@@ -18,44 +18,51 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/forms/Select";
-import { CheckCircle, Loader2, Lock, Send, UserCheck } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { CheckCircle, Loader2, Lock, Send, UserCheck, ArrowRight } from "lucide-react";
 import { notify } from "@/lib/notify";
+import apiFetch from "@/lib/apiClient";
+import Textarea from "@/components/forms/Textarea";
+import StatusBadge from "@/components/common/StatusBadge";
+
 export default function AdminApplicationsPage() {
+  const router = useRouter();
   const [cases, setCases] = useState<ApplicationCase[]>([]);
   const [assignedOfficer, setAssignedOfficer] = useState("");
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const [queryText, setQueryText] = useState("");
+  const [specialists, setSpecialists] = useState<any[]>([]);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
+
   useEffect(() => {
-    getApplications().then(setCases).catch(console.error);
-  }, []);
-
-  const selectedCase = useMemo(() => {
-    return cases.find((c) => c.id === selectedCaseId) || null;
-  }, [cases, selectedCaseId]);
-
-  const handleUpdateStatus = async (
-    newStatus: "UNDER_REVIEW" | "SUBMITTED" | "APPROVED",
-  ) => {
-    if (!selectedCaseId) return;
-    setIsUpdatingStatus(newStatus);
-
-    const updatePromise = new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-        notify.success(
-          `Filing stage updated to ${newStatus.replace("_", " ")}`,
-        );
-      }, 1000);
-    });
-
-    try {
-      await updatePromise;
-      await updateApplication(selectedCaseId, { status: newStatus });
+    async function loadData() {
       const list = await getApplications();
       setCases(list);
-      setIsUpdatingStatus(null);
-    } catch {
+    }
+    loadData();
+
+    apiFetch<any[]>("/admin/team")
+      .then((team) => {
+        if (Array.isArray(team)) setSpecialists(team);
+      })
+      .catch(() => {});
+  }, []);
+
+  const selectedCase = useMemo(
+    () => cases.find((c) => c.id === selectedCaseId) || null,
+    [cases, selectedCaseId]
+  );
+
+  const handleUpdateStatus = async (status: string) => {
+    if (!selectedCaseId) return;
+    setIsUpdatingStatus(status);
+    try {
+      await updateApplication(selectedCaseId, { status: status as any });
+      const list = await getApplications();
+      setCases(list);
+      notify.success(`Status updated to ${status}`);
+    } finally {
       setIsUpdatingStatus(null);
     }
   };
@@ -66,22 +73,18 @@ export default function AdminApplicationsPage() {
     const list = await getApplications();
     setCases(list);
     setAssignedOfficer(officer);
-    notify.success(
-      officer
-        ? `Assigned to ${officer.split(",")[0]}`
-        : "Officer assignment cleared.",
-    );
+    notify.success(`Assigned officer: ${officer}`);
   };
 
-    const handleRaiseQuery = async () => {
+  const handleRaiseQuery = async () => {
     if (!selectedCaseId || !queryText.trim()) return;
-    await updateApplication(selectedCaseId, { query: queryText });
+    await updateApplication(selectedCaseId, { query: queryText.trim() });
     const list = await getApplications();
     setCases(list);
     notify.warning(`Clarification query alert submitted to customer.`);
   };
 
-    const handleClearQuery = async () => {
+  const handleClearQuery = async () => {
     if (!selectedCaseId) return;
     await updateApplication(selectedCaseId, { query: "" });
     const list = await getApplications();
@@ -89,6 +92,7 @@ export default function AdminApplicationsPage() {
     setQueryText("");
     notify.success("Active query warning cleared.");
   };
+
   // Column definitions for applications tab list table
   const applicationsColumns = useMemo<ColumnDef<ApplicationCase>[]>(
     () => [
@@ -137,34 +141,26 @@ export default function AdminApplicationsPage() {
         header: "Status",
         accessorKey: "status",
         cell: (row) => (
-          <Badge
-            variant={row.status === "APPROVED" ? "green" : "indigo"}
-            rounded="full"
-            size="sm"
-          >
-            {row.status.replace("_", " ")}
-          </Badge>
+          <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
         ),
       },
       {
         header: "Action",
         accessorKey: "action",
         cell: (row) => (
-          <Button
-            variant={selectedCaseId === row.id ? "primary" : "outline"}
-            size="sm"
-            className="text-xs font-semibold"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedCaseId(row.id);
-            }}
-          >
-            Process
-          </Button>
+          <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300"
+            >
+              View Case Details <ArrowRight size={13} />
+            </Button>
+          </Link>
         ),
       },
     ],
-    [setSelectedCaseId],
+    [],
   );
 
   return (
@@ -181,11 +177,35 @@ export default function AdminApplicationsPage() {
         searchKey="serviceTitle"
         searchPlaceholder="Search by filing service..."
         defaultPageSize={10}
-        onRowClick={(row) => setSelectedCaseId(row.id)}
+        onRowClick={(row) => router.push(`/admin/applications/${row.id}`)}
         selectedRowId={selectedCaseId}
         getRowId={(row) => row.id}
+        mobileCardRender={(row) => (
+          <div className="p-3 bg-white border border-slate-200/80 rounded-xl space-y-2 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                {row.id}
+              </span>
+              <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
+            </div>
+            <div>
+              <p className="font-extrabold text-sm text-slate-900 leading-snug">{row.serviceTitle}</p>
+              <p className="text-xs font-semibold text-slate-700 mt-0.5">{row.customerName}</p>
+              <p className="text-[10px] text-slate-400">{row.customerPhone}</p>
+            </div>
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-[11px] text-slate-500">
+                Officer: <strong className="text-slate-800">{row.assignedExecutive || "Unassigned"}</strong>
+              </span>
+              <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" size="sm" className="text-xs font-bold py-1.5 px-3 flex items-center gap-1 min-h-[36px]">
+                  View Details <ArrowRight size={12} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       />
-
       <Drawer
         open={selectedCaseId !== null}
         onClose={() => setSelectedCaseId(null)}
@@ -270,15 +290,11 @@ export default function AdminApplicationsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Unassigned</SelectItem>
-                  <SelectItem value="Rohan Sharma, Sr. Specialist">
-                    Rohan Sharma (Filing Specialist)
-                  </SelectItem>
-                  <SelectItem value="Anjali Gupta, CA Consultant">
-                    Anjali Gupta (CA Consultant)
-                  </SelectItem>
-                  <SelectItem value="Vikram Malhotra, CS Associate">
-                    Vikram Malhotra (CS Associate)
-                  </SelectItem>
+                  {specialists.map((spec) => (
+                    <SelectItem key={spec.id} value={`${spec.name} (${spec.role})`}>
+                      {spec.name} ({spec.role})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -368,11 +384,12 @@ export default function AdminApplicationsPage() {
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Raise Query Alert
               </label>
-              <textarea
+              <Textarea
+                rows={2}
                 value={queryText}
                 onChange={(e) => setQueryText(e.target.value)}
                 placeholder="Detail the revisions needed..."
-                className="w-full rounded-lg border border-slate-200 p-2.5 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary h-16 resize-none"
+                className="text-xs p-2.5"
               />
               <div className="flex gap-2">
                 <Button

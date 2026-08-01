@@ -176,15 +176,7 @@ export default function BusinessProfilePage() {
       .slice(0, 4);
   }, [catalogServices, businessProfile]);
 
-  // Pre-select first 2 suggested services by default
-  useEffect(() => {
-    if (suggestedServices.length > 0 && selectedServiceSlugs.length === 0) {
-      setSelectedServiceSlugs(
-        suggestedServices.slice(0, 2).map((s) => s.slug),
-      );
-    }
-  }, [suggestedServices]);
-
+  // Initial selection is empty - user manually selects suggested services
   // Toggle Selection
   const toggleSelectService = (slug: string) => {
     setSelectedServiceSlugs((prev) =>

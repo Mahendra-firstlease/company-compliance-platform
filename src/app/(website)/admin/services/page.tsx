@@ -2,49 +2,54 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  FileCheck2,
+  Briefcase,
   Search,
-  Filter,
-  PlusCircle,
-  RefreshCw,
-  ExternalLink,
   Edit3,
-  Star,
-  Sparkles,
-  IndianRupee,
-  Clock,
-  Tag,
-  Building2,
   CheckCircle2,
+  Sparkles,
+  TrendingUp,
+  Tag,
+  DollarSign,
+  Plus,
+  ArrowRight,
+  ShieldCheck,
+  SquareArrowOutUpRight,
 } from "lucide-react";
-import Link from "next/link";
-import { ServicesGridSkeleton } from "@/components/ui/skeletons";
 import Button from "@/components/common/Button";
-import SearchBar from "@/components/common/SearchBar";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Badge from "@/components/ui/Badge/Badge";
+import apiFetch from "@/lib/apiClient";
 import { notify } from "@/lib/notify";
-import { Service } from "@/types/services";
+import { useModal } from "@/components/ui/overlay";
+import Link from "next/link";
 
-export default function AdminServicesManagementPage() {
-  const [services, setServices] = useState<Service[]>([]);
+interface AdminServiceItem {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription?: string;
+  price: number;
+  governmentFee: number;
+  professionalFee: number;
+  duration: string;
+  popular?: boolean;
+  featured?: boolean;
+}
+
+export default function AdminServicesPage() {
+  const modal = useModal();
+  const [services, setServices] = useState<AdminServiceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const fetchServices = async () => {
-    setIsLoading(true);
     try {
-      const res = await fetch("/api/services");
-      if (res.ok) {
-        const data = await res.json();
-        setServices(data);
-      } else {
-        notify.error("Failed to fetch services catalog.");
-      }
+      setIsLoading(true);
+      const data = await apiFetch<AdminServiceItem[]>("/admin/services");
+      setServices(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Admin services fetch error:", err);
-      notify.error("Network error fetching services.");
+      console.error("Failed to fetch admin services:", err);
     } finally {
       setIsLoading(false);
     }
@@ -54,300 +59,376 @@ export default function AdminServicesManagementPage() {
     fetchServices();
   }, []);
 
+  // Filtered Services Computation
   const filteredServices = useMemo(() => {
     return services.filter((s) => {
       const matchesSearch =
-        s.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.shortDescription.toLowerCase().includes(searchTerm.toLowerCase());
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.slug.toLowerCase().includes(searchQuery.toLowerCase());
 
-      if (categoryFilter === "ALL") return matchesSearch;
-      if (categoryFilter === "POPULAR") return matchesSearch && (s.popular || s.featured);
-      if (categoryFilter === "EXPRESS")
-        return matchesSearch && (s.duration.toLowerCase().includes("24") || s.duration.toLowerCase().includes("1-2"));
+      if (categoryFilter === "POPULAR") return matchesSearch && s.popular;
+      if (categoryFilter === "FEATURED") return matchesSearch && s.featured;
 
       return matchesSearch;
     });
-  }, [services, searchTerm, categoryFilter]);
+  }, [services, searchQuery, categoryFilter]);
+
+  // Edit Service Pricing Modal Handler
+  const handleEditPricing = (service: AdminServiceItem) => {
+    let govtFee = service.governmentFee;
+    let profFee = service.professionalFee;
+    let isPopular = service.popular || false;
+    let isFeatured = service.featured || false;
+
+    const saveChanges = async () => {
+      const totalPrice = Number(govtFee) + Number(profFee);
+      try {
+        await apiFetch("/admin/services", {
+          method: "PATCH",
+          body: JSON.stringify({
+            id: service.id,
+            price: totalPrice,
+            governmentFee: Number(govtFee),
+            professionalFee: Number(profFee),
+            popular: isPopular,
+            featured: isFeatured,
+          }),
+        });
+
+        notify.success(`Pricing updated for ${service.title}`);
+        fetchServices();
+        modal.closeAll();
+      } catch (err) {
+        console.error("Failed to update pricing:", err);
+        notify.error("Failed to update service pricing.");
+      }
+    };
+
+    modal.open({
+      title: `Edit Service Pricing: ${service.title}`,
+      description: `Ref Slug: /${service.slug}`,
+      size: "md",
+      content: (
+        <div className="space-y-4 pt-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">Government Fee (₹)</label>
+              <input
+                type="number"
+                defaultValue={govtFee}
+                onChange={(e) => (govtFee = parseFloat(e.target.value) || 0)}
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none focus:bg-white focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">Professional Fee (₹)</label>
+              <input
+                type="number"
+                defaultValue={profFee}
+                onChange={(e) => (profFee = parseFloat(e.target.value) || 0)}
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none focus:bg-white focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-lg flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-700">Calculated Total Package Fee:</span>
+            <span className="font-black text-indigo-700 text-sm">₹{Number(govtFee) + Number(profFee)}</span>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <label className="block text-xs font-bold text-slate-700">Catalog Badges</label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked={isPopular}
+                  onChange={(e) => (isPopular = e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500 size-4"
+                />
+                <span>Popular Tag</span>
+              </label>
+
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked={isFeatured}
+                  onChange={(e) => (isFeatured = e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500 size-4"
+                />
+                <span>Featured Homepage Tag</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+            <Button variant="outline" size="sm" onClick={() => modal.closeAll()} className="text-xs font-bold">
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={saveChanges} className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700">
+              Save Pricing
+            </Button>
+          </div>
+        </div>
+      ),
+    });
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-6 shadow-2xs">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block">
-            Catalog & Pricing Operations
-          </span>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Statutory Services Management
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Statutory Services & Pricing Management
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage 15+ statutory compliance services, fees, turnaround durations, and catalog availability in MySQL.
+            Configure government fees, professional margins, catalog tags, and SLAs across all 15 compliance products.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchServices}
-            className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-2 text-xs font-bold"
-            title="Refresh services catalog"
-          >
-            <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} />
-            <span>Refresh Services</span>
-          </button>
-
-          <Link href="/services">
-            <Button variant="primary" size="sm" className="font-bold text-xs py-2.5 px-4 cursor-pointer flex items-center gap-1.5">
-              <ExternalLink className="size-4" />
-              <span>Preview Public Catalog</span>
-            </Button>
-          </Link>
-        </div>
+        <Button variant="primary" size="sm" className="text-xs font-bold flex items-center gap-1.5 shrink-0">
+          <Plus size={14} /> Add New Service
+        </Button>
       </div>
 
-      {/* Overview Metrics Header */}
+      {/* KPI Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Active Catalog Services</span>
-          <p className="text-2xl font-black text-slate-900">{services.length}</p>
-        </div>
+        <Card enableHover>
+          <CardContent className="p-4 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Catalog</span>
+            <p className="text-2xl font-black text-slate-900">{services.length} Services</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Featured & Popular</span>
-          <p className="text-2xl font-black text-indigo-600">
-            {services.filter((s) => s.popular || s.featured).length}
-          </p>
-        </div>
+        <Card enableHover>
+          <CardContent className="p-4 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Popular Products</span>
+            <p className="text-2xl font-black text-amber-600">{services.filter((s) => s.popular).length}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Average Govt Fee</span>
-          <p className="text-2xl font-black text-emerald-600">
-            ₹
-            {services.length > 0
-              ? Math.round(services.reduce((acc, s) => acc + (s.governmentFee || 0), 0) / services.length)
-              : 0}
-          </p>
-        </div>
+        <Card enableHover>
+          <CardContent className="p-4 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Featured Products</span>
+            <p className="text-2xl font-black text-indigo-600">{services.filter((s) => s.featured).length}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Express Processing (≤48h)</span>
-          <p className="text-2xl font-black text-amber-600">
-            {services.filter((s) => s.duration.includes("24") || s.duration.includes("1-2")).length}
-          </p>
-        </div>
+        <Card enableHover>
+          <CardContent className="p-4 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Avg Package Price</span>
+            <p className="text-2xl font-black text-emerald-600">
+              ₹{services.length > 0 ? Math.round(services.reduce((a, b) => a + b.price, 0) / services.length) : 0}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filter & Search Bar using Reusable SearchBar Component */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Reusable SearchBar Component */}
-        <div className="w-full sm:w-80">
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search service title, slug, or details..."
-            size="sm"
-            fullWidth={true}
+      {/* Toolbar: Search Bar & Filter Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto max-w-full">
+          <button
+            type="button"
+            onClick={() => setCategoryFilter("ALL")}
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+              categoryFilter === "ALL" ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+            }`}
+          >
+            All Products ({services.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategoryFilter("POPULAR")}
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+              categoryFilter === "POPULAR" ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+            }`}
+          >
+            Popular ({services.filter((s) => s.popular).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategoryFilter("FEATURED")}
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+              categoryFilter === "FEATURED" ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+            }`}
+          >
+            Featured ({services.filter((s) => s.featured).length})
+          </button>
+        </div>
+
+        <div className="relative w-full sm:max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search service title or slug..."
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-indigo-500 text-slate-700"
           />
         </div>
-
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
-          {[
-            { label: "All Services", value: "ALL" },
-            { label: "Popular & Featured", value: "POPULAR" },
-            { label: "Express Processing", value: "EXPRESS" },
-          ].map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setCategoryFilter(tab.value)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                categoryFilter === tab.value
-                  ? "bg-white text-indigo-600 shadow-2xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Services Grid */}
-      {isLoading ? (
-        <ServicesGridSkeleton count={6} />
-      ) : filteredServices.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service) => (
-            <div
-              key={service.id || service.slug}
-              className="bg-white border border-slate-200 rounded-lg p-6 space-y-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="size-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold shrink-0">
-                    <FileCheck2 className="size-5" />
-                  </div>
+      {/* Services Datatable */}
+      <Card enableHover>
+        <CardContent className="p-0">
+          <>
+            {/* Desktop Table View (sm+) */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3 px-4">Service Product</th>
+                    <th className="py-3 px-4">Govt Fee</th>
+                    <th className="py-3 px-4">Professional Fee</th>
+                    <th className="py-3 px-4">Total Price</th>
+                    <th className="py-3 px-4">Filing SLA</th>
+                    <th className="py-3 px-4 text-center">Tags</th>
+                    <th className="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-slate-400">
+                        Loading services catalog...
+                      </td>
+                    </tr>
+                  ) : filteredServices.length > 0 ? (
+                    filteredServices.map((service) => (
+                      <tr key={service.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div>
+                            <p className="font-bold text-slate-900">{service.title}</p>
+                            <span className="text-[10px] text-slate-400 font-mono">/{service.slug}</span>
+                          </div>
+                        </td>
 
-                  <div className="flex items-center gap-1">
-                    {service.popular && (
-                      <Badge variant="indigo" rounded="full" size="sm">
-                        Popular
-                      </Badge>
-                    )}
-                    {service.featured && (
-                      <Badge variant="green" rounded="full" size="sm">
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+                        <td className="py-3.5 px-4 font-semibold text-slate-700">
+                          ₹{service.governmentFee}
+                        </td>
 
-                <div>
-                  <h3 className="font-black text-sm text-slate-900 line-clamp-1">{service.title}</h3>
-                  <p className="text-[11px] font-mono text-slate-400 mt-0.5">/{service.slug}</p>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mt-2">
-                    {service.shortDescription}
-                  </p>
-                </div>
-              </div>
+                        <td className="py-3.5 px-4 font-semibold text-slate-700">
+                          ₹{service.professionalFee}
+                        </td>
 
-              <div className="space-y-3 pt-4 border-t border-slate-100">
-                {/* Fee Breakdown */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg text-center text-xs">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">Govt Fee</span>
-                    <span className="font-bold text-slate-800">₹{service.governmentFee || 0}</span>
-                  </div>
+                        <td className="py-3.5 px-4 font-black text-indigo-700 text-sm">
+                          ₹{service.price}
+                        </td>
 
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">Prof Fee</span>
-                    <span className="font-bold text-slate-800">₹{service.professionalFee || service.price}</span>
-                  </div>
+                        <td className="py-3.5 px-4 font-semibold text-slate-600">
+                          {service.duration || "5-7 Days"}
+                        </td>
 
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">Total</span>
-                    <span className="font-black text-indigo-700">₹{service.price}</span>
-                  </div>
-                </div>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            {service.popular && <Badge variant="yellow" size="sm">Popular</Badge>}
+                            {service.featured && <Badge variant="indigo" size="sm">Featured</Badge>}
+                          </div>
+                        </td>
 
-                {/* Card Action Buttons */}
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
-                    <Clock className="size-3.5 text-indigo-500" />
-                    <span>{service.duration}</span>
-                  </span>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Link href={`/services/${service.slug}`} target="_blank">
+                              <button
+                                type="button"
+                                className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                                title="View Public Catalog Page"
+                              >
+                                <SquareArrowOutUpRight size={15} />
+                              </button>
+                            </Link>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedService(service)}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <Edit3 className="size-3.5" />
-                      <span>Inspect</span>
-                    </button>
+                            <button
+                              type="button"
+                              onClick={() => handleEditPricing(service)}
+                              className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                              title="Edit Service Pricing"
+                            >
+                              <Edit3 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="p-12 text-center text-slate-400">
+                        No services found matching query.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                    <Link href={`/services/${service.slug}`} target="_blank">
+            {/* Mobile Cards List View (< sm) */}
+            <div className="sm:hidden divide-y divide-slate-100 p-2">
+              {isLoading ? (
+                <div className="p-8 text-center text-slate-400 text-xs">Loading services catalog...</div>
+              ) : filteredServices.length > 0 ? (
+                filteredServices.map((service) => (
+                  <div key={service.id} className="p-3.5 space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-extrabold text-sm text-slate-900">{service.title}</h4>
+                        <p className="text-[10px] text-slate-400 font-mono">/{service.slug}</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {service.popular && <Badge variant="yellow" size="sm">Popular</Badge>}
+                        {service.featured && <Badge variant="indigo" size="sm">Featured</Badge>}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-lg p-2.5 grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Govt Fee</span>
+                        <p className="font-semibold text-slate-700">₹{service.governmentFee}</p>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Prof. Fee</span>
+                        <p className="font-semibold text-slate-700">₹{service.professionalFee}</p>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Total</span>
+                        <p className="font-black text-indigo-700">₹{service.price}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/services/${service.slug}`} target="_blank">
+                          <button
+                            type="button"
+                            className="p-2 text-slate-400 hover:text-indigo-600 bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center min-h-[36px] min-w-[36px]"
+                            title="View Public Catalog Page"
+                          >
+                            <SquareArrowOutUpRight size={15} />
+                          </button>
+                        </Link>
+                        <span className="text-[11px] text-slate-500 font-semibold">
+                          SLA: {service.duration || "5-7 Days"}
+                        </span>
+                      </div>
                       <button
-                        className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                        title="View landing page"
+                        type="button"
+                        onClick={() => handleEditPricing(service)}
+                        className="p-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center font-bold text-xs min-h-[36px] min-w-[36px]"
+                        title="Edit Service Pricing"
                       >
-                        <ExternalLink className="size-3.5" />
+                        <Edit3 size={15} />
                       </button>
-                    </Link>
+                    </div>
                   </div>
-                </div>
-              </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-slate-400 text-xs">No services found matching query.</div>
+              )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white border border-slate-200 rounded-lg p-12 text-center space-y-4">
-          <div className="size-12 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
-            <FileCheck2 className="size-6" />
-          </div>
-          <h3 className="text-base font-bold text-slate-900">No Services Found</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            {searchTerm
-              ? "No statutory services match your search terms."
-              : "No services are configured in MySQL."}
-          </p>
-        </div>
-      )}
-
-      {/* Service Details Inspection Modal */}
-      {selectedService && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-lg max-w-lg w-full p-6 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                  <FileCheck2 className="size-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900">{selectedService.title}</h3>
-                  <p className="text-[11px] font-mono text-slate-400">/{selectedService.slug}</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedService(null)}
-                className="size-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-4 space-y-3 text-xs">
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold block">Description</span>
-                <p className="font-medium text-slate-700 leading-relaxed mt-0.5">{selectedService.description || selectedService.shortDescription}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Government Statutory Fee</span>
-                  <span className="font-bold text-slate-900">₹{selectedService.governmentFee || 0}</span>
-                </div>
-
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Professional Processing Fee</span>
-                  <span className="font-bold text-slate-900">₹{selectedService.professionalFee || selectedService.price}</span>
-                </div>
-
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Total Package Fee</span>
-                  <span className="font-black text-indigo-700 text-sm">₹{selectedService.price}</span>
-                </div>
-
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Turnaround Time</span>
-                  <span className="font-bold text-slate-800">{selectedService.duration}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <Link href={`/services/${selectedService.slug}`} target="_blank">
-                <Button variant="outline" size="sm" className="text-xs font-bold flex items-center gap-1.5">
-                  <span>Open Public Page</span>
-                  <ExternalLink className="size-3.5" />
-                </Button>
-              </Link>
-
-              <Button
-                onClick={() => setSelectedService(null)}
-                variant="primary"
-                size="sm"
-                className="text-xs font-bold"
-              >
-                Close Inspector
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
+          </>
+        </CardContent>
+      </Card>
     </div>
   );
 }

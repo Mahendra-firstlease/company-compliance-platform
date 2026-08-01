@@ -49,7 +49,7 @@ export default function UserNavDropdown() {
 
   return (
     <Menu as="div" className="relative">
-      <MenuButton className="flex items-center gap-2 rounded-full bg-slate-50 p-1.5 pr-3 text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer focus:outline-hidden">
+      <MenuButton className="flex items-center gap-2 rounded-full bg-slate-50 p-1 sm:p-1.5 sm:pr-3 text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer focus:outline-hidden">
         <div
           className={`flex size-7 items-center justify-center rounded-full text-white text-xs font-bold uppercase shadow-2xs ${
             isAdminOrExec ? "bg-indigo-900" : "bg-primary"
@@ -57,9 +57,9 @@ export default function UserNavDropdown() {
         >
           {avatarChar}
         </div>
-        <span className="max-w-30 truncate">{userName.split(" ")[0]}</span>
+        <span className="hidden sm:inline-block max-w-30 truncate">{userName.split(" ")[0]}</span>
         {isAdminOrExec && (
-          <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-bold uppercase">
+          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-bold uppercase">
             Admin
           </span>
         )}

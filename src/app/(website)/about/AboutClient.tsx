@@ -189,7 +189,7 @@ export default function AboutClient() {
           </div>
 
           {/* About Corporate Story & Milestones Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 pt-10 border-t border-slate-200/80">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-12 pt-10 border-t border-slate-200/80">
             {companyMilestones.map((ms, i) => (
               <div
                 key={i}

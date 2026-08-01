@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendContactInquiryEmail } from "@/lib/emailService";
 
 export async function POST(request: Request) {
   try {
@@ -24,6 +25,15 @@ export async function POST(request: Request) {
         leadStatus: "NEW",
       },
     });
+
+    // Send automated React Email confirmation to customer & admin alert asynchronously
+    sendContactInquiryEmail({
+      name,
+      email,
+      phone,
+      service,
+      message,
+    }).catch((err) => console.error("Failed to send contact inquiry email:", err));
 
     return NextResponse.json(
       { success: true, message: "Inquiry received successfully!", lead },

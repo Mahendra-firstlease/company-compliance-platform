@@ -72,7 +72,7 @@ export default function DashboardRoutesLayout({
       menuItems={menuItems}
       activeTab={activeTab}
       onTabChange={handleTabChange}
-      headerTheme="slate"
+      headerTheme="indigo"
     >
       {children}
     </DashboardLayout>

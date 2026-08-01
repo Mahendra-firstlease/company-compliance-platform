@@ -14,13 +14,25 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const application = await prisma.application.findUnique({
+    let application = await prisma.application.findUnique({
       where: { id },
       include: {
         documents: true,
         assignedExecutive: true,
       },
     });
+
+    // Fallback: search by serviceSlug if ID lookup returns null
+    if (!application) {
+      application = await prisma.application.findFirst({
+        where: { serviceSlug: id },
+        orderBy: { createdAt: "desc" },
+        include: {
+          documents: true,
+          assignedExecutive: true,
+        },
+      });
+    }
 
     if (!application) {
       return NextResponse.json(
@@ -72,6 +84,7 @@ export async function PATCH(
     if (payload.customerName) updateData.customerName = payload.customerName;
     if (payload.customerPhone) updateData.customerPhone = payload.customerPhone;
     if (payload.address) updateData.address = payload.address;
+    if (payload.formData) updateData.formData = payload.formData;
     if (payload.query !== undefined) updateData.queryText = payload.query;
 
     if (payload.assignedExecutive !== undefined) {

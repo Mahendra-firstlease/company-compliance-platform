@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { registerSchema, RegisterFormValues } from "@/schemas/auth.schema";
+import { sendWelcomeEmail } from "@/lib/emailService";
 
 export async function registerUserAction(formData: RegisterFormValues) {
   try {
@@ -33,7 +34,7 @@ export async function registerUserAction(formData: RegisterFormValues) {
     // 2. Hash password securely
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // 3. Create user in database without initial businessProfile (user will complete in /business-profile)
+    // 3. Create user in database
     const user = await prisma.user.create({
       data: {
         name: `${firstName} ${lastName}`.trim(),
@@ -43,6 +44,14 @@ export async function registerUserAction(formData: RegisterFormValues) {
         role: "CLIENT",
       },
     });
+
+    // 4. Send automated Welcome Email asynchronously
+    sendWelcomeEmail({
+      to: normalizedEmail,
+      userName: user.name || firstName || "Valued Client",
+    }).catch((err) =>
+      console.error("[Register] Error sending welcome email:", err)
+    );
 
     return {
       success: true,

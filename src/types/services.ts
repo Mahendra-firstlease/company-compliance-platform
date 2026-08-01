@@ -3,6 +3,13 @@ export interface FAQItem {
   answer: string;
 }
 
+export interface ServiceDetails {
+  benefits?: string[];
+  eligibility?: string[];
+  requiredDocuments?: string[];
+  faqs?: FAQItem[];
+}
+
 export interface Service {
   id: string;
   slug: string;
@@ -21,4 +28,5 @@ export interface Service {
   eligibility?: string[];
   requiredDocuments?: string[];
   faqs?: FAQItem[];
+  details?: ServiceDetails;
 }

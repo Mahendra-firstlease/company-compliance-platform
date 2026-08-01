@@ -45,6 +45,7 @@ model User {
   schedules        ComplianceSchedule[]
   certificates     IssuedCertificate[]
   assignedLeads    CrmLead[]
+  notifications    Notification[]
 }
 
 model Account {
@@ -132,6 +133,7 @@ model Application {
   customerName        String
   customerPhone       String
   address             String            @db.Text
+  formData            Json?
   assignedExecutiveId String?
   queryText           String?           @db.Text
   governmentFee       Float
@@ -218,4 +220,36 @@ model CrmLead {
   createdAt         DateTime @default(now())
 
   assignedAgent     User?    @relation(fields: [assignedAgentId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String   @db.Text
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, URGENT
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model TeamMember {
+  id             String   @id @default(uuid())
+  name           String
+  role           String
+  email          String   @unique
+  phone          String
+  specialization String
+  activeCases    Int      @default(0)
+  completedCases Int      @default(0)
+  slaRate        String   @default("98.5%")
+  status         String   @default("AVAILABLE") // AVAILABLE, BUSY, OFFLINE
+  avatarUrl      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

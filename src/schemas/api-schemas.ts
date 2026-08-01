@@ -82,6 +82,7 @@ export const updateApplicationSchema = z.object({
   customerName: z.string().min(2).max(100).optional(),
   customerPhone: z.string().min(8).max(20).optional(),
   address: z.string().max(500).optional(),
+  formData: z.record(z.string(), z.any()).optional(),
   query: z.string().max(1000, "Query message exceeds 1000 characters.").optional(),
   assignedExecutive: z.string().max(150).optional(),
 });

@@ -171,6 +171,42 @@ export async function POST(request: Request) {
       },
     });
 
+    // Project-Wide Notification Dispatcher (Client & Admin)
+    try {
+      if ((prisma as any).notification) {
+        // 1. Client Notification
+        await (prisma as any).notification.create({
+          data: {
+            userId: finalUserId,
+            title: "Application Submitted",
+            message: `Your ${newApp.serviceTitle} filing application (Ref: ${newApp.id}) has been created successfully.`,
+            type: "INFO",
+            link: `/applications/${newApp.serviceSlug}`,
+          },
+        });
+
+        // 2. Admin Alert Notifications
+        const adminUsers = await prisma.user.findMany({
+          where: { role: "ADMIN" },
+          select: { id: true },
+        });
+
+        for (const adm of adminUsers) {
+          await (prisma as any).notification.create({
+            data: {
+              userId: adm.id,
+              title: "New Application Submitted",
+              message: `New ${newApp.serviceTitle} case filed by ${newApp.customerName} (Ref: ${newApp.id}).`,
+              type: "URGENT",
+              link: `/admin/applications`,
+            },
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.warn("Notification creation deferred:", notifErr);
+    }
+
     return NextResponse.json(newApp, { status: 201 });
   } catch (error) {
     return handleApiError(error, "Failed to create application.");

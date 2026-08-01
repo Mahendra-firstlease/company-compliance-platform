@@ -16,7 +16,6 @@ import { notify } from "@/lib/notify";
 import {
   FileCheck,
   UploadCloud,
-  Trash2,
   CheckCircle,
   FileText,
   CreditCard,
@@ -30,17 +29,12 @@ import {
   ExternalLink,
   Lock,
   Check,
-  Eye,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useModal } from "@/components/ui/overlay";
 import { getServiceConfig } from "@/features/services/registry";
 import DynamicForm from "@/features/services/components/DynamicForm";
-import FileUpload, {
-  validateFileSecurity,
-  sanitizeFilename,
-} from "@/components/forms/FileUpload";
+import { MultiFileUpload, UploadedFile } from "@/components/upload";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -48,7 +42,6 @@ interface PageProps {
 
 export default function ApplicationWorkspacePage({ params }: PageProps) {
   const { slug } = use(params);
-  const modal = useModal();
 
   // Find corresponding service definitions
   const serviceConfig = getServiceConfig(slug);
@@ -59,6 +52,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
   // Load and sync application case from client storage
   const [appCase, setAppCase] = useState<ApplicationCase | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [supportingDocs, setSupportingDocs] = useState<UploadedFile[]>([]);
 
   // Sync application status from backend (polled gently every 10 seconds)
   useEffect(() => {
@@ -90,18 +84,6 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
       clearInterval(interval);
     };
   }, [slug]);
-
-  // Upload simulation states
-  const requiredDocs =
-    serviceConfig?.sections
-      .flatMap((s) => s.fields)
-      .filter((f) => f.type === "file" || f.type === "front-back-file")
-      .map((f) => f.label) || [
-      "PAN Card",
-      "Aadhaar Card",
-      "Office Address Proof",
-    ];
-  const [isSubmittingDocs, setIsSubmittingDocs] = useState(false);
 
   // Simulation loading states
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
@@ -163,215 +145,6 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
     ? getEffectiveActiveIndex(appCase.status)
     : 1;
 
-  // Remove file attachments
-  const handleDeleteFile = async (docName: string) => {
-    if (!appCase) return;
-    const newUploads = { ...appCase.uploadedDocs };
-    delete newUploads[docName];
-
-    await updateApplication(appCase.id, { uploadedDocs: newUploads });
-    const activeApp = await getApplicationBySlug(slug);
-    setAppCase(activeApp);
-  };
-
-  // View uploaded file modal
-  const handleViewFile = (
-    docName: string,
-    file: { name: string; size: string; type: string; url?: string },
-  ) => {
-    const canEdit = appCase
-      ? appCase.status === "DOCUMENTS_PENDING" ||
-        appCase.status === "PAYMENT_CONFIRMED"
-      : false;
-
-    modal.open({
-      title: "Secure Document Preview",
-      size: "lg",
-      content: (
-        <div className="space-y-6 text-center py-4">
-          <div className="mx-auto size-12 bg-primary-light text-primary rounded-full flex items-center justify-center">
-            <FileText size={24} />
-          </div>
-          <div className="space-y-1.5">
-            <h3 className="font-bold text-slate-900 text-base">
-              {docName}
-            </h3>
-            <p className="text-xs text-slate-500 font-semibold truncate max-w-sm mx-auto">
-              {file.name}
-            </p>
-            <div className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              <span>{file.size}</span>
-              <span>&bull;</span>
-              <span>{file.type} Format</span>
-            </div>
-          </div>
-
-          {/* File Preview Content */}
-          {file.url ? (
-            <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 flex items-center justify-center min-h-75">
-              {file.type.toUpperCase() === "PDF" ? (
-                <iframe
-                  src={file.url}
-                  className="w-full h-95 border-0"
-                  title={file.name}
-                />
-              ) : (
-                <img
-                  src={file.url}
-                  className="max-h-95 w-auto max-w-full object-contain p-2 rounded-lg shadow-sm bg-white border border-slate-200"
-                  alt={file.name}
-                />
-              )}
-            </div>
-          ) : (
-            /* Mock Fallback Preview Content */
-            <div className="border border-slate-150 bg-slate-50 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-48 border-dashed">
-              <div className="h-1.5 w-16 bg-slate-200 rounded-full animate-pulse" />
-              <div className="h-1.5 w-32 bg-slate-200 rounded-full animate-pulse" />
-              <div className="h-1.5 w-24 bg-slate-200 rounded-full animate-pulse" />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
-                Simulated Encryption Secure Sandbox Preview
-              </p>
-              <span className="text-xs text-slate-400 text-center max-w-xs leading-normal font-medium">
-                This file has been securely encrypted in compliance with
-                statutory guidelines for Ministry Filings.
-              </span>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center pt-4 border-t border-slate-100 mt-4">
-            <div>
-              {canEdit && (
-                <>
-                  <input
-                    type="file"
-                    id="replace-file-picker"
-                    className="hidden"
-                    accept=".pdf,.png,.jpg,.jpeg"
-                    onChange={(e) => {
-                      const newFile = e.target.files?.[0];
-                      if (!newFile || !appCase) return;
-
-                      const check = validateFileSecurity(
-                        newFile,
-                        ["pdf", "png", "jpg", "jpeg"],
-                        5,
-                      );
-                      if (!check.isValid) {
-                        notify.error({
-                          title: "Validation Failed",
-                          description: check.error || "Security check failed.",
-                        });
-                        return;
-                      }
-
-                      const sanitized = sanitizeFilename(newFile.name);
-                      const objectUrl = URL.createObjectURL(newFile);
-                      const updatedFile = {
-                        name: sanitized,
-                        size: `${(newFile.size / (1024 * 1024)).toFixed(2)} MB`,
-                        type:
-                          newFile.type.split("/")[1]?.toUpperCase() ||
-                          newFile.name.split(".").pop()?.toUpperCase() ||
-                          "UNKNOWN",
-                        url: objectUrl,
-                      };
-
-                      const newUploads = {
-                        ...appCase.uploadedDocs,
-                        [docName]: updatedFile,
-                      };
-                      updateApplication(appCase.id, {
-                        uploadedDocs: newUploads,
-                      }).then(() => {
-                        getApplicationBySlug(slug).then(setAppCase);
-                      });
-                      notify.success({
-                        title: "Document Updated",
-                        description: `Replaced with ${sanitized}`,
-                      });
-                      modal.closeAll();
-                    }}
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-primary border-primary-border hover:bg-primary-light/30"
-                    onClick={() =>
-                      document.getElementById("replace-file-picker")?.click()
-                    }
-                  >
-                    Replace File
-                  </Button>
-                </>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => modal.closeAll()}
-              >
-                Close
-              </Button>
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={() => {
-                  notify.success(
-                    "Document verification copy downloaded to client storage.",
-                  );
-                  modal.closeAll();
-                }}
-              >
-                Download Document
-              </Button>
-            </div>
-          </div>
-        </div>
-      ),
-    });
-  };
-
-  // Submit all documents for review
-  const handleSubmitDocuments = async () => {
-    if (!appCase) return;
-    setIsSubmittingDocs(true);
-    const submitPromise = new Promise((resolve) => setTimeout(resolve, 2000));
-
-    notify.promise(submitPromise, {
-      loading: {
-        title: "Submitting Files",
-        description: "Registering upload coordinates.",
-      },
-      success: {
-        title: "Files Transmitted",
-        description: "Verification queue updated.",
-      },
-      error: { title: "Transmission Error", description: "Gateway failure." },
-    });
-
-    try {
-      await submitPromise;
-      // Clear queries on re-submission and advance status
-      await updateApplication(appCase.id, {
-        status: "UNDER_REVIEW",
-        query: "", // clear query
-      });
-      const activeApp = await getApplicationBySlug(slug);
-      setAppCase(activeApp);
-      setIsSubmittingDocs(false);
-    } catch (e) {
-      setIsSubmittingDocs(false);
-    }
-  };
-
-  // Check if all required files are present
-  const allFilesUploaded = appCase
-    ? requiredDocs.every((doc: string) => !!appCase.uploadedDocs[doc])
-    : false;
-
   // Simulate mock invoice generator
   const triggerInvoiceDownload = () => {
     if (!appCase) return;
@@ -397,38 +170,38 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               </style>
             </head>
             <body>
-              <div class="card">
-                <div class="hdr">
+              <div style="max-width:600px;margin:0 auto;border:1px solid #e2e8f0;padding:40px;border-radius:12px;background:#fff;">
+                <div style="display:flex;justify-content:space-between;border-bottom:2px solid #f1f5f9;padding-bottom:20px;">
                   <div>
-                    <h2 style="color:#4f46e5;margin:0;">COMPLIANCE PORTAL</h2>
-                    <p style="font-size:0.8em;color:#64748b;">Secured Corporate Filings</p>
+                    <h2 style="color:#4f46e5;margin:0;font-size:1.4em;">FIRSTLEASE COMPLIANCE PORTAL</h2>
+                    <p style="font-size:0.8em;color:#64748b;margin:4px 0 0 0;">Secured Corporate Filings</p>
                   </div>
                   <div style="text-align:right;">
-                    <h4 style="margin:0;">INVOICE</h4>
-                    <p style="font-size:0.8em;color:#64748b;">${appCase.id}</p>
+                    <h4 style="margin:0;font-size:1.2em;color:#0f172a;">TAX INVOICE</h4>
+                    <p style="font-size:0.8em;color:#64748b;margin:4px 0 0 0;">${appCase.id}</p>
                   </div>
                 </div>
-                <div class="grid">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:30px 0;">
                   <div>
-                    <strong>Billed To:</strong><br>
+                    <strong style="color:#0f172a;">Billed To:</strong><br>
                     ${appCase.customerName}<br>
                     ${appCase.address || "India Registered Office"}
                   </div>
                   <div style="text-align:right;">
-                    <strong>Filing Date:</strong> ${new Date(appCase.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}<br>
-                    <strong>Payment Mode:</strong> UPI Gateway
+                    <strong style="color:#0f172a;">Filing Date:</strong> ${new Date(appCase.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}<br>
+                    <strong style="color:#0f172a;">Payment Mode:</strong> Razorpay Gateway
                   </div>
                 </div>
-                <table class="tbl">
+                <table style="width:100%;border-collapse:collapse;margin-top:20px;">
                   <thead>
-                    <tr><th>Item Description</th><th style="text-align:right;">Amount</th></tr>
+                    <tr style="background:#f8fafc;"><th style="text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;font-size:0.85em;color:#475569;">Item Description</th><th style="text-align:right;padding:12px;border-bottom:1px solid #e2e8f0;font-size:0.85em;color:#475569;">Amount</th></tr>
                   </thead>
                   <tbody>
-                    <tr><td>${appCase.serviceTitle} - Government Fees</td><td style="text-align:right;">₹${appCase.governmentFee}</td></tr>
-                    <tr><td>Professional Processing Charges</td><td style="text-align:right;">₹${appCase.professionalFee}</td></tr>
+                    <tr><td style="padding:12px;border-bottom:1px solid #f1f5f9;font-size:0.9em;color:#334155;">${appCase.serviceTitle} - Government Fees</td><td style="text-align:right;padding:12px;border-bottom:1px solid #f1f5f9;font-size:0.9em;color:#334155;">₹${appCase.governmentFee}</td></tr>
+                    <tr><td style="padding:12px;border-bottom:1px solid #f1f5f9;font-size:0.9em;color:#334155;">Professional Processing Charges</td><td style="text-align:right;padding:12px;border-bottom:1px solid #f1f5f9;font-size:0.9em;color:#334155;">₹${appCase.professionalFee}</td></tr>
                   </tbody>
                 </table>
-                <div class="total">Total Paid: ₹${appCase.totalFee}</div>
+                <div style="text-align:right;font-size:1.2em;font-weight:bold;margin-top:30px;color:#4f46e5;">Total Paid: ₹${appCase.totalFee}</div>
               </div>
             </body>
           </html>
@@ -457,20 +230,20 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                 .border-inner { border: 2px dashed #b8860b; padding: 40px; }
                 h1 { font-size: 3em; margin: 0 0 10px 0; color: #8b6508; letter-spacing: 2px; }
                 h3 { font-size: 1.5em; font-weight: normal; margin: 20px 0; }
-                .desc { font-style: italic; font-size: 1.2em; margin: 30px auto; max-width: 600px; line-height: 1.6; }
-                .meta { display: flex; justify-content: space-between; margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px; font-size: 0.9em; }
+                p.desc { font-style: italic; font-size: 1.2em; margin: 30px auto; max-width: 600px; line-height: 1.6; }
+                div.meta { display: flex; justify-content: space-between; margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px; font-size: 0.9em; }
               </style>
             </head>
             <body>
-              <div class="border-outer">
-                <div class="border-inner">
-                  <h1>CERTIFICATE OF COMPLIANCE</h1>
-                  <p style="font-size:0.8em;letter-spacing:4px;color:#888;">MINISTRY OF CORPORATE AFFAIRS</p>
-                  <h3>This is to certify that the business entity</h3>
-                  <h2 style="font-size:2em;margin:10px 0;color:#111;">${appCase.customerName.toUpperCase()}</h2>
-                  <p class="desc">has successfully met all statutory guidelines, document submissions, and filing audits required under Indian Ministry Regulations for the service registration of</p>
-                  <h2 style="color:#8b6508;margin:10px 0;">${appCase.serviceTitle}</h2>
-                  <div class="meta">
+              <div style="border: 15px solid #d4af37; padding: 50px; background: #fff; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                <div style="border: 2px dashed #b8860b; padding: 40px;">
+                  <h1 style="font-size:2.8em;margin:0 0 10px 0;color:#8b6508;letter-spacing:2px;">CERTIFICATE OF COMPLIANCE</h1>
+                  <p style="font-size:0.8em;letter-spacing:4px;color:#888;margin-bottom:20px;">MINISTRY OF CORPORATE AFFAIRS</p>
+                  <h3 style="font-size:1.3em;font-weight:normal;margin:20px 0;">This is to certify that the business entity</h3>
+                  <h2 style="font-size:2em;margin:10px 0;color:#111;font-weight:bold;">${appCase.customerName.toUpperCase()}</h2>
+                  <p style="font-style:italic;font-size:1.1em;margin:30px auto;max-width:600px;line-height:1.6;color:#475569;">has successfully met all statutory guidelines, document submissions, and filing audits required under Indian Ministry Regulations for the service registration of</p>
+                  <h2 style="color:#8b6508;margin:10px 0;font-size:1.8em;">${appCase.serviceTitle}</h2>
+                  <div style="display:flex;justify-content:space-between;margin-top:60px;border-top:1px solid #eee;padding-top:20px;font-size:0.9em;color:#64748b;">
                     <div><strong>Tracking ID:</strong> ${appCase.id}</div>
                     <div><strong>Date of Issue:</strong> ${new Date().toLocaleDateString()}</div>
                   </div>
@@ -725,6 +498,14 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
             <div className="space-y-4">
               <DynamicForm
                 config={serviceConfig}
+                disabled={
+                  appCase
+                    ? (appCase.status === "UNDER_REVIEW" ||
+                       appCase.status === "SUBMITTED" ||
+                       appCase.status === "APPROVED") &&
+                      !appCase.query
+                    : false
+                }
                 initialValues={{
                   applicantName: appCase.customerName,
                   fullName: appCase.customerName,
@@ -732,6 +513,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   registeredAddress: appCase.address,
                 }}
                 onSubmit={async (formData) => {
+                  console.log("Filing Form Data:", formData);
                   notify.loading({
                     title: "Submitting Filing Application...",
                     description:
@@ -740,6 +522,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   await updateApplication(appCase.id, {
                     status: "UNDER_REVIEW",
                     query: "",
+                    formData: formData as Record<string, any>,
                   });
                   const activeApp = await getApplicationBySlug(slug);
                   setAppCase(activeApp);
@@ -748,6 +531,28 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                     description: "Updated workspace status to UNDER_REVIEW.",
                   });
                 }}
+              />
+            </div>
+
+            {/* Additional Supporting Documents MultiFileUpload Portal */}
+            <div className="bg-white border border-slate-200/90 rounded-xl p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                  <UploadCloud size={16} className="text-indigo-600" />
+                  Upload Additional Supporting Documents & Attachments
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Attach supporting verification files for your filing (e.g. Utility Bills, Property Leases, NOCs, Bank Statements, Financial Audit Reports).
+              </p>
+              <MultiFileUpload
+                label="Supporting Attachments (Up to 10 files, max 10MB each)"
+                value={supportingDocs}
+                onChange={setSupportingDocs}
+                maxFiles={10}
+                maxSizeMb={10}
+                allowedTypes={["pdf", "png", "jpg", "jpeg"]}
+                disabled={appCase.status === "APPROVED"}
               />
             </div>
           </div>

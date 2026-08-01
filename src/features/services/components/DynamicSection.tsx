@@ -9,9 +9,10 @@ interface DynamicSectionProps {
   section: FormSectionConfig;
   control: Control<any>;
   errors: FieldErrors<any>;
+  disabled?: boolean;
 }
 
-export default function DynamicSection({ section, control, errors }: DynamicSectionProps) {
+export default function DynamicSection({ section, control, errors, disabled = false }: DynamicSectionProps) {
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-2xs space-y-6">
       <div>
@@ -34,7 +35,7 @@ export default function DynamicSection({ section, control, errors }: DynamicSect
                 : "col-span-1"
             }
           >
-            <DynamicField field={field} control={control} errors={errors} />
+            <DynamicField field={field} control={control} errors={errors} disabled={disabled} />
           </div>
         ))}
       </div>

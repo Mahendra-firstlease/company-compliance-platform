@@ -63,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           {/* Key Value Prop List */}
-          <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             {[
               { title: "10,000+ Filings", desc: "Verified Corporate Cases" },
               { title: "99.8% Accuracy", desc: "Zero Ministry Rejections" },

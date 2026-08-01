@@ -53,8 +53,12 @@ export async function getApplicationBySlug(idOrSlug: string): Promise<Applicatio
   try {
     const data = await apiFetch<ApplicationCase>(`/applications/${idOrSlug}`);
     return data || null;
-  } catch (err) {
-    console.error(`Failed to fetch application ${idOrSlug}:`, err);
+  } catch (err: any) {
+    // 404 Not Found is expected when user accesses workspace before filing
+    if (err?.message?.includes("404") || err?.message?.includes("not found")) {
+      return null;
+    }
+    console.warn(`No existing application found for ${idOrSlug}`);
     return null;
   }
 }

@@ -12,17 +12,21 @@
 
 # testing
 /coverage
+.vitest/
 
 # next.js
 /.next/
 /out/
+/storage/
 
 # production
 /build
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.log
 
 # debug
 npm-debug.log*
@@ -30,15 +34,31 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# environment variables (ignore secrets, keep template)
+.env
+.env*.local
+.env.development
+.env.production
+.env.staging
+!.env.example
 
-# vercel
-.vercel
+# database & local storage
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# IDEs & editors
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-# Private project info (ignored by Git)
+# Private documentation & artifacts
 PROJECT_INFO.md
+AUDIT_REPORT.md
+

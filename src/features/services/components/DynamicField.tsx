@@ -14,10 +14,12 @@ interface DynamicFieldProps {
   field: FormFieldConfig;
   control: Control<any>;
   errors: FieldErrors<any>;
+  disabled?: boolean;
 }
 
-export default function DynamicField({ field, control, errors }: DynamicFieldProps) {
+export default function DynamicField({ field, control, errors, disabled = false }: DynamicFieldProps) {
   const errorMessage = errors[field.id]?.message as string | undefined;
+  const isFieldDisabled = disabled || field.disabled;
 
   switch (field.type) {
     case "text":
@@ -35,7 +37,7 @@ export default function DynamicField({ field, control, errors }: DynamicFieldPro
                 {...controllerField}
                 type={field.type === "number" ? "number" : "text"}
                 placeholder={field.placeholder}
-                disabled={field.disabled}
+                disabled={isFieldDisabled}
                 readOnly={field.readOnly}
               />
             </FormGroup>
@@ -55,7 +57,7 @@ export default function DynamicField({ field, control, errors }: DynamicFieldPro
               <Textarea
                 {...controllerField}
                 placeholder={field.placeholder}
-                disabled={field.disabled}
+                disabled={isFieldDisabled}
                 rows={3}
               />
             </FormGroup>
@@ -74,7 +76,7 @@ export default function DynamicField({ field, control, errors }: DynamicFieldPro
           render={({ field: controllerField }) => (
             <FormGroup label={field.label} required={field.required} error={errorMessage}>
               <Select value={controllerField.value} onValueChange={controllerField.onChange}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" disabled={isFieldDisabled}>
                   <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -103,6 +105,7 @@ export default function DynamicField({ field, control, errors }: DynamicFieldPro
               label={field.label}
               checked={controllerField.value}
               onChange={controllerField.onChange}
+              disabled={isFieldDisabled}
               error={errorMessage}
             />
           )}
@@ -128,6 +131,7 @@ export default function DynamicField({ field, control, errors }: DynamicFieldPro
               backRule={"backRule" in field ? field.backRule : undefined}
               value={controllerField.value}
               onChange={controllerField.onChange}
+              disabled={isFieldDisabled}
               error={errorMessage}
             />
           )}

@@ -81,19 +81,41 @@ export default function DashboardLayout({
         />
 
         {/* Main Content Area & Footer wrapper */}
-        <div className="flex-1 flex flex-col justify-between min-h-[calc(100vh-64px)] bg-slate-50/50">
-          <main className="p-6 md:p-8 space-y-8 overflow-x-hidden flex-1">
+        <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[calc(100vh-64px)] bg-slate-50/50">
+          <main className="p-4 sm:p-6 md:p-8 space-y-8 overflow-x-hidden flex-1 min-w-0">
             {/* Page Header Ribbon */}
-            <div className="flex justify-between items-center pb-4 border-b border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 capitalize tracking-tight">
+                <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
                   {activeTab} Workspace
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">{description}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{description}</p>
               </div>
-              <div className="text-right">
+              <div className="flex items-center justify-between sm:justify-end gap-2">
                 <NavigationButtons />
               </div>
+            </div>
+
+            {/* Mobile Quick Navigation Pill Bar (< lg) */}
+            <div className="lg:hidden -mt-4 pb-2 overflow-x-auto scrollbar-none flex items-center gap-2 border-b border-slate-200/80">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onTabChange(item.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/30"
+                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                  >
+                    <Icon size={14} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Inner Dashboard Tabs Content */}

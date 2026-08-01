@@ -52,36 +52,36 @@ function HeroSection({}: Props) {
               Fast, secure, expert-led and hassle free.
             </p>
 
-            <div className="flex items-center border gap-2 border-neutral-300 h-13 max-w-[440px] w-full rounded-full overflow-hidden mt-6 mx-auto md:mx-0">
+            <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-[440px] w-full rounded-2xl sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full h-full pl-6 outline-none text-sm bg-transparent text-neutral-600"
+                className="w-full h-11 pl-4 sm:pl-5 outline-none text-sm bg-transparent text-neutral-600"
                 required
               />
               <Button
                 type="submit"
                 variant="primary"
-                className="w-56 h-10 rounded-full text-xs font-bold text-slate-50 cursor-pointer mr-1.5 shrink-0"
+                className="w-full sm:w-auto px-6 h-10 rounded-xl sm:rounded-full text-xs font-bold text-slate-50 cursor-pointer shrink-0"
               >
                 Subscribe now
               </Button>
             </div>
-            <p className="inline-flex gap-2 text-center lg:text-left text-sm text-neutral-600 mt-4">
-              Popular:{" "}
-              <span className="font-normal text-sm px-4 bg-gray-200 rounded-lg">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-center lg:text-left text-sm text-neutral-600 mt-4 mx-auto md:mx-0">
+              <span className="font-semibold text-xs text-neutral-500 uppercase tracking-wide">Popular:</span>
+              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
                 GST
-              </span>{" "}
-              <span className="font-normal text-sm px-4 bg-gray-200 rounded-lg">
+              </span>
+              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
                 FSSI
               </span>
-              <span className="font-normal text-sm px-4 bg-gray-200 rounded-lg">
+              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
                 MSME
               </span>
-              <span className="font-normal text-sm px-4 bg-gray-200 rounded-lg">
+              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
                 IEC
               </span>
-            </p>
+            </div>
 
             {/* Avatars + Stars */}
             <div className="flex items-center mt-10 mx-auto lg:mx-0">

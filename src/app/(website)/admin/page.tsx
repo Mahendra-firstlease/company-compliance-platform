@@ -35,11 +35,20 @@ import { getApplications, updateApplication, ApplicationCase } from "@/lib/appli
 import { notify } from "@/lib/notify";
 import SearchBar from "@/components/common/SearchBar";
 import { useModal } from "@/components/ui/overlay";
+import Drawer from "@/components/ui/overlay/drawer/Drawer";
+import apiFetch from "@/lib/apiClient";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Select from "@/components/forms/Select";
+import Textarea from "@/components/forms/Textarea";
+import StatusBadge from "@/components/common/StatusBadge";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const modal = useModal();
   const [cases, setCases] = useState<ApplicationCase[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -50,8 +59,19 @@ export default function AdminDashboardPage() {
   const [isUploadingCert, setIsUploadingCert] = useState(false);
 
   // Auto-poll applications from MySQL to get live real-time paid filings
+  const [specialists, setSpecialists] = useState<{ id: string; name: string; role: string }[]>([]);
+
   useEffect(() => {
     let active = true;
+
+    // Fetch dynamic team members from MySQL database
+    apiFetch<{ id: string; name: string; role: string }[]>("/admin/team")
+      .then((data) => {
+        if (active && Array.isArray(data)) {
+          setSpecialists(data);
+        }
+      })
+      .catch((err) => console.warn("Error fetching team specialists:", err));
 
     const loadCases = async () => {
       try {
@@ -104,6 +124,11 @@ export default function AdminDashboardPage() {
       return matchesSearch;
     });
   }, [cases, statusFilter, searchTerm]);
+
+  // Open Manage Case Dedicated Detail Workspace
+  const handleOpenManageCase = (caseId: string) => {
+    router.push(`/admin/applications/${caseId}`);
+  };
 
   // Handler functions
   const handleAssignOfficer = async (officer: string) => {
@@ -165,7 +190,6 @@ export default function AdminDashboardPage() {
 
     const submitCertificate = async () => {
       if (!uploadedFileUrl) {
-        // Fallback default sample certificate URL if no file picked
         uploadedFileUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
       }
 
@@ -293,12 +317,12 @@ export default function AdminDashboardPage() {
     <div className="space-y-6 animate-in fade-in duration-300">
       
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-6 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-2xs">
         <div>
           <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block">
             Backoffice Legal Operations Console
           </span>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Statutory Filings Queue & Case Management
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -306,7 +330,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>5s Live Sync Active</span>
@@ -315,28 +339,48 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPI Stats Counters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Total Paid Cases</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200/90 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Paid Cases</span>
+            <span className="p-1.5 rounded-md bg-slate-100 text-slate-600">
+              <ClipboardList size={14} />
+            </span>
+          </div>
           <p className="text-2xl font-black text-slate-900">{cases.length}</p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Under Review</span>
+        <div className="bg-gradient-to-br from-white to-indigo-50/40 border border-indigo-100 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Under Review</span>
+            <span className="p-1.5 rounded-md bg-indigo-100 text-indigo-600">
+              <Clock size={14} />
+            </span>
+          </div>
           <p className="text-2xl font-black text-indigo-600">
             {cases.filter((c) => c.status === "UNDER_REVIEW").length}
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Active Queries</span>
+        <div className="bg-gradient-to-br from-white to-amber-50/40 border border-amber-100 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Active Queries</span>
+            <span className="p-1.5 rounded-md bg-amber-100 text-amber-600">
+              <AlertTriangle size={14} />
+            </span>
+          </div>
           <p className="text-2xl font-black text-amber-600">
             {cases.filter((c) => Boolean(c.query)).length}
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Approved & Certificates Issued</span>
+        <div className="bg-gradient-to-br from-white to-emerald-50/40 border border-emerald-100 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Approved & Certs</span>
+            <span className="p-1.5 rounded-md bg-emerald-100 text-emerald-600">
+              <CheckCircle2 size={14} />
+            </span>
+          </div>
           <p className="text-2xl font-black text-emerald-600">
             {cases.filter((c) => c.status === "APPROVED").length}
           </p>
@@ -344,7 +388,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Search & Filter Controls using Reusable SearchBar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
         {/* Reusable SearchBar Component */}
         <div className="w-full sm:w-80">
           <SearchBar
@@ -357,7 +401,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
+        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto max-w-full scrollbar-none">
           {[
             { label: "All Cases", value: "ALL" },
             { label: "New Paid", value: "NEW_PAID" },
@@ -369,7 +413,7 @@ export default function AdminDashboardPage() {
             <button
               key={tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 statusFilter === tab.value
                   ? "bg-white text-indigo-600 shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -381,296 +425,313 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Grid Layout: Table (70%) vs Manage Case Drawer (30%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Table View */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ref ID</TableHead>
-                <TableHead>Service Title</TableHead>
-                <TableHead>Customer Details</TableHead>
-                <TableHead>Assigned Executive</TableHead>
-                <TableHead>Filing Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCases.map((row) => (
-                <TableRow
-                  key={row.id}
-                  onClick={() => setSelectedCaseId(row.id)}
-                  className="cursor-pointer"
-                >
-                  <TableCell className="font-mono text-xs font-bold text-slate-700 bg-slate-50">
-                    {row.id}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-bold text-slate-900">{row.serviceTitle}</p>
-                      <span className="text-[11px] text-slate-400">/{row.serviceSlug}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-bold text-slate-800">{row.customerName}</p>
-                      <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs font-medium text-slate-600">
-                      {row.assignedExecutive || "Unassigned"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        row.status === "APPROVED"
-                          ? "green"
-                          : row.status === "PAYMENT_CONFIRMED"
-                          ? "green"
-                          : row.query
-                          ? "yellow"
-                          : "indigo"
-                      }
-                      rounded="full"
-                      size="sm"
-                    >
-                      {row.query ? "QUERY PENDING" : row.status === "PAYMENT_CONFIRMED" ? "✓ PAYMENT CONFIRMED" : row.status.replace("_", " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant={selectedCaseId === row.id ? "primary" : "outline"}
-                      size="sm"
-                      className="text-xs font-bold"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedCaseId(row.id);
-                      }}
-                    >
-                      Manage Case
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Selected Case Management Panel */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-6 shadow-2xs">
-          {selectedCase ? (
-            <div className="space-y-6">
-              {/* Selected Case Header */}
-              <div className="flex justify-between items-start pb-4 border-b border-slate-100">
-                <div>
-                  <span className="font-mono text-xs font-bold text-slate-400">Ref: {selectedCase.id}</span>
-                  <h3 className="font-black text-base text-slate-900">{selectedCase.serviceTitle}</h3>
-                  <p className="text-xs text-slate-500 font-semibold">{selectedCase.customerName} &middot; {selectedCase.customerPhone}</p>
-                </div>
-                <Badge
-                  variant={selectedCase.status === "APPROVED" ? "green" : "indigo"}
-                  rounded="full"
-                  size="sm"
-                >
-                  {selectedCase.status.replace("_", " ")}
-                </Badge>
-              </div>
-
-              {/* Upload Certificate Action Button */}
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-emerald-800">
-                  <Award className="size-5 shrink-0" />
-                  <h4 className="font-bold text-xs">Official Certificate Issuance</h4>
-                </div>
-                <p className="text-[11px] text-emerald-700 leading-relaxed">
-                  Upload government-issued registration certificates to mark the application APPROVED and deliver files to the customer workspace.
-                </p>
-                <Button
-                  onClick={() => handleUploadCertificateModal(selectedCase)}
-                  variant="primary"
-                  size="sm"
-                  fullWidth
-                  className="font-bold text-xs py-2 bg-emerald-600 hover:bg-emerald-700 text-white border-0 flex items-center justify-center gap-1.5 cursor-pointer mt-1"
-                >
-                  <Upload className="size-4" />
-                  <span>Upload Certificate & Approve</span>
-                </Button>
-              </div>
-
-              {/* Uploaded User Documents List */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Uploaded Applicant Documents</label>
-                {Object.keys(selectedCase.uploadedDocs).length > 0 ? (
-                  <div className="space-y-2">
-                    {Object.entries(selectedCase.uploadedDocs).map(([docName, file]) => (
-                      <div
-                        key={docName}
-                        onClick={() => handleInspectDocument(docName, file)}
-                        className="p-3 bg-slate-50 border border-slate-200 hover:border-indigo-400 rounded-lg flex items-center justify-between text-xs cursor-pointer transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <FileText className="size-4 text-indigo-600 shrink-0" />
-                          <div>
-                            <p className="font-bold text-slate-800">{docName}</p>
-                            <p className="text-[10px] text-slate-400">{file.name}</p>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-indigo-600 hover:underline">Inspect</span>
-                      </div>
-                    ))}
+      {/* Desktop Datatable Queue View (sm+) */}
+      <div className="hidden sm:block bg-white border border-slate-200 rounded-lg overflow-x-auto max-w-full shadow-2xs">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Ref ID</TableHead>
+              <TableHead>Service Title</TableHead>
+              <TableHead>Customer Details</TableHead>
+              <TableHead>Assigned Executive</TableHead>
+              <TableHead>Filing Status</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCases.map((row) => (
+              <TableRow
+                key={row.id}
+                onClick={() => handleOpenManageCase(row.id)}
+                className="cursor-pointer hover:bg-slate-50/80 transition-colors"
+              >
+                <TableCell className="font-mono text-xs font-bold text-slate-700 bg-slate-50">
+                  {row.id}
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <p className="font-bold text-slate-900">{row.serviceTitle}</p>
+                    <span className="text-[11px] text-slate-400">/{row.serviceSlug}</span>
                   </div>
-                ) : (
-                  <p className="text-xs text-slate-400 italic">No applicant files uploaded yet.</p>
-                )}
-              </div>
-
-              {/* Assign Executive Section */}
-              <div className="space-y-2 border-t border-slate-100 pt-4">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Backoffice Specialist</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter CA/CS Executive Name..."
-                    value={assignedOfficer}
-                    onChange={(e) => setAssignedOfficer(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-medium text-slate-800 outline-none"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-bold text-xs shrink-0"
-                    onClick={() => handleAssignOfficer(assignedOfficer)}
-                  >
-                    Assign
-                  </Button>
-                </div>
-              </div>
-
-              {/* Filing Status Workflow Buttons */}
-              <div className="space-y-2 border-t border-slate-100 pt-4">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Advance Filing Stage</label>
-                
-                {selectedCase.query ? (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2.5">
-                    <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-xs text-amber-900">Active Query Pending Customer Action</h4>
-                      <p className="text-[11px] text-amber-700 mt-0.5">Clear active query below after customer uploads revised documents.</p>
-                    </div>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <p className="font-bold text-slate-800">{row.customerName}</p>
+                    <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-2">
-                    <Button
-                      variant={selectedCase.status === "UNDER_REVIEW" ? "primary" : "outline"}
-                      size="sm"
-                      fullWidth
-                      onClick={() => handleUpdateStatus("UNDER_REVIEW")}
-                      disabled={isUpdatingStatus !== null}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5"
-                      leftIcon={isUpdatingStatus === "UNDER_REVIEW" ? <Loader2 className="size-4 animate-spin" /> : <UserCheck className="size-4" />}
-                    >
-                      1. Move to Under Review (Verification)
-                    </Button>
-
-                    <Button
-                      variant={selectedCase.status === "SUBMITTED" ? "primary" : "outline"}
-                      size="sm"
-                      fullWidth
-                      onClick={() => handleUpdateStatus("SUBMITTED")}
-                      disabled={isUpdatingStatus !== null}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5"
-                      leftIcon={isUpdatingStatus === "SUBMITTED" ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                    >
-                      2. Mark Submitted to Ministry (Govt Filing)
-                    </Button>
-
-                    <Button
-                      variant={selectedCase.status === "APPROVED" ? "primary" : "outline"}
-                      size="sm"
-                      fullWidth
-                      onClick={() => handleUpdateStatus("APPROVED")}
-                      disabled={isUpdatingStatus !== null}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0"
-                      leftIcon={isUpdatingStatus === "APPROVED" ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
-                    >
-                      3. Approve & Issue Government Certificate
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Raise Query Action Box */}
-              <div className="space-y-3 border-t border-slate-100 pt-4">
-                <div className="flex justify-between items-center">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Raise Customer Query</label>
-                  {selectedCase.query && (
-                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                      Active Query
-                    </span>
-                  )}
-                </div>
-
-                <select
-                  onChange={(e) => {
-                    if (e.target.value) setQueryText(e.target.value);
-                  }}
-                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 outline-none font-medium"
-                >
-                  <option value="">Quick Query Templates...</option>
-                  <option value="Address proof blurred or unreadable. Please re-upload clear utility bill or lease agreement.">
-                    Address proof blurred or unreadable
-                  </option>
-                  <option value="PAN Card name does not match applicant full name. Please provide official name proof.">
-                    PAN Card name mismatch
-                  </option>
-                  <option value="Aadhaar Card front and back side scans missing. Please upload complete document.">
-                    Aadhaar front/back scans missing
-                  </option>
-                </select>
-
-                <textarea
-                  rows={2}
-                  value={queryText}
-                  onChange={(e) => setQueryText(e.target.value)}
-                  placeholder="Type specific query for client workspace..."
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 outline-none"
-                />
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    fullWidth
-                    onClick={handleRaiseQuery}
-                    className="font-bold text-xs py-2 bg-amber-600 hover:bg-amber-700 text-white border-0"
-                  >
-                    Raise Query Alert
-                  </Button>
-                  {selectedCase.query && (
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs font-medium text-slate-600">
+                    {row.assignedExecutive || "Unassigned"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleClearQuery}
-                      className="font-bold text-xs py-2 text-slate-600 shrink-0"
+                      className="text-xs font-bold cursor-pointer flex items-center gap-1.5 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300"
                     >
-                      Clear Query
+                      View Case Details <ArrowRight size={13} />
                     </Button>
-                  )}
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Mobile Stacked Card View (< sm) */}
+      <div className="sm:hidden space-y-3">
+        {filteredCases.map((row) => (
+          <div
+            key={row.id}
+            onClick={() => handleOpenManageCase(row.id)}
+            className="bg-white border border-slate-200/90 rounded-xl p-4 space-y-3 shadow-2xs hover:shadow-xs transition-all active:bg-slate-50 cursor-pointer"
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+              <span className="font-mono text-xs font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                {row.id}
+              </span>
+              <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
+            </div>
+
+            <div>
+              <h4 className="font-extrabold text-sm text-slate-900 leading-snug">{row.serviceTitle}</h4>
+              <p className="text-xs font-semibold text-slate-700 mt-1">{row.customerName}</p>
+              <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-[11px] text-slate-500 font-medium">
+                Officer: <strong className="text-slate-800">{row.assignedExecutive || "Unassigned"}</strong>
+              </span>
+              <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold text-indigo-700 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 min-h-[38px] px-3.5 flex items-center gap-1"
+                >
+                  View Details <ArrowRight size={12} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Official Project Vaul Drawer for Manage Case Details */}
+      <Drawer
+        open={isDrawerOpen && !!selectedCase}
+        onClose={() => setIsDrawerOpen(false)}
+        title={selectedCase ? `Manage Case Ref: ${selectedCase.id}` : "Manage Case"}
+        description={selectedCase ? `${selectedCase.serviceTitle} • ${selectedCase.customerName}` : ""}
+        direction="right"
+        className="max-w-xl"
+      >
+        {selectedCase && (
+          <div className="space-y-6">
+            {/* Selected Case Header */}
+            <div className="flex justify-between items-start pb-4 border-b border-slate-100">
+              <div>
+                <span className="font-mono text-xs font-bold text-slate-400">Ref ID: {selectedCase.id}</span>
+                <h3 className="font-black text-base text-slate-900">{selectedCase.serviceTitle}</h3>
+                <p className="text-xs text-slate-500 font-semibold">{selectedCase.customerName} &middot; {selectedCase.customerPhone}</p>
+                <div className="pt-2">
+                  <Link href={`/admin/applications/${selectedCase.id}`}>
+                    <Button variant="outline" size="sm" className="text-xs font-bold text-indigo-700 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 flex items-center gap-1.5 py-1.5 px-3">
+                      <span>Open Full Case Workspace</span>
+                      <ArrowRight size={13} />
+                    </Button>
+                  </Link>
                 </div>
               </div>
+              <StatusBadge status={selectedCase.query ? "QUERY_RAISED" : selectedCase.status} size="sm" />
             </div>
-          ) : (
-            <div className="text-center py-16 text-slate-400 space-y-2">
-              <ClipboardList className="size-8 mx-auto text-slate-300" />
-              <p className="text-xs font-bold text-slate-600">Select a case from the queue to manage filing stages.</p>
+
+            {/* Upload Certificate Action Button */}
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
+              <div className="flex items-center gap-2 text-emerald-800">
+                <Award className="size-5 shrink-0" />
+                <h4 className="font-bold text-xs">Official Certificate Issuance</h4>
+              </div>
+              <p className="text-[11px] text-emerald-700 leading-relaxed">
+                Upload government-issued registration certificates to mark the application APPROVED and deliver files to the customer workspace.
+              </p>
+              <Button
+                onClick={() => handleUploadCertificateModal(selectedCase)}
+                variant="primary"
+                size="sm"
+                fullWidth
+                className="font-bold text-xs py-2 bg-emerald-600 hover:bg-emerald-700 text-white border-0 flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+              >
+                <Upload className="size-4" />
+                <span>Upload Certificate & Approve</span>
+              </Button>
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Uploaded User Documents List */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Uploaded Applicant Documents</label>
+              {Object.keys(selectedCase.uploadedDocs).length > 0 ? (
+                <div className="space-y-2">
+                  {Object.entries(selectedCase.uploadedDocs).map(([docName, file]) => (
+                    <div
+                      key={docName}
+                      onClick={() => handleInspectDocument(docName, file)}
+                      className="p-3 bg-slate-50 border border-slate-200 hover:border-indigo-400 rounded-lg flex items-center justify-between text-xs cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText className="size-4 text-indigo-600 shrink-0" />
+                        <div>
+                          <p className="font-bold text-slate-800">{docName}</p>
+                          <p className="text-[10px] text-slate-400">{file.name}</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-indigo-600 hover:underline">Inspect</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No applicant files uploaded yet.</p>
+              )}
+            </div>
+
+            {/* Assign Executive Section */}
+            <div className="space-y-2 border-t border-slate-100 pt-4">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Backoffice Specialist (MySQL Database)</label>
+              <Select
+                value={assignedOfficer}
+                onChange={(val) => {
+                  setAssignedOfficer(val);
+                  handleAssignOfficer(val);
+                }}
+                placeholder="-- Select Specialist from Database --"
+                options={[
+                  { label: "-- Select Specialist from Database --", value: "" },
+                  { label: "Unassigned (Clear Assignment)", value: "Unassigned" },
+                  ...specialists.map((spec) => ({
+                    label: `${spec.name} — ${spec.role}`,
+                    value: `${spec.name} (${spec.role})`,
+                  })),
+                ]}
+              />
+            </div>
+
+            {/* Filing Status Workflow Buttons */}
+            <div className="space-y-2 border-t border-slate-100 pt-4">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Advance Filing Stage</label>
+              
+              {selectedCase.query ? (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2.5">
+                  <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-xs text-amber-900">Active Query Pending Customer Action</h4>
+                    <p className="text-[11px] text-amber-700 mt-0.5">Clear active query below after customer uploads revised documents.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2">
+                  <Button
+                    variant={selectedCase.status === "UNDER_REVIEW" ? "primary" : "outline"}
+                    size="sm"
+                    fullWidth
+                    onClick={() => handleUpdateStatus("UNDER_REVIEW")}
+                    disabled={isUpdatingStatus !== null}
+                    className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer"
+                    leftIcon={isUpdatingStatus === "UNDER_REVIEW" ? <Loader2 className="size-4 animate-spin" /> : <UserCheck className="size-4" />}
+                  >
+                    1. Move to Under Review (Verification)
+                  </Button>
+
+                  <Button
+                    variant={selectedCase.status === "SUBMITTED" ? "primary" : "outline"}
+                    size="sm"
+                    fullWidth
+                    onClick={() => handleUpdateStatus("SUBMITTED")}
+                    disabled={isUpdatingStatus !== null}
+                    className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer"
+                    leftIcon={isUpdatingStatus === "SUBMITTED" ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                  >
+                    2. Mark Submitted to Ministry (Govt Filing)
+                  </Button>
+
+                  <Button
+                    variant={selectedCase.status === "APPROVED" ? "primary" : "outline"}
+                    size="sm"
+                    fullWidth
+                    onClick={() => handleUpdateStatus("APPROVED")}
+                    disabled={isUpdatingStatus !== null}
+                    className="rounded-lg justify-start font-bold text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer"
+                    leftIcon={isUpdatingStatus === "APPROVED" ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
+                  >
+                    3. Approve & Issue Government Certificate
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Raise Query Action Box */}
+            <div className="space-y-3 border-t border-slate-100 pt-4">
+              <div className="flex justify-between items-center">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Raise Customer Query</label>
+                {selectedCase.query && (
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Active Query
+                  </span>
+                )}
+              </div>
+
+              <Select
+                onChange={(val) => {
+                  if (val) setQueryText(val);
+                }}
+                placeholder="Quick Query Templates..."
+                options={[
+                  { label: "Quick Query Templates...", value: "" },
+                  { label: "Address proof blurred or unreadable", value: "Address proof blurred or unreadable. Please re-upload clear utility bill or lease agreement." },
+                  { label: "PAN Card name mismatch", value: "PAN Card name does not match applicant full name. Please provide official name proof." },
+                  { label: "Aadhaar Card front & back missing", value: "Aadhaar Card front and back side scans missing. Please upload complete document." },
+                ]}
+              />
+
+              <Textarea
+                rows={2}
+                value={queryText}
+                onChange={(e) => setQueryText(e.target.value)}
+                placeholder="Type specific query for client workspace..."
+                className="text-xs p-2.5 bg-slate-50 border-slate-200"
+              />
+
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  fullWidth
+                  onClick={handleRaiseQuery}
+                  className="font-bold text-xs py-2 bg-amber-600 hover:bg-amber-700 text-white border-0 cursor-pointer"
+                >
+                  Raise Query Alert
+                </Button>
+                {selectedCase.query && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearQuery}
+                    className="font-bold text-xs py-2 text-slate-600 shrink-0 cursor-pointer"
+                  >
+                    Clear Query
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
 
     </div>
   );

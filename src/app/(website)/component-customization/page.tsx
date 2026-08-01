@@ -32,7 +32,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import FileUpload from "@/components/forms/FileUpload";
+import { FileUpload, MultiFileUpload } from "@/components/upload";
 import Badge from "@/components/ui/Badge/Badge";
 import {
   Tabs as UITabs,
@@ -1864,15 +1864,34 @@ import { fileUploadSchema } from "@/schemas/file.schema";
 
 // Demo helper wrapper state component
 function FileUploadDemo() {
-  const [file, setFile] = useState<any>(null);
+  const [singleFile, setSingleFile] = useState<any>(null);
+  const [multiFiles, setMultiFiles] = useState<any[]>([]);
+
   return (
-    <FileUpload
-      value={file}
-      onChange={setFile}
-      onView={() => alert(`Viewing file: ${file.name}`)}
-      allowedTypes={["pdf", "png", "jpg"]}
-      maxSizeMb={2}
-      label="Attach Identity KYC Proof"
-    />
+    <div className="space-y-6">
+      <div>
+        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">1. Single File Upload</h4>
+        <FileUpload
+          value={singleFile}
+          onChange={setSingleFile}
+          onView={() => alert(`Viewing file: ${singleFile?.name}`)}
+          allowedTypes={["pdf", "png", "jpg"]}
+          maxSizeMb={2}
+          label="Identity KYC Proof (Single File)"
+        />
+      </div>
+
+      <div className="border-t border-slate-200 pt-4">
+        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">2. Multi-File Upload Field</h4>
+        <MultiFileUpload
+          value={multiFiles}
+          onChange={setMultiFiles}
+          allowedTypes={["pdf", "png", "jpg", "jpeg"]}
+          maxSizeMb={5}
+          maxFiles={5}
+          label="Supporting Property Documents (Up to 5 files)"
+        />
+      </div>
+    </div>
   );
 }

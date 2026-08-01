@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { verifyPaymentSchema } from "@/schemas/api-schemas";
 import { handleApiError, handleValidationError } from "@/lib/api-response";
+import { sendPaymentReceiptEmail } from "@/lib/emailService";
 
 export async function POST(req: Request) {
   try {
@@ -97,6 +98,26 @@ export async function POST(req: Request) {
           });
         }
       });
+
+      // Send automated React Email tax payment receipt asynchronously
+      (async () => {
+        try {
+          const user = await prisma.user.findUnique({ where: { id: userId } });
+          const firstApp = await prisma.application.findUnique({ where: { id: applicationIds[0] } });
+          if (user?.email) {
+            await sendPaymentReceiptEmail({
+              to: user.email,
+              userName: user.name || "Valued Client",
+              serviceName: firstApp?.serviceTitle || "Compliance Service Filing",
+              amount: amount || perAppAmount,
+              transactionId: razorpay_payment_id,
+              orderId: razorpay_order_id,
+            });
+          }
+        } catch (emailErr) {
+          console.error("[VerifyPayment] Error sending receipt email:", emailErr);
+        }
+      })();
     }
 
     return NextResponse.json({

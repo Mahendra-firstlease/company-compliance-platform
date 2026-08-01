@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "http://localhost:3000",
     "https://assets.prebuiltui.com",
-    "192.168.1.14",
+    "192.168.1.15",
+
   ],
   images: {
     formats: ["image/avif", "image/webp"],

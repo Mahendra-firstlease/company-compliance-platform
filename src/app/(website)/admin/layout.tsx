@@ -9,6 +9,7 @@ import {
   DollarSign,
   FolderOpen,
   Users,
+  PhoneCall,
   UserCheck,
   BarChart3,
 } from "lucide-react";
@@ -27,11 +28,12 @@ export default function AdminRoutesLayout({
   // Admin menu configuration
   const menuItems: SidebarItem[] = useMemo(() => [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "users", label: "Users", icon: Users },
     { id: "applications", label: "Applications", icon: ClipboardList },
     { id: "services", label: "Services", icon: Briefcase },
     { id: "pricing", label: "Pricing", icon: DollarSign },
     { id: "documents", label: "Documents", icon: FolderOpen },
-    { id: "crm", label: "CRM / Leads", icon: Users },
+    { id: "crm", label: "CRM / Leads", icon: PhoneCall },
     { id: "team", label: "Team", icon: UserCheck },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
   ], []);
@@ -39,7 +41,7 @@ export default function AdminRoutesLayout({
   // Map the active pathname back to the tab ID
   const activeTab = useMemo(() => {
     if (pathname === "/admin") return "overview";
-    const sub = pathname.replace("/admin/", "");
+    const sub = pathname.split("/")[2]; // e.g. /admin/users or /admin/users/123 -> 'users'
     const matched = menuItems.find((item) => item.id === sub);
     return matched ? matched.id : "overview";
   }, [pathname, menuItems]);
@@ -55,6 +57,7 @@ export default function AdminRoutesLayout({
   // Determine dynamic description for admin sub-page workspace headers
   const description = useMemo(() => {
     if (activeTab === "overview") return "MCA statutory filings & business registrations queues.";
+    if (activeTab === "users") return "Directory of registered clients, business profiles, and applied services.";
     if (activeTab === "applications") return "Verify documents, query cases, and issue licenses.";
     if (activeTab === "services") return "Configure statutory corporate filing products catalog.";
     if (activeTab === "pricing") return "Setup government filing fees and professional margins.";

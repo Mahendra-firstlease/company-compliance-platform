@@ -84,8 +84,8 @@ export default function DashboardSidebar({
                     : "text-slate-500 hover:bg-slate-100/75 hover:text-primary",
                   // Padding depending on collapse state
                   isCollapsed && !mobileMenuOpen
-                    ? "justify-center py-3 px-2"
-                    : "px-3.5 py-2.5"
+                    ? "justify-center py-3 px-2 min-h-[44px]"
+                    : "px-3.5 py-3 min-h-[44px]"
                 )}
                 title={isCollapsed && !mobileMenuOpen ? item.label : undefined}
               >

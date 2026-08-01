@@ -28,16 +28,34 @@ export default function MultiServiceCheckoutModal({
   const router = useRouter();
   const { data: session } = useSession();
 
+  // Local state for instant modal reactive updates upon deletion
+  const [servicesList, setServicesList] = useState<Service[]>(selectedServices);
   const [contactName, setContactName] = useState(session?.user?.name || "");
   const [contactPhone, setContactPhone] = useState((session?.user as any)?.phone || "");
   const [businessAddress, setBusinessAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
 
-  const totalFee = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const totalFee = servicesList.reduce((sum, s) => sum + s.price, 0);
+
+  const handleRemoveItem = (slugOrId: string) => {
+    const updated = servicesList.filter((s) => s.slug !== slugOrId && s.id !== slugOrId);
+    setServicesList(updated);
+    if (onRemoveService) {
+      onRemoveService(slugOrId);
+    }
+    if (updated.length === 0) {
+      onCancel();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (servicesList.length === 0) {
+      notify.error({ title: "No Services Selected", description: "Please select at least one service." });
+      return;
+    }
 
     if (!contactName || !contactPhone) {
       notify.error({
@@ -55,7 +73,7 @@ export default function MultiServiceCheckoutModal({
 
     notify.loading({
       title: "Initiating Batch Payment...",
-      description: "Preparing order for " + selectedServices.length + " compliance services.",
+      description: "Preparing order for " + servicesList.length + " compliance services.",
     });
 
     try {
@@ -77,8 +95,8 @@ export default function MultiServiceCheckoutModal({
           amount: totalFee * 100, // in paise
           currency: "INR",
           notes: {
-            batchCount: String(selectedServices.length),
-            services: selectedServices.map((s) => s.slug).join(", "),
+            batchCount: String(servicesList.length),
+            services: servicesList.map((s) => s.slug).join(", "),
             userId: loggedInUserId,
             userEmail: loggedInUserEmail,
           },
@@ -96,7 +114,7 @@ export default function MultiServiceCheckoutModal({
       }
 
       const { order_id, amount, currency, key } = orderData;
-      const appIds = selectedServices.map((s) => `COMP-${s.id}0${Math.floor(1000 + Math.random() * 9000)}`);
+      const appIds = servicesList.map((s) => `COMP-${s.id}0${Math.floor(1000 + Math.random() * 9000)}`);
 
       // 3. Open Official Razorpay Checkout Modal
       const options = {
@@ -104,7 +122,7 @@ export default function MultiServiceCheckoutModal({
         amount,
         currency: currency || "INR",
         name: "Compliance Platform India",
-        description: `Bundled Package Payment (${selectedServices.length} Services)`,
+        description: `Bundled Package Payment (${servicesList.length} Services)`,
         order_id,
         prefill: {
           name: contactName,
@@ -122,7 +140,7 @@ export default function MultiServiceCheckoutModal({
 
           try {
             // Save Applications in DB with explicit logged in user ID and email
-            const appPromises = selectedServices.map((service, idx) => {
+            const appPromises = servicesList.map((service, idx) => {
               return saveApplication({
                 id: appIds[idx],
                 userId: loggedInUserId,
@@ -159,13 +177,13 @@ export default function MultiServiceCheckoutModal({
 
             notify.success({
               title: "Package Payment Confirmed! 🎉",
-              description: `Initiated filings for ${selectedServices.length} services. Payment ID: ${response.razorpay_payment_id}`,
+              description: `Initiated filings for ${servicesList.length} services. Payment ID: ${response.razorpay_payment_id}`,
             });
           } catch (err: any) {
             console.error("Batch payment handler warning:", err);
             notify.success({
               title: "Package Payment Confirmed! 🎉",
-              description: `Initiated filings for ${selectedServices.length} services. Navigating to dashboard...`,
+              description: `Initiated filings for ${servicesList.length} services. Navigating to dashboard...`,
             });
           } finally {
             setIsSubmitting(false);
@@ -231,7 +249,7 @@ export default function MultiServiceCheckoutModal({
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-800">
-              Combined Statutory Checkout ({selectedServices.length} Services)
+              Combined Statutory Checkout ({servicesList.length} Services)
             </h3>
             <p className="text-xs text-slate-500">
               Single invoice and bundled filing initiation for selected compliance services.
@@ -256,10 +274,14 @@ export default function MultiServiceCheckoutModal({
 
       {/* Selected Items List */}
       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          Package Summary:
-        </span>
-        {selectedServices.map((s) => (
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Package Summary ({servicesList.length} Services):
+          </span>
+          <span className="text-xs font-bold text-indigo-700">Total: ₹{totalFee}</span>
+        </div>
+
+        {servicesList.map((s) => (
           <div
             key={s.id || s.slug}
             className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg text-xs"
@@ -270,16 +292,14 @@ export default function MultiServiceCheckoutModal({
             </div>
             <div className="flex items-center gap-3">
               <span className="font-bold text-slate-900">₹{s.price}</span>
-              {onRemoveService && selectedServices.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => onRemoveService(s.id || s.slug)}
-                  className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                  title="Remove from package"
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => handleRemoveItem(s.slug || s.id)}
+                className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors p-1.5 cursor-pointer"
+                title="Remove from package"
+              >
+                <Trash2 className="size-4" />
+              </button>
             </div>
           </div>
         ))}
@@ -288,7 +308,7 @@ export default function MultiServiceCheckoutModal({
       {/* Pricing Summary Block */}
       <div className="p-4 bg-indigo-50/60 rounded-lg border border-indigo-100 space-y-1">
         <div className="flex justify-between items-center text-xs text-slate-600">
-          <span>Subtotal ({selectedServices.length} services):</span>
+          <span>Subtotal ({servicesList.length} services):</span>
           <span className="font-bold text-slate-900">₹{totalFee}</span>
         </div>
         <div className="flex justify-between items-center text-sm font-black text-indigo-950 pt-1 border-t border-indigo-100">
@@ -342,7 +362,7 @@ export default function MultiServiceCheckoutModal({
           Cancel
         </Button>
 
-        <Button type="submit" variant="primary" disabled={isSubmitting} className="flex items-center gap-2 cursor-pointer">
+        <Button type="submit" variant="primary" disabled={isSubmitting || servicesList.length === 0} className="flex items-center gap-2 cursor-pointer">
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" />

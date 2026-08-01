@@ -41,9 +41,14 @@ export async function GET(
       );
     }
 
+    const formDataObj = (application.formData as Record<string, any>) || {};
     const formatted = {
       ...application,
       query: application.queryText || undefined,
+      queryResponse: formDataObj._queryResponse || undefined,
+      queryStatus: formDataObj._queryStatus || (application.queryText ? "QUERY_RAISED" : "RESOLVED"),
+      clientResponseFiles: formDataObj._clientResponseFiles || [],
+      queryHistory: formDataObj._queryHistory || [],
       assignedExecutive: application.assignedExecutive?.name || application.assignedExecutiveId || undefined,
       uploadedDocs: formatApplicationDocuments(application.documents),
     };
@@ -86,6 +91,24 @@ export async function PATCH(
     if (payload.address) updateData.address = payload.address;
     if (payload.formData) updateData.formData = payload.formData;
     if (payload.query !== undefined) updateData.queryText = payload.query;
+
+    // Merge query workflow metadata into formData object
+    if (
+      payload.queryResponse !== undefined ||
+      payload.queryStatus !== undefined ||
+      payload.clientResponseFiles !== undefined ||
+      payload.queryHistory !== undefined
+    ) {
+      const existingApp = await prisma.application.findUnique({ where: { id } });
+      const currentForm = (payload.formData || existingApp?.formData || {}) as Record<string, any>;
+      updateData.formData = {
+        ...currentForm,
+        ...(payload.queryResponse !== undefined && { _queryResponse: payload.queryResponse }),
+        ...(payload.queryStatus !== undefined && { _queryStatus: payload.queryStatus }),
+        ...(payload.clientResponseFiles !== undefined && { _clientResponseFiles: payload.clientResponseFiles }),
+        ...(payload.queryHistory !== undefined && { _queryHistory: payload.queryHistory }),
+      };
+    }
 
     if (payload.assignedExecutive !== undefined) {
       if (!payload.assignedExecutive || payload.assignedExecutive === "Unassigned") {
@@ -132,6 +155,16 @@ export async function PATCH(
         type: "QUERY_RAISED",
         queryText: payload.query,
       });
+    } else if (payload.queryStatus === "CLIENT_RESPONDED") {
+      await sendApplicationNotification({
+        applicationId: updatedApp.id,
+        serviceTitle: updatedApp.serviceTitle,
+        customerName: updatedApp.customerName,
+        customerPhone: updatedApp.customerPhone,
+        userEmail: updatedApp.user?.email || undefined,
+        type: "QUERY_RESPONDED",
+        clientReply: payload.queryResponse,
+      });
     } else if (payload.status === "APPROVED") {
       await sendApplicationNotification({
         applicationId: updatedApp.id,
@@ -154,9 +187,14 @@ export async function PATCH(
       });
     }
 
+    const updatedFormDataObj = (updatedApp.formData as Record<string, any>) || {};
     const formatted = {
       ...updatedApp,
       query: updatedApp.queryText || undefined,
+      queryResponse: updatedFormDataObj._queryResponse || undefined,
+      queryStatus: updatedFormDataObj._queryStatus || (updatedApp.queryText ? "QUERY_RAISED" : "RESOLVED"),
+      clientResponseFiles: updatedFormDataObj._clientResponseFiles || [],
+      queryHistory: updatedFormDataObj._queryHistory || [],
       assignedExecutive: updatedApp.assignedExecutive?.name || updatedApp.assignedExecutiveId || undefined,
       uploadedDocs: formatApplicationDocuments(updatedApp.documents),
     };

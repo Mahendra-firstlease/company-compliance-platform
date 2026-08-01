@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ClipboardList,
   AlertCircle,
+  AlertTriangle,
   Clock,
   CheckCircle2,
   ArrowRight,
@@ -17,6 +18,7 @@ import {
 import Button from "@/components/common/Button";
 import Badge from "@/components/ui/Badge/Badge";
 import FieldValue from "@/components/common/FieldValue";
+import QueryResponseModal from "@/components/forms/QueryResponseModal";
 import {
   Card,
   CardHeader,
@@ -57,6 +59,7 @@ export default function UserDashboardPage() {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [dbNotifications, setDbNotifications] = useState<DbNotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeQueryCase, setActiveQueryCase] = useState<ApplicationCase | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -201,22 +204,38 @@ export default function UserDashboardPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end">
                       <Badge
                         variant={
                           c.status === "APPROVED"
                             ? "green"
-                            : c.queryNote || c.query
-                              ? "red"
-                              : "indigo"
+                            : c.queryStatus === "CLIENT_RESPONDED"
+                              ? "indigo"
+                              : c.queryNote || c.query
+                                ? "red"
+                                : "indigo"
                         }
                         rounded="full"
                         size="sm"
                       >
-                        {c.queryNote || c.query
-                          ? "ACTION REQUIRED"
-                          : c.status.replace(/_/g, " ")}
+                        {c.queryStatus === "CLIENT_RESPONDED"
+                          ? "CLIENT RESPONDED"
+                          : c.queryNote || c.query
+                            ? "ACTION REQUIRED"
+                            : c.status.replace(/_/g, " ")}
                       </Badge>
+
+                      {(c.query || c.queryNote) && c.queryStatus !== "CLIENT_RESPONDED" && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setActiveQueryCase(c)}
+                          className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1.5 shadow-2xs"
+                        >
+                          <AlertTriangle size={12} /> Respond to Query
+                        </Button>
+                      )}
+
                       <Link href={`/applications/${c.serviceSlug}`}>
                         <Button
                           variant="outline"
@@ -432,6 +451,17 @@ export default function UserDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Query Response Modal */}
+      <QueryResponseModal
+        application={activeQueryCase}
+        isOpen={!!activeQueryCase}
+        onClose={() => setActiveQueryCase(null)}
+        onSuccess={async () => {
+          const list = await getApplications();
+          setCases(list);
+        }}
+      />
     </div>
   );
 }

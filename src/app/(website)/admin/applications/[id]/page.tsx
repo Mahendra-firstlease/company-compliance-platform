@@ -330,24 +330,60 @@ export default function AdminApplicationDetailPage() {
               <CardDescription>Update filing lifecycle, manage customer queries, or issue certificates.</CardDescription>
             </CardHeader>
             <CardContent className="p-5 space-y-5">
-              {application.query ? (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-                  <AlertTriangle className="size-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="space-y-2 flex-1">
-                    <div>
-                      <h4 className="font-bold text-xs text-amber-900">Active Query Alert Pending Customer Response</h4>
-                      <p className="text-xs text-amber-800 mt-1 bg-amber-100/60 p-2 rounded border border-amber-200 font-mono">
-                        "{application.query}"
-                      </p>
+              {application.query || application.queryResponse ? (
+                <div className="space-y-4">
+                  <div className={`p-4 rounded-xl border space-y-3 ${application.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-50/80 border-teal-200" : "bg-amber-50/80 border-amber-200"}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className={`size-5 ${application.queryStatus === "CLIENT_RESPONDED" ? "text-teal-600" : "text-amber-600"}`} />
+                        <div>
+                          <h4 className={`font-bold text-xs ${application.queryStatus === "CLIENT_RESPONDED" ? "text-teal-950" : "text-amber-900"}`}>
+                            {application.queryStatus === "CLIENT_RESPONDED"
+                              ? "✅ Client Responded to Active Query"
+                              : "⚠️ Active Query Alert Pending Customer Response"}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 font-mono">
+                            Query: "{application.query || application.queryNote}"
+                          </p>
+                        </div>
+                      </div>
+                      <StatusBadge status={application.queryStatus || "QUERY_RAISED"} size="sm" />
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleClearQuery}
-                      className="text-xs font-bold bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
-                    >
-                      Clear Active Query Warning
-                    </Button>
+
+                    {/* Render Client Written Response & Uploaded Files if Client Responded */}
+                    {application.queryResponse && (
+                      <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          <span>Applicant Written Clarification:</span>
+                        </div>
+                        <p className="text-slate-800 font-semibold bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                          "{application.queryResponse}"
+                        </p>
+
+                        {application.clientResponseFiles && application.clientResponseFiles.length > 0 && (
+                          <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                            <span className="font-bold text-[11px] text-slate-600 block">Re-uploaded Document(s):</span>
+                            <div className="flex flex-wrap gap-2">
+                              {application.clientResponseFiles.map((file: any, idx: number) => (
+                                <FieldValue key={idx} value={file} compact />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClearQuery}
+                        className="text-xs font-bold bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50"
+                        leftIcon={<CheckCircle className="size-4 text-emerald-600" />}
+                      >
+                        Approve & Mark Query Resolved
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -405,9 +441,11 @@ export default function AdminApplicationDetailPage() {
                   placeholder="Quick Query Templates..."
                   options={[
                     { label: "Quick Query Templates...", value: "" },
-                    { label: "Address proof blurred or unreadable", value: "Address proof blurred or unreadable. Please re-upload clear utility bill or lease agreement." },
-                    { label: "PAN Card name mismatch", value: "PAN Card name does not match applicant full name. Please provide official name proof." },
-                    { label: "Aadhaar Card front & back missing", value: "Aadhaar Card front and back side scans missing. Please upload complete document." },
+                    { label: "📄 Address proof blurred or unreadable", value: "Address proof blurred or unreadable. Please re-upload clear utility bill or registered lease agreement." },
+                    { label: "🆔 PAN Card name mismatch", value: "PAN Card name does not match applicant full legal name. Please provide official name change proof or gazette copy." },
+                    { label: "📑 Aadhaar Card front & back missing", value: "Aadhaar Card front and back side scans missing. Please upload complete document." },
+                    { label: "🏬 FSSAI / Premises NOC Missing", value: "Premises No Objection Certificate (NOC) or electricity bill copy missing for business address verification." },
+                    { label: "✍️ Signature Scan Invalid", value: "Specimen signature scan blurred or has colored background. Please upload clear black ink signature on white paper." },
                   ]}
                 />
 
@@ -545,6 +583,55 @@ export default function AdminApplicationDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Card: Query Communication Audit Log & History */}
+          {application.queryHistory && application.queryHistory.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                    <AlertTriangle className="size-4 text-amber-500" />
+                    Query Communication History Log ({application.queryHistory.length})
+                  </CardTitle>
+                  <CardDescription>Chronological log of queries raised, specialist notes, and customer responses.</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="p-5">
+                <div className="space-y-3">
+                  {application.queryHistory.map((item, idx) => (
+                    <div key={item.id || idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-amber-900 bg-amber-100/70 px-2 py-0.5 rounded text-[11px]">
+                          Officer Query: "{item.queryText}"
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {item.respondedAt ? new Date(item.respondedAt).toLocaleDateString("en-IN") : "Pending"}
+                        </span>
+                      </div>
+
+                      {item.clientReply && (
+                        <div className="p-2.5 bg-white rounded-lg border border-slate-200 text-slate-800 space-y-1.5">
+                          <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider block">Customer Reply:</span>
+                          <p className="font-medium italic text-slate-900">"{item.clientReply}"</p>
+
+                          {item.clientFiles && item.clientFiles.length > 0 && (
+                            <div className="pt-1.5 border-t border-slate-100 space-y-1">
+                              <span className="text-[10px] font-bold text-slate-500 block">Attached File(s):</span>
+                              <div className="flex flex-wrap gap-2">
+                                {item.clientFiles.map((f: any, fIdx: number) => (
+                                  <FieldValue key={fIdx} value={f} compact />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Card 3: Submitted Verification Documents Vault */}
           <Card>

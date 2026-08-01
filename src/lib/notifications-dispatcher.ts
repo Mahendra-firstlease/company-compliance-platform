@@ -12,9 +12,10 @@ export interface NotificationPayload {
   customerPhone: string;
   userEmail?: string;
   userId?: string;
-  type: "STATUS_CHANGE" | "QUERY_RAISED" | "APPROVED";
+  type: "STATUS_CHANGE" | "QUERY_RAISED" | "QUERY_RESPONDED" | "APPROVED";
   newStatus?: ApplicationStatus;
   queryText?: string;
+  clientReply?: string;
 }
 
 /**
@@ -40,6 +41,10 @@ export async function sendApplicationNotification(payload: NotificationPayload) 
       messageTitle = "Clarification Required";
       messageText = `A query was raised on your ${payload.serviceTitle} filing: "${payload.queryText}". Please upload revised documents.`;
       notifType = "WARNING";
+    } else if (payload.type === "QUERY_RESPONDED") {
+      messageTitle = "Client Responded to Query";
+      messageText = `Client ${payload.customerName} submitted a response and attached documents for ${payload.serviceTitle}.`;
+      notifType = "INFO";
     } else if (payload.type === "APPROVED") {
       messageTitle = "Statutory Certificate Issued";
       messageText = `Your ${payload.serviceTitle} filing has been APPROVED! Your official certificate is available in your workspace.`;

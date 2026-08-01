@@ -31,6 +31,17 @@ export interface IssuedCertificate {
   issuedDate: string;
 }
 
+export interface QueryHistoryEntry {
+  id: string;
+  queryText: string;
+  raisedBy?: string;
+  createdAt: string;
+  clientReply?: string;
+  clientFiles?: Array<{ name: string; url: string; size?: string }>;
+  respondedAt?: string;
+  status: "QUERY_RAISED" | "CLIENT_RESPONDED" | "RESOLVED";
+}
+
 export interface ApplicationCase {
   id: string;
   userId?: string;
@@ -51,6 +62,10 @@ export interface ApplicationCase {
   issuedCertificates?: IssuedCertificate[];
   queryNote?: string;
   query?: string;
+  queryResponse?: string;
+  queryStatus?: "QUERY_RAISED" | "CLIENT_RESPONDED" | "RESOLVED";
+  clientResponseFiles?: Array<{ name: string; url: string; size?: string }>;
+  queryHistory?: QueryHistoryEntry[];
   adminNote?: string;
   assignedExecutive?: string;
   governmentFee?: number;

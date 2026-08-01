@@ -141,7 +141,7 @@ export default function AdminApplicationsPage() {
         header: "Status",
         accessorKey: "status",
         cell: (row) => (
-          <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
+          <StatusBadge status={row.queryStatus || (row.query ? "QUERY_RAISED" : row.status)} size="sm" />
         ),
       },
       {
@@ -186,7 +186,7 @@ export default function AdminApplicationsPage() {
               <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                 {row.id}
               </span>
-              <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
+              <StatusBadge status={row.queryStatus || (row.query ? "QUERY_RAISED" : row.status)} size="sm" />
             </div>
             <div>
               <p className="font-extrabold text-sm text-slate-900 leading-snug">{row.serviceTitle}</p>

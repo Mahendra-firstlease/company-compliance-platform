@@ -69,6 +69,11 @@ const statusMap: Record<string, StatusConfig> = {
     badgeClass: "bg-orange-50 text-orange-700 border-orange-200",
     icon: AlertTriangle,
   },
+  CLIENT_RESPONDED: {
+    label: "Client Responded",
+    badgeClass: "bg-teal-50 text-teal-800 border-teal-300",
+    icon: CheckCircle2,
+  },
   PAYMENT_PENDING: {
     label: "Pay Pending",
     badgeClass: "bg-amber-50 text-amber-800 border-amber-200",

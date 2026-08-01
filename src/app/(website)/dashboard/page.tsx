@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Button from "@/components/common/Button";
 import Badge from "@/components/ui/Badge/Badge";
+import FieldValue from "@/components/common/FieldValue";
 import {
   Card,
   CardHeader,
@@ -191,10 +192,10 @@ export default function UserDashboardPage() {
                         Ref ID: <span className="font-mono text-slate-600">{c.id}</span> &middot; Filed {formatDate(c.createdAt)}
                       </p>
                       {c.formData && Object.keys(c.formData).length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
+                        <div className="flex flex-wrap gap-1.5 pt-1 items-center">
                           {Object.entries(c.formData).slice(0, 3).map(([k, v]) => (
-                            <span key={k} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
-                              {k}: <strong className="text-slate-800">{String(v)}</strong>
+                            <span key={k} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono inline-flex items-center gap-1">
+                              {k}: <span className="font-bold text-slate-800"><FieldValue value={v} compact /></span>
                             </span>
                           ))}
                         </div>

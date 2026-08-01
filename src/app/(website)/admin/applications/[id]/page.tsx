@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Button from "@/components/common/Button";
 import StatusBadge from "@/components/common/StatusBadge";
+import FieldValue from "@/components/common/FieldValue";
 import Select from "@/components/forms/Select";
 import Textarea from "@/components/forms/Textarea";
 import Input from "@/components/forms/Input";
@@ -531,9 +532,9 @@ export default function AdminApplicationDetailPage() {
                       <span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider block">
                         {k.replace(/([A-Z])/g, " $1")}
                       </span>
-                      <span className="font-bold text-xs text-slate-900 font-mono block break-words">
-                        {String(v)}
-                      </span>
+                      <div className="font-bold text-xs text-slate-900 font-mono block break-words">
+                        <FieldValue value={v} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -660,7 +661,9 @@ export default function AdminApplicationDetailPage() {
                       {Object.entries(application.formData).map(([k, v]) => (
                         <div key={k} className="flex justify-between items-center text-slate-700 gap-2">
                           <span className="font-medium text-slate-500 truncate">{k}:</span>
-                          <span className="font-bold text-slate-900 truncate max-w-44">{String(v)}</span>
+                          <div className="font-bold text-slate-900 text-right truncate max-w-56">
+                            <FieldValue value={v} compact />
+                          </div>
                         </div>
                       ))}
                     </div>

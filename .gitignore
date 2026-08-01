@@ -58,6 +58,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Project documentation
-# (PROJECT_INFO.md and AUDIT_REPORT.md are tracked in Git)
+# Private documentation & artifacts
+PROJECT_INFO.md
+AUDIT_REPORT.md
 

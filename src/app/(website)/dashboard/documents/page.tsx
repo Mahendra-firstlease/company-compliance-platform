@@ -4,12 +4,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   FileText,
   ShieldCheck,
-  Download,
   Eye,
   CheckCircle2,
   Lock,
   ExternalLink,
-  Sparkles,
   RefreshCw,
   PlusCircle,
   FileCheck2,
@@ -19,8 +17,8 @@ import Button from "@/components/common/Button";
 import SearchBar from "@/components/common/SearchBar";
 import Badge from "@/components/ui/Badge/Badge";
 import { ServicesGridSkeleton } from "@/components/ui/skeletons";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { getApplications, ApplicationCase, UploadedFile } from "@/lib/applications";
+import { Card, CardContent } from "@/components/ui/card";
+import { getApplications, ApplicationCase } from "@/lib/applications";
 import { notify } from "@/lib/notify";
 
 interface VaultDocument {
@@ -78,6 +76,7 @@ export default function UserDocumentsVaultPage() {
             serviceSlug: c.serviceSlug,
             applicationId: c.id,
             status: c.status === "APPROVED" ? "VERIFIED" : "REGISTERED",
+            fileUrl: file.url,
             uploadedAt: new Date(c.createdAt).toLocaleDateString("en-IN", {
               day: "numeric",
               month: "short",
@@ -261,6 +260,29 @@ export default function UserDocumentsVaultPage() {
                     {doc.serviceTitle}
                   </span>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedDoc(doc)}
+                  className="group relative h-24 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/50"
+                  title={`Preview ${doc.fileName}`}
+                >
+                  {doc.fileUrl && /\.(png|jpe?g|webp)$/i.test(doc.fileName) ? (
+                    <img
+                      src={doc.fileUrl}
+                      alt={`Preview of ${doc.fileName}`}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center gap-2 text-slate-500">
+                      <FileText className="size-7 text-indigo-500" />
+                      <span className="text-[11px] font-bold">{doc.fileType.includes("PDF") ? "PDF document" : "Document"}</span>
+                    </div>
+                  )}
+                  <span className="absolute inset-x-0 bottom-0 bg-slate-950/70 px-2 py-1 text-center text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    Click to preview
+                  </span>
+                </button>
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
@@ -270,7 +292,7 @@ export default function UserDocumentsVaultPage() {
                   <button
                     onClick={() => setSelectedDoc(doc)}
                     className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors cursor-pointer"
-                    title="Inspect file"
+                          title="Preview file"
                   >
                     <Eye className="size-4" />
                   </button>
@@ -332,6 +354,29 @@ export default function UserDocumentsVaultPage() {
               </button>
             </div>
 
+            <div className="h-72 overflow-hidden rounded-lg border border-slate-200 bg-slate-950">
+              {selectedDoc.fileUrl ? (
+                /\.(png|jpe?g|webp)$/i.test(selectedDoc.fileName) ? (
+                  <img
+                    src={selectedDoc.fileUrl}
+                    alt={`Preview of ${selectedDoc.fileName}`}
+                    className="size-full object-contain"
+                  />
+                ) : (
+                  <iframe
+                    src={selectedDoc.fileUrl}
+                    title={`Preview of ${selectedDoc.fileName}`}
+                    className="size-full border-0 bg-white"
+                  />
+                )
+              ) : (
+                <div className="flex size-full flex-col items-center justify-center gap-2 text-center text-slate-300">
+                  <FileText className="size-8" />
+                  <p className="text-xs font-semibold">A preview is not available for this file.</p>
+                </div>
+              )}
+            </div>
+
             <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-4 space-y-3 text-xs">
               <div>
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">Document Type</span>
@@ -364,15 +409,18 @@ export default function UserDocumentsVaultPage() {
                   Open Workspace
                 </Button>
               </Link>
-
-              <Button
-                onClick={() => setSelectedDoc(null)}
-                variant="primary"
-                size="sm"
-                className="text-xs font-bold"
-              >
-                Close Preview
-              </Button>
+              <div className="flex items-center gap-2">
+                {selectedDoc.fileUrl && (
+                  <a href={selectedDoc.fileUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="primary" size="sm" className="text-xs font-bold">
+                      Open full file
+                    </Button>
+                  </a>
+                )}
+                <Button onClick={() => setSelectedDoc(null)} variant="outline" size="sm" className="text-xs font-bold">
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         </div>

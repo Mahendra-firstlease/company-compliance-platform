@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import DashboardHeader from "./DashboardHeader";
 import DashboardFooter from "./DashboardFooter";
 import DashboardSidebar from "./DashboardSidebar";
@@ -35,6 +36,7 @@ export default function DashboardLayout({
   children,
   headerTheme = "slate",
 }: DashboardLayoutProps) {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -82,19 +84,21 @@ export default function DashboardLayout({
 
         {/* Main Content Area & Footer wrapper */}
         <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[calc(100vh-64px)] bg-slate-50/50">
-          <main className="p-4 sm:p-6 md:p-8 space-y-8 overflow-x-hidden flex-1 min-w-0">
-            {/* Page Header Ribbon */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
-              <div>
-                <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
-                  {activeTab} Workspace
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+          <main className="p-3.5 sm:p-6 md:p-8 space-y-6 sm:space-y-8 overflow-x-hidden flex-1 min-w-0">
+            {/* Page Header Ribbon (Rendered for top-level admin tabs only) */}
+            {pathname.split("/").filter(Boolean).length <= 2 && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
+                    {activeTab} Workspace
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+                </div>
+                <div className="flex items-center justify-between sm:justify-end gap-2">
+                  <NavigationButtons />
+                </div>
               </div>
-              <div className="flex items-center justify-between sm:justify-end gap-2">
-                <NavigationButtons />
-              </div>
-            </div>
+            )}
 
             {/* Mobile Quick Navigation Pill Bar (< lg) */}
             <div className="lg:hidden -mt-4 pb-2 overflow-x-auto scrollbar-none flex items-center gap-2 border-b border-slate-200/80">

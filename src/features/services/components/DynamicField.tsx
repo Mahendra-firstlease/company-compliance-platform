@@ -18,7 +18,17 @@ interface DynamicFieldProps {
 }
 
 export default function DynamicField({ field, control, errors, disabled = false }: DynamicFieldProps) {
-  const errorMessage = errors[field.id]?.message as string | undefined;
+  const fieldError = errors[field.id];
+  const errorMessage =
+    (fieldError?.message as string | undefined) ||
+    (field.type === "front-back-file" &&
+      typeof fieldError === "object" &&
+      fieldError !== null &&
+      [
+        (fieldError as { frontUrl?: { message?: string } }).frontUrl?.message,
+        (fieldError as { backUrl?: { message?: string } }).backUrl?.message,
+      ].find(Boolean)) ||
+    undefined;
   const isFieldDisabled = disabled || field.disabled;
 
   switch (field.type) {
@@ -59,6 +69,26 @@ export default function DynamicField({ field, control, errors, disabled = false 
                 placeholder={field.placeholder}
                 disabled={isFieldDisabled}
                 rows={3}
+              />
+            </FormGroup>
+          )}
+        />
+      );
+    }
+
+    case "date": {
+      return (
+        <Controller
+          name={field.id}
+          control={control}
+          defaultValue={field.defaultValue || ""}
+          render={({ field: controllerField }) => (
+            <FormGroup label={field.label} required={field.required} error={errorMessage}>
+              <Input
+                {...controllerField}
+                type="date"
+                disabled={isFieldDisabled}
+                readOnly={field.readOnly}
               />
             </FormGroup>
           )}

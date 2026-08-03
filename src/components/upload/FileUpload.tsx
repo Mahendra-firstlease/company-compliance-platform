@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { notify } from "@/lib/notify";
-import { UploadedFile, processSingleFileUpload } from "./upload-utils";
+import { UploadedFile, processSingleFileUpload, deleteUploadedFile } from "./upload-utils";
 import UploadDropzone from "./UploadDropzone";
 import UploadPreview from "./UploadPreview";
 import UploadProgress from "./UploadProgress";
@@ -38,6 +38,11 @@ export default function FileUpload({
     const file = files[0];
     if (!file) return;
 
+    // Purge old S3 object if user is replacing an already uploaded file
+    if (value?.key || value?.url) {
+      deleteUploadedFile(value.key || value.url).catch(() => {});
+    }
+
     setLocalError(null);
     setIsUploading(true);
 
@@ -61,7 +66,11 @@ export default function FileUpload({
     }
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    // Automatically purge old file from AWS S3 bucket upon removal
+    if (value?.key || value?.url) {
+      deleteUploadedFile(value.key || value.url).catch(() => {});
+    }
     setLocalError(null);
     if (onChange) {
       onChange(null);

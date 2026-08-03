@@ -33,27 +33,39 @@ export async function POST(request: Request) {
     const applicationId = formData.get("applicationId") as string | null;
 
     if (!file) {
+      console.warn("⚠️ [SERVER UPLOAD REJECT]: No file attached in request payload.");
       return NextResponse.json({ error: "No file attached in request payload." }, { status: 400 });
     }
+
+    console.log("📥 [SERVER UPLOAD REQUEST RECEIVED]:", {
+      fileName: file.name,
+      fileSizeMB: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+      docName,
+      applicationId: applicationId || "None (Standalone)",
+      userId,
+      userRole,
+    });
 
     // 1. Verify Application Ownership & Existence if applicationId provided
     if (applicationId) {
       let appCase = null;
-      if ((prisma as any).applicationCase) {
-        appCase = await (prisma as any).applicationCase.findUnique({
+      if ((prisma as any).application) {
+        appCase = await (prisma as any).application.findUnique({
           where: { id: applicationId },
           select: { id: true, userId: true },
         });
       }
 
       if (!appCase) {
+        console.warn(`⚠️ [SERVER UPLOAD REJECT]: Application ID '${applicationId}' not found.`);
         return NextResponse.json(
           { error: `Filing application ID '${applicationId}' not found.` },
           { status: 404 }
         );
       }
 
-      if (appCase.userId !== userId && userRole !== "ADMIN") {
+      if (appCase.userId !== userId && userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+        console.warn(`⚠️ [SERVER UPLOAD FORBIDDEN]: User '${userId}' does not own application '${applicationId}'.`);
         return NextResponse.json(
           { error: "Forbidden. You do not own this application case." },
           { status: 403 }
@@ -68,6 +80,7 @@ export async function POST(request: Request) {
       maxSizeMb: 5,
     });
     if (!metaCheck.isValid) {
+      console.warn("⚠️ [SERVER UPLOAD REJECT - METADATA]:", metaCheck.error);
       return NextResponse.json({ error: metaCheck.error || "Invalid file format or size." }, { status: 400 });
     }
 
@@ -77,10 +90,17 @@ export async function POST(request: Request) {
     const ext = path.extname(sanitized).replace(".", "").toLowerCase();
     const magicCheck = verifyMagicBytes(buffer, ext);
     if (!magicCheck.isValid) {
+      console.warn("⚠️ [SERVER UPLOAD REJECT - MAGIC BYTES]:", magicCheck.error);
       return NextResponse.json({ error: magicCheck.error || "File signature verification failed." }, { status: 400 });
     }
 
     const checksum = calculateChecksum(buffer);
+
+    console.log("🔒 [SERVER UPLOAD SECURITY VERIFIED]:", {
+      sanitized,
+      checksum,
+      magicBytesValid: true,
+    });
 
     // 4. Save to Private Storage (Outside /public) or S3 Storage via AWS SDK PutObjectCommand
     const s3Result = await uploadToS3Storage(file, "compliance-documents", {
@@ -100,6 +120,13 @@ export async function POST(request: Request) {
       await fs.writeFile(filePath, buffer);
       s3Result.fileUrl = `/storage/documents/${localFileName}`;
     }
+
+    console.log("🎉 [SERVER UPLOAD SUCCESSFUL]:", {
+      fileUrl: s3Result.fileUrl,
+      fileName: s3Result.fileName,
+      storageMode: s3Result.isMock ? "Local Storage (/storage/documents)" : "AWS S3 Bucket",
+      checksum,
+    });
 
     // 5. Create Document Record with PENDING_REVIEW Status
     let dbDocument = null;
@@ -149,24 +176,56 @@ export async function POST(request: Request) {
       throw dbErr;
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        fileUrl: s3Result.fileUrl,
-        fileName: s3Result.fileName,
-        fileSizeBytes: s3Result.fileSizeBytes,
-        fileSize: s3Result.fileSize,
-        fileType: s3Result.fileType,
-        checksum,
-        documentId: dbDocument?.id || null,
-        status: "PENDING_REVIEW",
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      id: dbDocument?.id || `doc_${Date.now()}`,
+      fileUrl: s3Result.fileUrl,
+      fileName: s3Result.fileName,
+      fileSize: s3Result.fileSize,
+      fileType: s3Result.fileType,
+      key: s3Result.key,
+      checksum: s3Result.checksum,
+      isMock: s3Result.isMock,
+    });
   } catch (error) {
     if (createdFilePath) {
-      await cleanupUploadedFile(createdFilePath);
+      cleanupUploadedFile(createdFilePath).catch(() => {});
     }
-    return handleApiError(error, "Failed to process document upload.");
+    return handleApiError(error, "Failed to upload document.");
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const key = searchParams.get("key");
+    const documentId = searchParams.get("documentId");
+
+    if (!key && !documentId) {
+      return NextResponse.json({ error: "File key or documentId required for deletion." }, { status: 400 });
+    }
+
+    if (key) {
+      await deleteFromS3Storage(key);
+    }
+
+    if (documentId && (prisma as any).document) {
+      try {
+        await (prisma as any).document.delete({
+          where: { id: documentId },
+        });
+      } catch (dbErr) {
+        console.warn("[Document Delete Notice]: Document record already removed or unlinked.");
+      }
+    }
+
+    return NextResponse.json({ success: true, message: "File removed successfully." }, { status: 200 });
+  } catch (error) {
+    return handleApiError(error, "Failed to delete document.");
   }
 }

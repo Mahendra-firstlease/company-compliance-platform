@@ -34,13 +34,14 @@ export default function DynamicForm({
     handleSubmit,
     getValues,
     reset,
-    formState: { errors },
+    watch,
+    formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(dynamicSchema),
     defaultValues: initialValues || {},
   });
 
-  // Restore saved draft on client mount
+  // Restore saved draft on client mount (restores text fields + uploaded S3 file URLs)
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem(`draft_${config.serviceSlug}`);
@@ -53,6 +54,23 @@ export default function DynamicForm({
     }
   }, [config.serviceSlug, reset, initialValues]);
 
+  // Real-time automatic draft auto-save on form value changes
+  const formValues = watch();
+
+  React.useEffect(() => {
+    if (!isDirty) return;
+    const timeoutId = setTimeout(() => {
+      try {
+        const storageKey = `draft_${config.serviceSlug}`;
+        localStorage.setItem(storageKey, JSON.stringify(formValues));
+      } catch (err) {
+        // Silently ignore storage quota errors
+      }
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [formValues, isDirty, config.serviceSlug]);
+
   const handleSaveDraft = () => {
     try {
       const currentData = getValues();
@@ -61,7 +79,7 @@ export default function DynamicForm({
 
       notify.success({
         title: "Draft Saved! 💾",
-        description: "Your application progress has been saved to your local workspace.",
+        description: "Your application progress and uploaded document S3 links have been saved.",
       });
     } catch (err) {
       notify.error({
@@ -73,6 +91,7 @@ export default function DynamicForm({
 
   const handleFormSubmit = async (data: Record<string, any>) => {
     try {
+      console.log("Submitting form data:", data);
       await onSubmit(data);
       // Clean up saved draft upon successful submission
       localStorage.removeItem(`draft_${config.serviceSlug}`);
@@ -81,8 +100,18 @@ export default function DynamicForm({
     }
   };
 
+  const handleInvalidSubmit = (formErrors: typeof errors) => {
+    const firstError = Object.values(formErrors).find((entry) => entry?.message);
+    notify.error({
+      title: "Please fix the highlighted fields",
+      description:
+        (firstError?.message as string | undefined) ||
+        "Some required fields are missing or invalid.",
+    });
+  };
+
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit, handleInvalidSubmit)} className="space-y-6">
       {/* Locked Status Notice Banner */}
       {disabled && (
         <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2.5">

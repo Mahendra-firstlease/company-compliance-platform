@@ -65,6 +65,7 @@ export const createApplicationSchema = z.object({
   governmentFee: z.number().nonnegative().optional(),
   professionalFee: z.number().nonnegative().optional(),
   totalFee: z.number().positive("Total fee must be a positive number."),
+  uploadedDocs: z.record(z.string(), z.any()).optional(),
 });
 
 export const updateApplicationSchema = z.object({

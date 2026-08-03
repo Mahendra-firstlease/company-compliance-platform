@@ -32,7 +32,16 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(notifications, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
+    const errorMsg = error?.message || "";
+    if (
+      errorMsg.includes("Timed out fetching a new connection") ||
+      errorMsg.includes("connection pool") ||
+      error?.code === "P2024"
+    ) {
+      console.warn("[Prisma Pool Deferred]: Connection pool busy, deferring notifications fetch.");
+      return NextResponse.json([], { status: 200 });
+    }
     return handleApiError(error, "Failed to fetch user notifications.");
   }
 }

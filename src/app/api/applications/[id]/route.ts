@@ -4,7 +4,11 @@ import { ApplicationStatus } from "@prisma/client";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { updateApplicationSchema } from "@/schemas/api-schemas";
 import { handleApiError, handleValidationError } from "@/lib/api-response";
-import { formatApplicationDocuments } from "@/lib/applications";
+import {
+  extractUploadedDocuments,
+  formatApplicationDocuments,
+  formatStoredUploadMetadata,
+} from "@/lib/applications";
 import { sendApplicationNotification } from "@/lib/notifications-dispatcher";
 
 export async function GET(
@@ -50,7 +54,10 @@ export async function GET(
       clientResponseFiles: formDataObj._clientResponseFiles || [],
       queryHistory: formDataObj._queryHistory || [],
       assignedExecutive: application.assignedExecutive?.name || application.assignedExecutiveId || undefined,
-      uploadedDocs: formatApplicationDocuments(application.documents),
+      uploadedDocs: {
+        ...formatStoredUploadMetadata(extractUploadedDocuments(formDataObj)),
+        ...formatApplicationDocuments(application.documents),
+      },
     };
 
     return NextResponse.json(formatted, { status: 200 });
@@ -89,7 +96,13 @@ export async function PATCH(
     if (payload.customerName) updateData.customerName = payload.customerName;
     if (payload.customerPhone) updateData.customerPhone = payload.customerPhone;
     if (payload.address) updateData.address = payload.address;
-    if (payload.formData) updateData.formData = payload.formData;
+    if (payload.formData) {
+      const currentForm = (payload.formData || {}) as Record<string, any>;
+      updateData.formData = {
+        ...currentForm,
+        ...(payload.formData._uploadedDocs ? { _uploadedDocs: payload.formData._uploadedDocs } : {}),
+      };
+    }
     if (payload.query !== undefined) updateData.queryText = payload.query;
 
     // Merge query workflow metadata into formData object
@@ -134,9 +147,47 @@ export async function PATCH(
       }
     }
 
+    const uploadedDocs = (payload.formData?._uploadedDocs || {}) as Record<string, {
+      name?: unknown;
+      size?: unknown;
+      type?: unknown;
+      url?: unknown;
+    }>;
+    const existingDocuments = await prisma.document.findMany({
+      where: { applicationId: id },
+      select: { fileUrl: true },
+    });
+    const existingUrls = new Set(existingDocuments.map((document) => document.fileUrl));
+    const documentsToCreate = Object.entries(uploadedDocs).flatMap(([docName, file]) => {
+      if (
+        typeof file?.name !== "string" ||
+        typeof file?.url !== "string" ||
+        !file.url ||
+        file.url.startsWith("blob:") ||
+        existingUrls.has(file.url)
+      ) {
+        return [];
+      }
+
+      existingUrls.add(file.url);
+      return [{
+        docName,
+        fileName: file.name,
+        fileUrl: file.url,
+        fileSize: String(file.size || "Unknown"),
+        fileType: typeof file.type === "string" ? file.type : "Document",
+        status: "PENDING_REVIEW",
+      }];
+    });
+
     const updatedApp = await prisma.application.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        ...(documentsToCreate.length > 0
+          ? { documents: { create: documentsToCreate } }
+          : {}),
+      },
       include: {
         documents: true,
         assignedExecutive: true,
@@ -196,7 +247,10 @@ export async function PATCH(
       clientResponseFiles: updatedFormDataObj._clientResponseFiles || [],
       queryHistory: updatedFormDataObj._queryHistory || [],
       assignedExecutive: updatedApp.assignedExecutive?.name || updatedApp.assignedExecutiveId || undefined,
-      uploadedDocs: formatApplicationDocuments(updatedApp.documents),
+      uploadedDocs: {
+        ...formatStoredUploadMetadata(extractUploadedDocuments(updatedFormDataObj)),
+        ...formatApplicationDocuments(updatedApp.documents),
+      },
     };
 
     return NextResponse.json(formatted, { status: 200 });

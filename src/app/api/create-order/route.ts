@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createOrderSchema } from "@/schemas/api-schemas";
 import { handleApiError, handleValidationError } from "@/lib/api-response";
 
 export async function POST(req: Request) {
   try {
+    // 0. Block Admin users from purchasing client services
+    const session = await getServerSession(authOptions);
+    if (session?.user && (session.user as any).role === "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden. Admin accounts are restricted from purchasing client service packages." },
+        { status: 403 }
+      );
+    }
+
     // 1. Rate Limiting Check
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
     const rateLimit = checkRateLimit(`create_order:${ip}`, RATE_LIMIT_CONFIGS.publicApi);

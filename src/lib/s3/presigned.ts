@@ -58,3 +58,32 @@ export async function getPresignedUploadUrl(
     expiresInSeconds,
   };
 }
+
+/**
+ * Generate temporary presigned S3 download URL for secure file viewing.
+ * Prevents AWS S3 AccessDenied XML errors for private objects.
+ */
+export async function getPresignedDownloadUrl(
+  key: string,
+  expiresInSeconds = 3600 // 1 hour
+): Promise<string> {
+  const config = getS3Config();
+  const client = getS3Client();
+
+  if (!client || !config.hasCredentials) {
+    return `/storage/${key}`;
+  }
+
+  try {
+    const { GetObjectCommand } = await import("@aws-sdk/client-s3");
+    const command = new GetObjectCommand({
+      Bucket: config.bucketName,
+      Key: key,
+    });
+
+    return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+  } catch (err) {
+    console.error("[AWS S3 Presigned Download Error]:", err);
+    return `https://${config.bucketName}.s3.${config.region}.amazonaws.com/${key}`;
+  }
+}

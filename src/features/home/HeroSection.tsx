@@ -11,10 +11,14 @@ type Props = {
 function HeroSection({}: Props) {
   return (
     <>
-      <Section className="w-full bg-linear-to from-indigo-50/80 via-slate-50 to-blue-50/60 border-b border-slate-200/80 px-4 pb-10">
+      <Section
+      id="home"
+      className="w-full bg-cover bg-center bg-no-repeat bg-linear-to from-indigo-50/80 via-slate-50 to-blue-50/60 border-b border-slate-200/80 px-4 pb-10 heroSection-bg"
+      >
         <Container className="container flex flex-col-reverse md:flex-row items-center justify-between gap-8">
           {/* Left */}
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-start" 
+          >
             <a
               href="#"
               className="flex items-center gap-2 bg-primary-light border border-primary-border rounded-full p-1 pr-3 text-sm mx-auto md:mx-0 mt-20"
@@ -52,7 +56,7 @@ function HeroSection({}: Props) {
               Fast, secure, expert-led and hassle free.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-[440px] w-full rounded-2xl sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">
+            <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-2xl sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">
               <input
                 type="email"
                 placeholder="Enter your email"

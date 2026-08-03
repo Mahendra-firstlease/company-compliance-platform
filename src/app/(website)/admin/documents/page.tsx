@@ -28,6 +28,7 @@ interface AdminDocument {
   docName: string;
   fileName: string;
   fileUrl: string;
+  viewUrl: string;
   fileSize: string | number;
   fileType: string;
   status: string;
@@ -40,6 +41,8 @@ export default function AdminDocumentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [docTypeFilter, setDocTypeFilter] = useState("ALL");
   const [selectedDoc, setSelectedDoc] = useState<AdminDocument | null>(null);
+  const isImageDocument = (document: AdminDocument) =>
+    /\.(png|jpe?g|webp)$/i.test(document.fileName);
 
   const fetchDocuments = async () => {
     setIsLoading(true);
@@ -69,6 +72,7 @@ export default function AdminDocumentsPage() {
         doc.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.docName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doc.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.applicationId.toLowerCase().includes(searchTerm.toLowerCase());
 
       if (docTypeFilter === "ALL") return matchesSearch;
@@ -174,9 +178,21 @@ export default function AdminDocumentsPage() {
                   <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold shrink-0">
-                          <FileText className="size-4" />
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDoc(doc)}
+                          className="group relative size-12 shrink-0 overflow-hidden rounded-lg border border-indigo-100 bg-slate-950 text-indigo-300"
+                          title={`Preview ${doc.fileName}`}
+                        >
+                          {isImageDocument(doc) ? (
+                            <img src={doc.viewUrl} alt={`Preview of ${doc.fileName}`} className="size-full object-cover" />
+                          ) : (
+                            <FileText className="absolute inset-0 m-auto size-5" />
+                          )}
+                          <span className="absolute inset-0 flex items-center justify-center bg-slate-950/55 opacity-0 transition-opacity group-hover:opacity-100">
+                            <Eye className="size-4 text-white" />
+                          </span>
+                        </button>
                         <div>
                           <p className="font-bold text-slate-900">{doc.fileName}</p>
                           <span className="text-[11px] text-slate-400 font-semibold">{doc.docName}</span>
@@ -186,6 +202,7 @@ export default function AdminDocumentsPage() {
 
                     <td className="p-4">
                       <p className="font-bold text-slate-800">{doc.customerName}</p>
+                      <p className="text-[11px] text-slate-500">{doc.userEmail}</p>
                       <p className="text-[11px] font-mono text-slate-400">{doc.applicationId}</p>
                     </td>
 
@@ -221,11 +238,11 @@ export default function AdminDocumentsPage() {
                           className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
                         >
                           <Eye className="size-3.5" />
-                          <span>Inspect</span>
+                          <span>Preview</span>
                         </button>
 
                         <a
-                          href={doc.fileUrl}
+                          href={doc.viewUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
@@ -258,7 +275,7 @@ export default function AdminDocumentsPage() {
       {/* Document Inspector Modal */}
       {selectedDoc && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-lg max-w-2xl w-full p-6 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white border border-slate-200 rounded-xl max-w-4xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
@@ -277,6 +294,22 @@ export default function AdminDocumentsPage() {
               >
                 ✕
               </button>
+            </div>
+
+            <div className="h-[42vh] min-h-72 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 p-2">
+              {isImageDocument(selectedDoc) ? (
+                <img
+                  src={selectedDoc.viewUrl}
+                  alt={`Preview of ${selectedDoc.fileName}`}
+                  className="size-full object-contain"
+                />
+              ) : (
+                <iframe
+                  src={selectedDoc.viewUrl}
+                  title={`Preview of ${selectedDoc.fileName}`}
+                  className="size-full rounded border-0 bg-white"
+                />
+              )}
             </div>
 
             {/* Document Info Card */}
@@ -310,7 +343,7 @@ export default function AdminDocumentsPage() {
                 </span>
 
                 <a
-                  href={selectedDoc.fileUrl}
+                  href={selectedDoc.viewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"

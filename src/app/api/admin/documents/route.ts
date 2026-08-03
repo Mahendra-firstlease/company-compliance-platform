@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { handleApiError } from "@/lib/api-response";
+import {
+  extractUploadedDocuments,
+  formatStoredUploadMetadata,
+} from "@/lib/applications";
 
 export async function GET(request: Request) {
   try {
@@ -32,9 +36,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const filterType = searchParams.get("type") || "ALL";
+    const userId = searchParams.get("userId") || undefined;
+    const userFilter = userId ? { userId } : undefined;
 
     // 3. Fetch all documents from Prisma DB with relational details
     const dbDocuments = await prisma.document.findMany({
+      where: userFilter,
       include: {
         application: {
           select: {
@@ -60,6 +67,7 @@ export async function GET(request: Request) {
     });
 
     const dbApplications = await prisma.application.findMany({
+      where: userFilter,
       include: {
         documents: true,
         user: true,
@@ -71,9 +79,11 @@ export async function GET(request: Request) {
 
     const documentList: any[] = [];
     const seenIds = new Set<string>();
+    const seenUrls = new Set<string>();
 
     dbDocuments.forEach((doc) => {
       seenIds.add(doc.id);
+      seenUrls.add(doc.fileUrl);
       documentList.push({
         id: doc.id,
         applicationId: doc.applicationId,
@@ -85,6 +95,9 @@ export async function GET(request: Request) {
         docName: doc.docName,
         fileName: doc.fileName,
         fileUrl: doc.fileUrl,
+        viewUrl: doc.fileUrl.startsWith("/storage/")
+          ? `/api/documents/${doc.id}`
+          : doc.fileUrl,
         fileSize: doc.fileSize,
         fileType: doc.fileType,
         status: doc.status || "PENDING",
@@ -107,12 +120,44 @@ export async function GET(request: Request) {
             docName: doc.docName,
             fileName: doc.fileName,
             fileUrl: doc.fileUrl,
+            viewUrl: doc.fileUrl.startsWith("/storage/")
+              ? `/api/documents/${doc.id}`
+              : doc.fileUrl,
             fileSize: doc.fileSize,
             fileType: doc.fileType,
             status: doc.status || "PENDING",
             createdAt: doc.createdAt,
           });
         }
+      });
+
+      // Older applications stored upload metadata in formData before a Document
+      // relation was created. Read that database data so admins can still review
+      // every client's file, while avoiding duplicates for persisted records.
+      const storedUploads = formatStoredUploadMetadata(
+        extractUploadedDocuments((app.formData as Record<string, unknown>) || {}),
+      );
+      Object.entries(storedUploads).forEach(([docName, file]) => {
+        if (!file.url || seenUrls.has(file.url)) return;
+
+        seenUrls.add(file.url);
+        documentList.push({
+          id: `stored-${app.id}-${docName}`,
+          applicationId: app.id,
+          serviceTitle: app.serviceTitle,
+          serviceSlug: app.serviceSlug,
+          customerName: app.customerName,
+          customerPhone: app.customerPhone,
+          userEmail: app.user?.email || "N/A",
+          docName,
+          fileName: file.name,
+          fileUrl: file.url,
+          viewUrl: file.url,
+          fileSize: file.size,
+          fileType: file.type,
+          status: "PENDING_REVIEW",
+          createdAt: app.updatedAt,
+        });
       });
     });
 

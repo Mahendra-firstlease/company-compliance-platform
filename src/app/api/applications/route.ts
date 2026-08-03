@@ -6,7 +6,11 @@ import { authOptions } from "@/lib/auth";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createApplicationSchema } from "@/schemas/api-schemas";
 import { handleApiError, handleValidationError } from "@/lib/api-response";
-import { formatApplicationDocuments } from "@/lib/applications";
+import {
+  extractUploadedDocuments,
+  formatApplicationDocuments,
+  formatStoredUploadMetadata,
+} from "@/lib/applications";
 
 export async function GET(request: Request) {
   try {
@@ -19,19 +23,26 @@ export async function GET(request: Request) {
     const userRole = (session.user as any).role as string;
     const isAdminOrExec = userRole === "ADMIN" || userRole === "EXECUTIVE";
 
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-    const rateLimit = checkRateLimit(`get_apps:${ip}`, RATE_LIMIT_CONFIGS.userApi);
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(
+      `get_apps:${ip}`,
+      RATE_LIMIT_CONFIGS.userApi,
+    );
 
     if (!rateLimit.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait a minute." },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get("limit") || "50", 10)),
+    );
     const skip = (page - 1) * limit;
 
     // Regular users see ONLY their own applications; Admins/Execs see all applications
@@ -51,11 +62,18 @@ export async function GET(request: Request) {
     });
 
     const formatted = applications.map((app) => {
+      const savedUploads = formatStoredUploadMetadata(
+        extractUploadedDocuments((app.formData as Record<string, unknown>) || {}),
+      );
       return {
         ...app,
         query: app.queryText || undefined,
-        assignedExecutive: app.assignedExecutive?.name || app.assignedExecutiveId || undefined,
-        uploadedDocs: formatApplicationDocuments(app.documents),
+        assignedExecutive:
+          app.assignedExecutive?.name || app.assignedExecutiveId || undefined,
+        uploadedDocs: {
+          ...savedUploads,
+          ...formatApplicationDocuments(app.documents),
+        },
       };
     });
 
@@ -67,13 +85,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-    const rateLimit = checkRateLimit(`post_app:${ip}`, RATE_LIMIT_CONFIGS.userApi);
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(
+      `post_app:${ip}`,
+      RATE_LIMIT_CONFIGS.userApi,
+    );
 
     if (!rateLimit.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later." },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -131,9 +153,7 @@ export async function POST(request: Request) {
 
     let targetService = await prisma.service.findFirst({
       where: {
-        OR: [
-          { slug: payload.serviceSlug },
-        ],
+        OR: [{ slug: payload.serviceSlug }],
       },
     });
 
@@ -143,7 +163,8 @@ export async function POST(request: Request) {
           id: payload.serviceSlug || `service-${Date.now()}`,
           slug: payload.serviceSlug,
           title: payload.serviceTitle || "Statutory Service",
-          shortDescription: payload.serviceTitle || "Statutory Service Application",
+          shortDescription:
+            payload.serviceTitle || "Statutory Service Application",
           description: payload.serviceTitle || "Statutory Service Application",
           image: "/images/services/incorporation.jpg",
           price: payload.totalFee,
@@ -153,10 +174,17 @@ export async function POST(request: Request) {
         },
       });
     }
+    const formDataPayload = {
+      ...(payload as Record<string, any>),
+      ...(payload.uploadedDocs ? { _uploadedDocs: payload.uploadedDocs } : {}),
+    };
 
+    // Save new client service application in MySQL Database
     const newApp = await prisma.application.create({
       data: {
-        id: payload.id || `COMP-${targetService.id}0${Math.floor(1000 + Math.random() * 9000)}`,
+        id:
+          payload.id ||
+          `COMP-${targetService.id}0${Math.floor(1000 + Math.random() * 9000)}`,
         userId: finalUserId,
         serviceId: targetService.id,
         serviceSlug: targetService.slug,
@@ -165,8 +193,10 @@ export async function POST(request: Request) {
         customerName: payload.customerName,
         customerPhone: payload.customerPhone,
         address: payload.address || "",
+        formData: formDataPayload,
         governmentFee: payload.governmentFee || targetService.governmentFee,
-        professionalFee: payload.professionalFee || targetService.professionalFee,
+        professionalFee:
+          payload.professionalFee || targetService.professionalFee,
         totalFee: payload.totalFee || targetService.price,
       },
     });

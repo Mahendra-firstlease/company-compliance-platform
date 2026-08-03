@@ -6,6 +6,88 @@ import {
 } from "@/types";
 import apiFetch from "@/lib/apiClient";
 
+export function buildApplicationFormDataPayload(
+  formData: Record<string, any>,
+  uploadedDocs?: Record<string, UploadedFile | null> | UploadedFile[]
+): Record<string, any> {
+  const normalizedUploads = Array.isArray(uploadedDocs)
+    ? uploadedDocs.reduce<Record<string, UploadedFile>>((acc, doc) => {
+        if (doc) {
+          acc[doc.name || `doc_${Date.now()}`] = doc;
+        }
+        return acc;
+      }, {})
+    : Object.fromEntries(
+        Object.entries(uploadedDocs || {}).filter(([, value]) => Boolean(value)) as Array<[string, UploadedFile]>
+      );
+
+  const formUploads = extractUploadedDocuments(formData);
+  const allUploads = { ...formUploads, ...normalizedUploads };
+
+  return {
+    ...(formData || {}),
+    ...(Object.keys(allUploads).length > 0 ? { _uploadedDocs: allUploads } : {}),
+  };
+}
+
+type UploadMetadata = {
+  name: string;
+  size?: string | number;
+  type?: string;
+  url: string;
+  uploadedAt?: string;
+};
+
+function isUploadMetadata(value: unknown): value is UploadMetadata {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as UploadMetadata).name === "string" &&
+      typeof (value as UploadMetadata).url === "string",
+  );
+}
+
+/** Collect files from dynamic upload fields, including front/back inputs. */
+export function extractUploadedDocuments(
+  formData: Record<string, unknown> = {},
+): Record<string, UploadMetadata> {
+  return Object.entries(formData).reduce<Record<string, UploadMetadata>>(
+    (documents, [fieldName, value]) => {
+      if (isUploadMetadata(value)) {
+        documents[fieldName] = value;
+      } else if (fieldName === "_uploadedDocs" && value && typeof value === "object") {
+        Object.entries(value as Record<string, unknown>).forEach(([docName, file]) => {
+          if (isUploadMetadata(file)) documents[docName] = file;
+        });
+      } else if (value && typeof value === "object") {
+        const sides = value as { front?: unknown; back?: unknown };
+        if (isUploadMetadata(sides.front)) documents[`${fieldName} (Front)`] = sides.front;
+        if (isUploadMetadata(sides.back)) documents[`${fieldName} (Back)`] = sides.back;
+      }
+      return documents;
+    },
+    {},
+  );
+}
+
+/** Format upload metadata stored in application JSON for API consumers. */
+export function formatStoredUploadMetadata(
+  uploads: Record<string, UploadMetadata>,
+): Record<string, UploadedFile> {
+  return Object.fromEntries(
+    Object.entries(uploads).map(([docName, file]) => [
+      docName,
+      {
+        name: file.name,
+        url: file.url,
+        size: file.size ?? 0,
+        type: file.type || "Document",
+        uploadedAt: file.uploadedAt,
+      },
+    ]),
+  );
+}
+
 export type {
   UploadedFile,
   IssuedCertificate,
@@ -24,7 +106,10 @@ export function formatApplicationDocuments(
     uploadedDocs[doc.docName] = {
       id: doc.id || doc.docName,
       name: doc.fileName,
-      url: doc.fileUrl || "",
+      url:
+        doc.fileUrl?.startsWith("/storage/") && doc.id
+          ? `/api/documents/${doc.id}`
+          : doc.fileUrl || "",
       size: typeof doc.fileSize === "number" ? doc.fileSize : 0,
       type: doc.fileType,
       uploadedAt: new Date().toISOString(),

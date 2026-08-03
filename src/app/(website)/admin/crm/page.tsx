@@ -315,10 +315,10 @@ export default function AdminCrmPage() {
                               href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, "")}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                              className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-colors shadow-xs active:scale-95"
                               title="Chat on WhatsApp"
                             >
-                              <MessageSquare size={14} />
+                              <MessageSquare size={14} className="text-white" />
                             </a>
 
                             <Button
@@ -385,9 +385,9 @@ export default function AdminCrmPage() {
                         href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold rounded-lg text-xs"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-lg text-xs shadow-xs active:scale-95 transition-all"
                       >
-                        <MessageSquare size={13} /> WhatsApp
+                        <MessageSquare size={13} className="text-white" /> WhatsApp
                       </a>
                       <Button
                         variant="outline"

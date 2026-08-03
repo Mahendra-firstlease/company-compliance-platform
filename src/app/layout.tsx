@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { fontVars } from "@/lib/fonts";
+import { fontClassNames, fontVars } from "@/lib/fonts";
 import "./globals.css";
 import { Toaster } from "@/components/ui/notification/index";
 import { ModalProvider } from "@/components/ui/overlay";
@@ -59,14 +59,14 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={fontVars}>
+    <html lang="en" className={`${fontVars} ${fontClassNames}`}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-screen font-sans antialiased text-slate-900 bg-slate-50">
+      <body className={`min-h-screen font-sans antialiased text-slate-900 bg-slate-50 ${fontClassNames}`}>
         <QueryProvider>
           <AuthProvider>
             <ThemeProvider>

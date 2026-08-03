@@ -8,7 +8,7 @@
   --background: #ffffff;
   --foreground: #000000;
   --font-family: var(--font-poppins);
-  
+
   /* 100% Unified Corporate Brand Primary Color System */
   --primary: #4f46e5;
   --primary-hover: #4338ca;
@@ -20,7 +20,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-poppins);
-  
+
   /* Mapped Tailwind CSS Utility Classes */
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -36,4 +36,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), sans-serif;
+}
+
+.heroSection-bg {
+  background-image: url('/images/home/hero-section/hero-grid-gradient-img.png');
 }

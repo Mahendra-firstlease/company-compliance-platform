@@ -40,12 +40,15 @@ export default function FieldValue({ value, compact = false, className = "" }: F
   // 3. Handle Objects (Uploaded File Meta, Front/Back scans, or Generic JSON)
   if (typeof value === "object") {
     // A. Front-Back scan document object
-    if (value.frontUrl || value.backUrl) {
+    if (value.frontUrl || value.backUrl || value.front?.url || value.back?.url) {
+      const frontHref = value.frontUrl || value.front?.url;
+      const backHref = value.backUrl || value.back?.url;
+
       return (
         <div className="flex flex-wrap gap-2 items-center">
-          {value.frontUrl && (
+          {frontHref && (
             <a
-              href={value.frontUrl}
+              href={frontHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors"
@@ -55,9 +58,9 @@ export default function FieldValue({ value, compact = false, className = "" }: F
               <ExternalLink size={10} className="opacity-70 shrink-0" />
             </a>
           )}
-          {value.backUrl && (
+          {backHref && (
             <a
-              href={value.backUrl}
+              href={backHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors"

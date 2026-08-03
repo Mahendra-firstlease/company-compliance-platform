@@ -37,7 +37,11 @@ export async function GET(
     }
 
     // 2. Authorization Check: Document must belong to user OR user must be ADMIN
-    if (documentRecord.userId !== userId && userRole !== "ADMIN") {
+    if (
+      documentRecord.userId !== userId &&
+      userRole !== "ADMIN" &&
+      userRole !== "EXECUTIVE"
+    ) {
       return NextResponse.json({ error: "Forbidden. Access denied to document." }, { status: 403 });
     }
 

@@ -47,14 +47,25 @@ function buildFieldValidator(field: FormFieldConfig): z.ZodTypeAny {
       break;
     }
     case "number": {
-      let numSchema = z.coerce.number();
+      let numSchema = z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : val),
+        z.coerce.number({ error: `${field.label} must be a valid number` })
+      );
       if (field.min !== undefined) {
-        numSchema = numSchema.min(field.min, `${field.label} minimum value is ${field.min}`);
+        numSchema = numSchema.refine(
+          (val) => val === undefined || val >= field.min!,
+          `${field.label} minimum value is ${field.min}`
+        );
       }
       if (field.max !== undefined) {
-        numSchema = numSchema.max(field.max, `${field.label} maximum value is ${field.max}`);
+        numSchema = numSchema.refine(
+          (val) => val === undefined || val <= field.max!,
+          `${field.label} maximum value is ${field.max}`
+        );
       }
-      schema = field.required ? numSchema : numSchema.optional();
+      schema = field.required
+        ? numSchema.refine((val) => val !== undefined, `${field.label} is required`)
+        : numSchema.optional();
       break;
     }
     case "select":
@@ -75,17 +86,64 @@ function buildFieldValidator(field: FormFieldConfig): z.ZodTypeAny {
       break;
     }
     case "front-back-file": {
-      let fbSchema = z.object({
-        frontUrl: z.string().min(1, "Front image is required"),
-        backUrl: z.string().min(1, "Back image is required"),
-      });
-      schema = field.required ? fbSchema : fbSchema.partial().optional();
+      const uploadedSideSchema = z
+        .object({
+          url: z.string().min(1),
+        })
+        .passthrough();
+
+      const fbSchema = z
+        .object({
+          frontUrl: z.string().optional(),
+          backUrl: z.string().optional(),
+          front: uploadedSideSchema.optional().nullable(),
+          back: uploadedSideSchema.optional().nullable(),
+        })
+        .superRefine((val, ctx) => {
+          const hasFront = Boolean(val.frontUrl || val.front?.url);
+          const hasBack = Boolean(val.backUrl || val.back?.url);
+
+          if (!hasFront) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Front image is required",
+              path: ["frontUrl"],
+            });
+          }
+          if (!hasBack) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Back image is required",
+              path: ["backUrl"],
+            });
+          }
+        });
+
+      schema = field.required
+        ? fbSchema
+        : z
+            .object({
+              frontUrl: z.string().optional(),
+              backUrl: z.string().optional(),
+              front: uploadedSideSchema.optional().nullable(),
+              back: uploadedSideSchema.optional().nullable(),
+            })
+            .optional();
       break;
     }
     case "file":
     case "multi-file": {
-      let fileSchema = z.any();
-      schema = field.required ? fileSchema.refine((val) => !!val, `${field.label} file is required`) : fileSchema.optional();
+      const hasUploadedFile = (val: unknown) =>
+        Boolean(
+          val &&
+            typeof val === "object" &&
+            typeof (val as { url?: string }).url === "string" &&
+            (val as { url: string }).url.length > 0
+        );
+
+      schema = field.required
+        ? z.any().refine(hasUploadedFile, `${field.label} file is required`)
+        : z.any().optional();
       break;
     }
     default: {

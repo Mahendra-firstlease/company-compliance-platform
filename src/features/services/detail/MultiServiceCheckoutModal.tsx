@@ -28,6 +28,9 @@ export default function MultiServiceCheckoutModal({
   const router = useRouter();
   const { data: session } = useSession();
 
+  const userRole = (session?.user as any)?.role;
+  const isAdmin = userRole === "ADMIN";
+
   // Local state for instant modal reactive updates upon deletion
   const [servicesList, setServicesList] = useState<Service[]>(selectedServices);
   const [contactName, setContactName] = useState(session?.user?.name || "");
@@ -35,6 +38,45 @@ export default function MultiServiceCheckoutModal({
   const [businessAddress, setBusinessAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+
+  if (isAdmin) {
+    return (
+      <div className="p-6 text-center space-y-4 bg-amber-50/70 rounded-2xl border border-amber-200">
+        <div className="size-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center">
+          <AlertCircle size={24} />
+        </div>
+        <div className="space-y-1">
+          <h3 className="font-extrabold text-slate-900 text-base">
+            Admin Account Restriction
+          </h3>
+          <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
+            Admin accounts cannot purchase client service packages. Please log in with a customer account to purchase services, or access the Admin Console to manage filings.
+          </p>
+        </div>
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            className="text-xs font-bold w-full sm:w-auto cursor-pointer"
+          >
+            Close Modal
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              onCancel();
+              router.push("/admin/applications");
+            }}
+            className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto cursor-pointer"
+          >
+            Go to Admin Console
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const totalFee = servicesList.reduce((sum, s) => sum + s.price, 0);
 

@@ -17,3 +17,7 @@ export const fontRegistry = {
 export const fontVars = Object.values(fontRegistry)
   .map(({ font }) => font.variable)
   .join(" ");
+
+export const fontClassNames = Object.values(fontRegistry)
+  .map(({ font }) => font.className)
+  .join(" ");

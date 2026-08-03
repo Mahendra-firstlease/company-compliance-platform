@@ -19,7 +19,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-lg bg-white text-slate-900 border border-slate-200/60 shadow-2xs py-(--card-spacing) text-sm [--card-spacing:1.5rem] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:1rem] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl transition-all duration-200",
+        "group/card flex flex-col gap-(--card-spacing) relative rounded-lg bg-white text-slate-900 border border-slate-200/60 shadow-2xs py-(--card-spacing) text-sm [--card-spacing:1.5rem] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:1rem] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl transition-all duration-200",
         enableHover && "hover:-translate-y-1 hover:shadow-md hover:shadow-slate-100 hover:border-slate-300",
         className
       )}

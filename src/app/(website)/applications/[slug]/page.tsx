@@ -11,16 +11,22 @@ import {
   getApplicationBySlug,
   updateApplication,
   ApplicationCase,
+  buildApplicationFormDataPayload,
 } from "@/lib/applications";
 import { notify } from "@/lib/notify";
+import FieldValue from "@/components/common/FieldValue";
+import QueryResponseModal from "@/components/forms/QueryResponseModal";
+import StatusBadge from "@/components/common/StatusBadge";
 import {
   FileCheck,
   UploadCloud,
   CheckCircle,
+  CheckCircle2,
   FileText,
   CreditCard,
   Download,
   AlertCircle,
+  AlertTriangle,
   Activity,
   ArrowRight,
   ShieldAlert,
@@ -29,6 +35,9 @@ import {
   ExternalLink,
   Lock,
   Check,
+  MessageSquare,
+  ShieldCheck,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -88,6 +97,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
   // Simulation loading states
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isDownloadingCert, setIsDownloadingCert] = useState(false);
+  const [isQueryModalOpen, setIsQueryModalOpen] = useState(false);
 
   // Status timeline configurations
   const timelineSteps = [
@@ -302,89 +312,137 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
           ]}
         />
 
-        {/* Administrative Quick-link Banner */}
-        <div className="bg-primary-light border border-primary-border rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="size-8 bg-primary-light text-primary rounded-lg flex items-center justify-center shrink-0">
-              <Activity size={18} />
+        {/* Executive Workspace Command Header Hero */}
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-slate-950 via-slate-900 to-indigo-950 text-white p-6 md:p-8 shadow-xl border border-slate-800">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-[11px] font-mono text-indigo-300 bg-indigo-500/20 border border-indigo-400/30 px-3 py-1 rounded-full font-bold backdrop-blur-md">
+                Ref ID: {appCase.id}
+              </span>
+              <StatusBadge
+                status={
+                  appCase.queryStatus ||
+                  (appCase.query ? "QUERY_RAISED" : appCase.status)
+                }
+                size="md"
+              />
             </div>
-            <div>
-              <h4 className="font-semibold text-xs text-primary">
-                Filing Status Linked to BackOffice
-              </h4>
-              <p className="text-xs text-primary leading-normal">
-                Open the admin panel in another tab to manage status updates,
-                assign specialists, or test query responses.
-              </p>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-t border-slate-800/80">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">
+                  {appCase.serviceTitle}
+                </h1>
+                <p className="text-xs text-slate-300 mt-1.5 flex items-center gap-2">
+                  <span>
+                    Applicant:{" "}
+                    <strong className="text-white">
+                      {appCase.customerName}
+                    </strong>
+                  </span>
+                  <span>&middot;</span>
+                  <span>
+                    Filed{" "}
+                    {new Date(appCase.createdAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={triggerInvoiceDownload}
+                  disabled={isGeneratingInvoice}
+                  className="text-xs font-bold text-slate-200 bg-white/10 hover:bg-white/20 border-white/20 backdrop-blur-md"
+                  leftIcon={
+                    isGeneratingInvoice ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <FileText size={13} />
+                    )
+                  }
+                >
+                  Download Invoice
+                </Button>
+
+                <Link href="/admin" target="_blank">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md font-bold"
+                  >
+                    Admin Panel <ExternalLink size={12} />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-          <Link href="/admin" target="_blank">
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs bg-white flex items-center gap-1.5 font-semibold"
-            >
-              Open Admin Console <ExternalLink size={12} />
-            </Button>
-          </Link>
         </div>
 
-        {/* Query Alert Warning Banner (Step 7: Query Raised UI) */}
-        {appCase.query && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-5 flex gap-4 items-start shadow-2xs">
-            <div className="size-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0 mt-0.5 animate-pulse">
-              <AlertCircle size={20} />
+        {/* Query Alert Warning Banner & Customer Response Trigger */}
+        {(appCase.query || appCase.queryResponse) && (
+          <div
+            className={`p-5 rounded-2xl border shadow-md space-y-3 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-50/90 border-teal-200 text-teal-950" : "bg-amber-50/90 border-amber-200 text-amber-950"}`}
+          >
+            <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
+              <div className="flex items-start gap-3">
+                <div
+                  className={`size-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-100 text-teal-700" : "bg-amber-100 text-amber-700 animate-pulse"}`}
+                >
+                  <AlertTriangle size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-extrabold text-sm">
+                    {appCase.queryStatus === "CLIENT_RESPONDED"
+                      ? "✅ Clarification Response Submitted to Officer"
+                      : "⚠️ Action Required: Specialist Clarification Needed"}
+                  </h4>
+                  <p className="text-xs font-semibold leading-relaxed opacity-90">
+                    "
+                    {appCase.query ||
+                      appCase.queryNote ||
+                      "Please review and re-upload required verification details."}
+                    "
+                  </p>
+                </div>
+              </div>
+
+              {appCase.queryStatus !== "CLIENT_RESPONDED" ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsQueryModalOpen(true)}
+                  className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shrink-0 shadow-sm"
+                  leftIcon={<Send size={13} />}
+                >
+                  Respond to Query & Re-upload
+                </Button>
+              ) : (
+                <span className="text-[11px] font-extrabold text-teal-800 bg-teal-100 px-3 py-1 rounded-full border border-teal-300 shrink-0">
+                  Pending Officer Audit
+                </span>
+              )}
             </div>
-            <div className="space-y-1.5 text-left">
-              <h4 className="font-semibold text-sm text-red-800">
-                Filing Action Required: Query Raised
-              </h4>
-              <p className="text-xs text-red-600 leading-relaxed font-semibold">
-                {appCase.query}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">
-                Please re-upload your verification details below and re-submit
-                for clearance.
-              </p>
-            </div>
+
+            {/* Client Reply Summary if present */}
+            {appCase.queryResponse && (
+              <div className="pt-2 border-t border-teal-200/80 text-xs text-slate-700 space-y-1">
+                <span className="font-bold text-[11px] text-teal-900 uppercase tracking-wider block">
+                  Your Submitted Reply:
+                </span>
+                <p className="italic bg-white/80 p-2.5 rounded-lg border border-teal-100 text-slate-800 font-medium">
+                  "{appCase.queryResponse}"
+                </p>
+              </div>
+            )}
           </div>
         )}
-
-        {/* Main Header Block */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200 p-6 rounded-lg shadow-xs">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {appCase.serviceTitle}
-            </h1>
-            <p className="text-xs text-slate-400">
-              Reference ID:{" "}
-              <span className="font-semibold text-slate-600">{appCase.id}</span>{" "}
-              &middot; Ordered on:{" "}
-              {new Date(appCase.createdAt).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
-              appCase.status === "APPROVED"
-                ? "bg-green-50 text-green-700 border-green-200"
-                : appCase.status === "PAYMENT_CONFIRMED"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-3xs"
-                  : appCase.query
-                    ? "bg-amber-50 text-amber-600 border border-amber-100"
-                    : "bg-primary-light text-primary border-primary-border"
-            }`}
-          >
-            {appCase.status === "PAYMENT_CONFIRMED"
-              ? "✓ PAYMENT CONFIRMED"
-              : appCase.query
-                ? "QUERY PENDING"
-                : appCase.status.replace("_", " ")}
-          </span>
-        </div>
 
         {/* Dynamic Timeline Stepper (Step 8: Application Tracking) */}
         <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-lg shadow-xs relative overflow-hidden">
@@ -501,8 +559,8 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                 disabled={
                   appCase
                     ? (appCase.status === "UNDER_REVIEW" ||
-                       appCase.status === "SUBMITTED" ||
-                       appCase.status === "APPROVED") &&
+                        appCase.status === "SUBMITTED" ||
+                        appCase.status === "APPROVED") &&
                       !appCase.query
                     : false
                 }
@@ -511,6 +569,11 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   fullName: appCase.customerName,
                   mobileNumber: appCase.customerPhone,
                   registeredAddress: appCase.address,
+                  ...Object.fromEntries(
+                    Object.entries(appCase.formData || {}).filter(
+                      ([key]) => !key.startsWith("_")
+                    )
+                  ),
                 }}
                 onSubmit={async (formData) => {
                   console.log("Filing Form Data:", formData);
@@ -519,10 +582,16 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                     description:
                       "Transmitting dynamic form payload to backend.",
                   });
+
+                  const payload = buildApplicationFormDataPayload(
+                    formData as Record<string, any>,
+                    supportingDocs
+                  );
+
                   await updateApplication(appCase.id, {
                     status: "UNDER_REVIEW",
                     query: "",
-                    formData: formData as Record<string, any>,
+                    formData: payload,
                   });
                   const activeApp = await getApplicationBySlug(slug);
                   setAppCase(activeApp);
@@ -543,7 +612,9 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                 </h3>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Attach supporting verification files for your filing (e.g. Utility Bills, Property Leases, NOCs, Bank Statements, Financial Audit Reports).
+                Attach supporting verification files for your filing (e.g.
+                Utility Bills, Property Leases, NOCs, Bank Statements, Financial
+                Audit Reports).
               </p>
               <MultiFileUpload
                 label="Supporting Attachments (Up to 10 files, max 10MB each)"
@@ -686,6 +757,17 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
           </div>
         </div>
       </Container>
+
+      {/* Query Response Modal */}
+      <QueryResponseModal
+        application={appCase}
+        isOpen={isQueryModalOpen}
+        onClose={() => setIsQueryModalOpen(false)}
+        onSuccess={async () => {
+          const activeApp = await getApplicationBySlug(slug);
+          setAppCase(activeApp);
+        }}
+      />
     </Section>
   );
 }

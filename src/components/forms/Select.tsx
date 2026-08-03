@@ -105,7 +105,7 @@ export function UISelect({
         options,
       }}
     >
-      <div ref={containerRef} className="relative w-full">
+      <div ref={containerRef} className={cn("relative w-full", open && "z-50 relative")}>
         {children}
       </div>
     </SelectContext.Provider>
@@ -192,7 +192,7 @@ export function SelectContent({ className, children }: SelectContentProps) {
   return (
     <div
       className={cn(
-        "absolute z-50 mt-1.5 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white p-1.5 shadow-md scrollbar-thin animate-in fade-in slide-in-from-top-1 duration-200",
+        "absolute left-0 right-0 top-full z-50 mt-1.5 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl scrollbar-thin animate-in fade-in slide-in-from-top-1 duration-200",
         className
       )}
     >

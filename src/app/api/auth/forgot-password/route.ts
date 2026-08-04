@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       // 4. Construct reset link URL
       const origin =
         request.headers.get("origin") ||
-        process.env.NEXTAUTH_URL ||
+        process.env.NEXT_AUTH_URL ||
         "http://localhost:3000";
       const resetUrl = `${origin}/reset-password?token=${token}`;
 

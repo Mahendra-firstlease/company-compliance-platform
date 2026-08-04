@@ -7,6 +7,10 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/",
   },
   {
+    label: "About",
+    href: "/about",
+  },
+  {
     label: "Services",
     href: "/services",
     mega: true,
@@ -28,18 +32,16 @@ export const NAV_ITEMS: NavItem[] = [
       { label: "Professional Tax", href: "/services/professional-tax-registration" },
     ],
   },
+
   {
     label: "FAQs",
     href: "/faq",
   },
-  {
-    label: "Components Sandbox",
-    href: "/component-customization",
-  },
-  {
-    label: "About",
-    href: "/about",
-  },
+  // {
+  //   label: "Components Sandbox",
+  //   href: "/component-customization",
+  // },
+  
   {
     label: "Contact",
     href: "/contact",

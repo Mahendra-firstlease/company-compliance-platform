@@ -12,6 +12,15 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { loadRazorpayScript } from "@/lib/razorpay-client";
 
+type RazorpayCheckoutInstance = {
+  open: () => void;
+  on: (event: string, callback: (response: unknown) => void) => void;
+};
+
+type RazorpayWindowWithSdk = Window & typeof globalThis & {
+  Razorpay?: new (options: unknown) => RazorpayCheckoutInstance;
+};
+
 interface MultiServiceCheckoutModalProps {
   selectedServices: Service[];
   onRemoveService?: (serviceId: string) => void;
@@ -249,7 +258,12 @@ export default function MultiServiceCheckoutModal({
         },
       };
 
-      const razorpayWindow = new (window as Window & { Razorpay: new (options: unknown) => { open: () => void; on: (event: string, callback: (response: unknown) => void) => void } }).Razorpay(options);
+      const razorpayConstructor = (window as unknown as RazorpayWindowWithSdk).Razorpay;
+      if (!razorpayConstructor) {
+        throw new Error("Razorpay SDK is unavailable.");
+      }
+
+      const razorpayWindow = new razorpayConstructor(options);
 
       // Listen for payment.failed event safely
       razorpayWindow.on("payment.failed", function (response: unknown) {

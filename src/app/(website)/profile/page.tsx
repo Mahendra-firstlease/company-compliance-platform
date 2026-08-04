@@ -12,7 +12,6 @@ import MultiServiceCheckoutModal from "@/features/services/detail/MultiServiceCh
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { servicesService } from "@/services/services";
 import { services as fallbackServices } from "@/data/services";
-import { Service } from "@/types/services";
 import { getUserProfileWithBusinessAction } from "@/lib/actions/profile";
 import { useModal } from "@/components/ui/overlay";
 import { ProfileSkeleton } from "@/components/ui/skeletons";
@@ -25,7 +24,6 @@ import {
   Calendar,
   Sparkles,
   Edit3,
-  CheckCircle2,
   AlertCircle,
   Layers,
   MapPin,
@@ -34,6 +32,7 @@ import {
   Briefcase,
   ShoppingBag,
   Check,
+  ArrowRight,
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -77,7 +76,7 @@ export default function ProfilePage() {
       try {
         const res = await servicesService.getServices();
         return res || [];
-      } catch (err) {
+      } catch {
         return [];
       }
     },
@@ -140,12 +139,7 @@ export default function ProfilePage() {
       .slice(0, 4);
   }, [catalogServices, businessProfile]);
 
-  // Pre-select first 2 suggested services by default
-  useEffect(() => {
-    if (suggestedServices.length > 0 && selectedServiceSlugs.length === 0) {
-      setSelectedServiceSlugs(suggestedServices.slice(0, 2).map((s) => s.slug));
-    }
-  }, [suggestedServices]);
+  // Keep the selection empty until the user actively chooses services from the suggestions.
 
   // Toggle Service Selection
   const toggleSelectService = (slug: string) => {
@@ -208,25 +202,25 @@ export default function ProfilePage() {
   };
 
   return (
-    <Section className="py-12 bg-slate-50/70 min-h-screen pb-28">
+    <Section className="py-8 sm:py-12 bg-slate-50/70 min-h-screen pb-28">
       <Container>
         <div className="max-w-5xl mx-auto space-y-8">
           
           {/* Header Banner */}
-          <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 text-white shadow-xl">
+          <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 sm:p-8 text-white shadow-xl">
             <div className="absolute -right-10 -bottom-10 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="size-16 rounded-lg bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-white text-2xl font-black uppercase shadow-inner">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="size-12 sm:size-16 rounded-lg bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-white text-xl sm:text-2xl font-black uppercase shadow-inner">
                   {session?.user?.name?.[0] || session?.user?.email?.[0] || "U"}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold text-white tracking-tight">
+                    <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       {session?.user?.name || "User Account"}
                     </h1>
                     <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider">
-                      {(session?.user as any)?.role || "CLIENT"}
+                      {((session?.user as { role?: string } | undefined)?.role || "CLIENT")}
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1 flex items-center gap-2">
@@ -237,7 +231,7 @@ export default function ProfilePage() {
               </div>
 
               {!businessProfile && (
-                <div className="bg-amber-500/15 border border-amber-500/30 rounded-lg p-3 flex items-center gap-3">
+                <div className="bg-amber-500/15 border border-amber-500/30 rounded-lg p-3 flex items-start sm:items-center gap-3">
                   <AlertCircle className="size-5 text-amber-400 shrink-0" />
                   <span className="text-xs text-amber-200 font-medium">
                     Complete your 2-step Business Profile to get tailored statutory service recommendations.
@@ -266,23 +260,23 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                   <div className="flex items-center gap-3">
                     <UserCircle className="size-4 text-slate-400" />
                     <span className="text-xs font-medium text-slate-500">Full Name</span>
                   </div>
-                  <span className="text-xs font-bold text-slate-800">{user?.name || session?.user?.name || "N/A"}</span>
+                  <span className="text-xs font-bold text-slate-800 break-all">{user?.name || session?.user?.name || "N/A"}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                   <div className="flex items-center gap-3">
                     <Mail className="size-4 text-slate-400" />
                     <span className="text-xs font-medium text-slate-500">Email Address</span>
                   </div>
-                  <span className="text-xs font-bold text-slate-800">{user?.email || session?.user?.email}</span>
+                  <span className="text-xs font-bold text-slate-800 break-all">{user?.email || session?.user?.email}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                   <div className="flex items-center gap-3">
                     <Phone className="size-4 text-slate-400" />
                     <span className="text-xs font-medium text-slate-500">Phone Number</span>
@@ -290,7 +284,7 @@ export default function ProfilePage() {
                   <span className="text-xs font-bold text-slate-800">{user?.phone || "+91 9876543210"}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                   <div className="flex items-center gap-3">
                     <Calendar className="size-4 text-slate-400" />
                     <span className="text-xs font-medium text-slate-500">Member Since</span>
@@ -344,15 +338,15 @@ export default function ProfilePage() {
               ) : (
                 /* Display Registered Business Details */
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                     <div className="flex items-center gap-3">
                       <Building2 className="size-4 text-slate-400" />
                       <span className="text-xs font-medium text-slate-500">Business Name</span>
                     </div>
-                    <span className="text-xs font-bold text-slate-800">{businessProfile.businessName}</span>
+                    <span className="text-xs font-bold text-slate-800 break-all">{businessProfile.businessName}</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                     <div className="flex items-center gap-3">
                       <Briefcase className="size-4 text-slate-400" />
                       <span className="text-xs font-medium text-slate-500">Entity Structure</span>
@@ -360,7 +354,7 @@ export default function ProfilePage() {
                     <span className="text-xs font-bold text-slate-800">{businessProfile.businessType}</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                     <div className="flex items-center gap-3">
                       <Layers className="size-4 text-slate-400" />
                       <span className="text-xs font-medium text-slate-500">Industry Sector</span>
@@ -368,7 +362,7 @@ export default function ProfilePage() {
                     <span className="text-xs font-bold text-slate-800">{businessProfile.industry}</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-100">
                     <div className="flex items-center gap-3">
                       <MapPin className="size-4 text-slate-400" />
                       <span className="text-xs font-medium text-slate-500">State / Location</span>
@@ -376,7 +370,7 @@ export default function ProfilePage() {
                     <span className="text-xs font-bold text-slate-800">{businessProfile.state}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div className="p-3 rounded-lg bg-slate-50/70 border border-slate-100 space-y-1">
                       <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
                         <Users className="size-3.5" />
@@ -399,32 +393,33 @@ export default function ProfilePage() {
           </div>
 
           {/* Section: Dynamic Service Suggestions with Multi-Service Checkbox Selection */}
-          <div className="space-y-6 pt-6 border-t border-slate-200">
-            <div className="flex items-center justify-between">
+          <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-slate-200">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <Sparkles className="size-5 text-indigo-600" />
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">
                     Suggested Statutory Services for Your Business
                   </h2>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Select multiple services below to build a single combined compliance package and pay at once.
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Select multiple services below to build your custom compliance package and pay at once.
                 </p>
               </div>
 
               <Button
                 variant="outline"
+                rightIcon={<ArrowRight className="size-4" />}
                 size="sm"
                 onClick={() => router.push("/services")}
-                className="hidden sm:flex text-xs font-bold"
+                className="w-full sm:w-auto text-xs font-bold"
               >
-                View Full Catalog →
+                View Full Catalog
               </Button>
             </div>
 
             {/* Suggested Services Cards Grid with Selection Checkboxes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {suggestedServices.map((service) => {
                 const isSelected = selectedServiceSlugs.includes(service.slug);
 
@@ -432,14 +427,14 @@ export default function ProfilePage() {
                   <div
                     key={service.id || service.slug}
                     onClick={() => toggleSelectService(service.slug)}
-                    className={`relative rounded-lg border transition-all duration-300 cursor-pointer overflow-hidden p-1 ${
+                    className={`relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden p-1 ${
                       isSelected
                         ? "border-indigo-600 bg-indigo-50/30 ring-2 ring-indigo-500/20 shadow-md"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs"
                     }`}
                   >
                     {/* Multi-Selection Checkbox Banner */}
-                    <div className="flex items-center justify-between px-4 py-2 bg-slate-50/80 border-b border-slate-100 rounded-t-xl text-xs">
+                    <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 bg-slate-50/80 border-b border-slate-100 rounded-t-2xl text-xs">
                       <div className="flex items-center gap-2 font-semibold text-slate-700">
                         <div
                           className={`size-4 rounded border flex items-center justify-center transition-colors ${
@@ -448,16 +443,16 @@ export default function ProfilePage() {
                               : "border-slate-300 bg-white"
                           }`}
                         >
-                          {isSelected && <Check className="size-3 stroke-[3]" />}
+                          {isSelected && <Check className="size-3 stroke-3" />}
                         </div>
-                        <span>{isSelected ? "Selected for Bundle" : "Click to Add to Bundle"}</span>
+                        <span>{isSelected ? "Selected for Package" : "Click to Add"}</span>
                       </div>
 
                       <span className="font-bold text-indigo-700">₹{service.price}</span>
                     </div>
 
                     {/* Service Card Content */}
-                    <div className="p-2">
+                    <div className="p-2 sm:p-2.5">
                       <ServiceCard service={service} />
                     </div>
                   </div>
@@ -471,9 +466,9 @@ export default function ProfilePage() {
 
       {/* Sticky Bottom Multi-Service Batch Payment Bar (Mobile & Desktop Optimized) */}
       {selectedServices.length > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl p-3 sm:p-4 animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-2xl px-3 py-3 sm:px-4 sm:py-4 animate-in slide-in-from-bottom duration-300 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
           <Container>
-            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
               {/* Selected Services Info */}
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <div className="size-9 sm:size-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
@@ -495,7 +490,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Total Price & Pay Button Container */}
-              <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0 pt-2 sm:pt-0 border-t border-slate-100 sm:border-t-0">
+              <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-4 shrink-0 pt-2 sm:pt-0 border-t border-slate-100 sm:border-t-0 w-full sm:w-auto">
                 <div className="text-left sm:text-right">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-none">
                     Total Amount:
@@ -509,7 +504,7 @@ export default function ProfilePage() {
                   onClick={handleOpenMultiCheckout}
                   variant="primary"
                   size="lg"
-                  className="font-bold text-xs py-2.5 sm:py-3 px-4 sm:px-6 shadow-md cursor-pointer flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+                  className="font-bold text-xs py-2.5 sm:py-3 px-4 sm:px-6 shadow-md cursor-pointer flex items-center justify-center gap-2 flex-1 sm:flex-initial w-full sm:w-auto"
                 >
                   <ShieldCheck className="size-4 shrink-0" />
                   <span className="truncate">Pay & Apply ({selectedServices.length})</span>

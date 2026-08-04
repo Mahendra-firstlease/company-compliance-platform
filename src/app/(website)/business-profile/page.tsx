@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Section from "@/components/common/Section";
@@ -11,18 +11,13 @@ import BusinessProfileForm from "@/components/forms/BusinessProfileForm";
 import MultiServiceCheckoutModal from "@/features/services/detail/MultiServiceCheckoutModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { servicesService } from "@/services/services";
-import { services as fallbackServices } from "@/data/services";
-import { Service } from "@/types/services";
 import { getUserProfileWithBusinessAction } from "@/lib/actions/profile";
 import { useModal } from "@/components/ui/overlay";
 import { ProfileSkeleton } from "@/components/ui/skeletons";
 import {
   Building2,
-  Mail,
   ShieldCheck,
-  Sparkles,
   Edit3,
-  CheckCircle2,
   AlertCircle,
   Layers,
   MapPin,

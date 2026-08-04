@@ -5,7 +5,7 @@ import Button from "@/components/common/Button";
 import FormGroup from "@/components/forms/FormGroup";
 import Input from "@/components/forms/Input";
 import { Service } from "@/types/services";
-import { CheckCircle2, ShieldCheck, ShoppingBag, Trash2, Lock, AlertCircle, Loader2 } from "lucide-react";
+import { ShieldCheck, ShoppingBag, Trash2, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { saveApplication } from "@/lib/applications";
 import { useRouter } from "next/navigation";
@@ -28,20 +28,20 @@ export default function MultiServiceCheckoutModal({
   const router = useRouter();
   const { data: session } = useSession();
 
-  const userRole = (session?.user as any)?.role;
+  const userRole = (session?.user as { role?: string } | undefined)?.role;
   const isAdmin = userRole === "ADMIN";
 
   // Local state for instant modal reactive updates upon deletion
   const [servicesList, setServicesList] = useState<Service[]>(selectedServices);
   const [contactName, setContactName] = useState(session?.user?.name || "");
-  const [contactPhone, setContactPhone] = useState((session?.user as any)?.phone || "");
+  const [contactPhone, setContactPhone] = useState((session?.user as { phone?: string } | undefined)?.phone || "");
   const [businessAddress, setBusinessAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
 
   if (isAdmin) {
     return (
-      <div className="p-6 text-center space-y-4 bg-amber-50/70 rounded-2xl border border-amber-200">
+      <div className="p-4 sm:p-6 text-center space-y-4 bg-amber-50/70 rounded-2xl border border-amber-200">
         <div className="size-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center">
           <AlertCircle size={24} />
         </div>
@@ -53,7 +53,7 @@ export default function MultiServiceCheckoutModal({
             Admin accounts cannot purchase client service packages. Please log in with a customer account to purchase services, or access the Admin Console to manage filings.
           </p>
         </div>
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2 w-full">
           <Button
             variant="outline"
             size="sm"
@@ -107,7 +107,7 @@ export default function MultiServiceCheckoutModal({
       return;
     }
 
-    const loggedInUserId = (session?.user as any)?.id || undefined;
+    const loggedInUserId = (session?.user as { id?: string } | undefined)?.id || undefined;
     const loggedInUserEmail = session?.user?.email || undefined;
 
     setIsSubmitting(true);
@@ -174,7 +174,7 @@ export default function MultiServiceCheckoutModal({
         theme: {
           color: "#4f46e5",
         },
-        handler: async (response: any) => {
+        handler: async (response: { razorpay_order_id?: string; razorpay_payment_id?: string; razorpay_signature?: string }) => {
           notify.loading({
             title: "Verifying Batch Signature...",
             description: "Updating statutory application statuses.",
@@ -221,7 +221,7 @@ export default function MultiServiceCheckoutModal({
               title: "Package Payment Confirmed! 🎉",
               description: `Initiated filings for ${servicesList.length} services. Payment ID: ${response.razorpay_payment_id}`,
             });
-          } catch (err: any) {
+          } catch (err: unknown) {
             console.error("Batch payment handler warning:", err);
             notify.success({
               title: "Package Payment Confirmed! 🎉",
@@ -249,14 +249,15 @@ export default function MultiServiceCheckoutModal({
         },
       };
 
-      const razorpayWindow = new (window as any).Razorpay(options);
+      const razorpayWindow = new (window as Window & { Razorpay: new (options: unknown) => { open: () => void; on: (event: string, callback: (response: unknown) => void) => void } }).Razorpay(options);
 
       // Listen for payment.failed event safely
-      razorpayWindow.on("payment.failed", function (response: any) {
-        const errObj = response?.error || response || {};
+      razorpayWindow.on("payment.failed", function (response: unknown) {
+        const errorPayload = response as { error?: { description?: string; reason?: string }; description?: string; reason?: string } | undefined;
+        const errObj = errorPayload?.error || errorPayload || {};
         const errorDesc =
-          errObj.description ||
-          errObj.reason ||
+          (errObj as { description?: string; reason?: string }).description ||
+          (errObj as { description?: string; reason?: string }).reason ||
           "Payment was not completed. Please try again with a domestic Indian card (4585 0000 0000 0001) or UPI (success@razorpay).";
 
         console.warn("Razorpay Payment Event [payment.failed]:", errorDesc, errObj);
@@ -270,9 +271,9 @@ export default function MultiServiceCheckoutModal({
       });
 
       razorpayWindow.open();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Batch Razorpay error:", err);
-      const errorMsg = err?.message || "Could not process batch applications. Please try again.";
+      const errorMsg = err instanceof Error ? err.message : "Could not process batch applications. Please try again.";
       setLastError(errorMsg);
       notify.error({
         title: "Checkout Error",
@@ -283,10 +284,10 @@ export default function MultiServiceCheckoutModal({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200/80 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200/80">
+        <div className="flex items-start gap-3">
+          <div className="size-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
             <ShoppingBag className="size-5" />
           </div>
           <div>
@@ -315,8 +316,8 @@ export default function MultiServiceCheckoutModal({
       )}
 
       {/* Selected Items List */}
-      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-        <div className="flex items-center justify-between">
+      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Package Summary ({servicesList.length} Services):
           </span>
@@ -326,13 +327,13 @@ export default function MultiServiceCheckoutModal({
         {servicesList.map((s) => (
           <div
             key={s.id || s.slug}
-            className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg text-xs"
+            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 bg-white border border-slate-200 rounded-lg text-xs"
           >
-            <div>
-              <p className="font-bold text-slate-800">{s.title}</p>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 break-all">{s.title}</p>
               <p className="text-[11px] text-slate-400">Target Time: {s.duration}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between sm:justify-end gap-3">
               <span className="font-bold text-slate-900">₹{s.price}</span>
               <button
                 type="button"
@@ -348,8 +349,8 @@ export default function MultiServiceCheckoutModal({
       </div>
 
       {/* Pricing Summary Block */}
-      <div className="p-4 bg-indigo-50/60 rounded-lg border border-indigo-100 space-y-1">
-        <div className="flex justify-between items-center text-xs text-slate-600">
+      <div className="p-3 sm:p-4 bg-indigo-50/60 rounded-lg border border-indigo-100 space-y-1">
+        <div className="flex justify-between items-center text-xs text-slate-600 gap-2">
           <span>Subtotal ({servicesList.length} services):</span>
           <span className="font-bold text-slate-900">₹{totalFee}</span>
         </div>
@@ -360,7 +361,7 @@ export default function MultiServiceCheckoutModal({
       </div>
 
       {/* Customer Contact Details */}
-      <div className="space-y-4 pt-2">
+      <div className="space-y-3 sm:space-y-4 pt-1">
         <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
           Filing Contact Details:
         </span>
@@ -399,12 +400,12 @@ export default function MultiServiceCheckoutModal({
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
+        <Button type="button" size={'sm'} variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto">
           Cancel
         </Button>
 
-        <Button type="submit" variant="primary" disabled={isSubmitting || servicesList.length === 0} className="flex items-center gap-2 cursor-pointer">
+        <Button size={'sm'} type="submit" variant="primary" disabled={isSubmitting || servicesList.length === 0} className="flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto">
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" />
@@ -413,7 +414,7 @@ export default function MultiServiceCheckoutModal({
           ) : (
             <>
               <ShieldCheck className="size-4" />
-              <span>{lastError ? `Retry Payment (₹${totalFee})` : `Pay with Razorpay (₹${totalFee})`}</span>
+              <span>{lastError ? `Retry Payment (₹${totalFee})` : `Pay (₹${totalFee})`}</span>
             </>
           )}
         </Button>

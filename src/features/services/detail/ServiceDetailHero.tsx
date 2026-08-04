@@ -4,8 +4,13 @@ import { Service } from "@/types/services";
 
 export default function ServiceDetailHero({ service }: { service: Service }) {
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2 items-center">
+    <div className="space-y-4 py-6 sm:py-8 lg:py-12">
+     
+
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+        {service.title}
+      </h1>
+       <div className="flex flex-wrap gap-2 items-center">
         <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
           Government Filing
         </span>
@@ -14,10 +19,6 @@ export default function ServiceDetailHero({ service }: { service: Service }) {
           {service.duration}
         </span>
       </div>
-
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-        {service.title}
-      </h1>
 
       <p className="text-sm text-gray-600 leading-relaxed max-w-2xl">
         {service.shortDescription}

@@ -86,11 +86,11 @@ export default function BusinessProfileForm({
     resolver: zodResolver(businessProfileSchema),
     defaultValues: {
       businessName: initialValues?.businessName || "",
-      businessType: initialValues?.businessType || "Private Limited Company",
-      industry: initialValues?.industry || "IT & Software",
-      state: initialValues?.state || "Maharashtra",
-      employeeCount: initialValues?.employeeCount || "1-9 employees",
-      annualTurnover: initialValues?.annualTurnover || "10L - 40L",
+      businessType: initialValues?.businessType || "",
+      industry: initialValues?.industry || "",
+      state: initialValues?.state || "",
+      employeeCount: initialValues?.employeeCount || "",
+      annualTurnover: initialValues?.annualTurnover || "",
     },
   });
 
@@ -99,11 +99,11 @@ export default function BusinessProfileForm({
     if (initialValues && Object.keys(initialValues).length > 0) {
       reset({
         businessName: initialValues.businessName || "",
-        businessType: initialValues.businessType || "Private Limited Company",
-        industry: initialValues.industry || "IT & Software",
-        state: initialValues.state || "Maharashtra",
-        employeeCount: initialValues.employeeCount || "1-9 employees",
-        annualTurnover: initialValues.annualTurnover || "10L - 40L",
+        businessType: initialValues.businessType || "",
+        industry: initialValues.industry || "",
+        state: initialValues.state || "",
+        employeeCount: initialValues.employeeCount || "",
+        annualTurnover: initialValues.annualTurnover || "",
       });
     }
   }, [initialValues, reset]);

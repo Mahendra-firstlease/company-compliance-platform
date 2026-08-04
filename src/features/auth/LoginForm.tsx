@@ -70,7 +70,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
 
       modal.closeAll();
       if (onSuccess) onSuccess();
-      router.push("/business-profile");
+      router.push("/services");
       router.refresh();
     } catch (err: any) {
       console.error("Login error:", err);

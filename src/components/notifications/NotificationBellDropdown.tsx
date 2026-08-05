@@ -176,7 +176,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
                 <p className="text-[11px] text-slate-400">Loading live updates...</p>
               </div>
             ) : notifications.length > 0 ? (
-              notifications.slice(0, 8).map((notif) => {
+              notifications.slice(0, 5).map((notif) => {
                 const getIconAndColor = () => {
                   switch (notif.type) {
                     case "SUCCESS":

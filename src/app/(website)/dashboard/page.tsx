@@ -392,55 +392,66 @@ export default function UserDashboardPage() {
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
             {dbNotifications.length > 0 ? (
-              dbNotifications.map((notif) => {
-                const getIconAndColor = () => {
-                  switch (notif.type) {
-                    case "SUCCESS":
-                      return { Icon: CheckCircle2, color: "text-emerald-500 bg-emerald-50" };
-                    case "WARNING":
-                      return { Icon: AlertCircle, color: "text-rose-500 bg-rose-50" };
-                    case "URGENT":
-                      return { Icon: AlertCircle, color: "text-amber-500 bg-amber-50" };
-                    default:
-                      return { Icon: ShieldCheck, color: "text-indigo-600 bg-indigo-50" };
-                  }
-                };
+              <>
+                {dbNotifications.slice(0, 5).map((notif) => {
+                  const getIconAndColor = () => {
+                    switch (notif.type) {
+                      case "SUCCESS":
+                        return { Icon: CheckCircle2, color: "text-emerald-500 bg-emerald-50" };
+                      case "WARNING":
+                        return { Icon: AlertCircle, color: "text-rose-500 bg-rose-50" };
+                      case "URGENT":
+                        return { Icon: AlertCircle, color: "text-amber-500 bg-amber-50" };
+                      default:
+                        return { Icon: ShieldCheck, color: "text-indigo-600 bg-indigo-50" };
+                    }
+                  };
 
-                const { Icon, color } = getIconAndColor();
+                  const { Icon, color } = getIconAndColor();
 
-                return (
-                  <div
-                    key={notif.id}
-                    className={`flex gap-3 text-xs items-start p-2.5 rounded-lg border transition-colors ${
-                      notif.isRead
-                        ? "bg-slate-50/50 border-slate-100 text-slate-500"
-                        : "bg-white border-indigo-100 shadow-2xs font-medium text-slate-800"
-                    }`}
-                  >
-                    <div className={`p-1.5 rounded-lg ${color} shrink-0 mt-0.5`}>
-                      <Icon size={14} />
-                    </div>
-                    <div className="space-y-0.5 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className={`font-bold ${notif.isRead ? "text-slate-700" : "text-slate-900"}`}>
-                          {notif.title}
-                        </h4>
-                        <span className="text-[10px] text-slate-400">
-                          {formatDate(notif.createdAt)}
-                        </span>
+                  return (
+                    <div
+                      key={notif.id}
+                      className={`flex gap-3 text-xs items-start p-2.5 rounded-lg border transition-colors ${
+                        notif.isRead
+                          ? "bg-slate-50/50 border-slate-100 text-slate-500"
+                          : "bg-white border-indigo-100 shadow-2xs font-medium text-slate-800"
+                      }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${color} shrink-0 mt-0.5`}>
+                        <Icon size={14} />
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-normal">
-                        {notif.message}
-                      </p>
-                      {notif.link && (
-                        <Link href={notif.link} className="inline-block pt-1 text-[11px] font-bold text-indigo-600 hover:underline">
-                          View details &rarr;
-                        </Link>
-                      )}
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className={`font-bold ${notif.isRead ? "text-slate-700" : "text-slate-900"}`}>
+                            {notif.title}
+                          </h4>
+                          <span className="text-[10px] text-slate-400">
+                            {formatDate(notif.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-normal">
+                          {notif.message}
+                        </p>
+                        {notif.link && (
+                          <Link href={notif.link} className="inline-block pt-1 text-[11px] font-bold text-indigo-600 hover:underline">
+                            View details &rarr;
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+
+                <div className="pt-2 text-center border-t border-slate-100">
+                  <Link
+                    href="/dashboard/notifications"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors py-1 px-3 rounded-md hover:bg-indigo-50"
+                  >
+                    View All Notifications ({dbNotifications.length}) <ArrowRight size={13} />
+                  </Link>
+                </div>
+              </>
             ) : (
               <div className="p-6 text-center space-y-2">
                 <Bell size={24} className="text-slate-300 mx-auto" />

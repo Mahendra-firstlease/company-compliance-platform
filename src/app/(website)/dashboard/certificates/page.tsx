@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { FileCheck } from "lucide-react";
+import { FileCheck, Download } from "lucide-react";
 import Button from "@/components/common/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { getApplications, ApplicationCase } from "@/lib/applications";
+import { downloadFile } from "@/utils/download";
 
 export default function CertificatesPage() {
   const [cases, setCases] = useState<ApplicationCase[]>([]);
@@ -47,15 +48,19 @@ export default function CertificatesPage() {
                       </p>
                     </div>
                   </div>
-                  <Link href={`/applications/${c.serviceSlug}`}>
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      className="text-xs font-semibold"
-                    >
-                      Download License
-                    </Button>
-                  </Link>
+
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => {
+                      const certUrl = c.issuedCertificates?.[0]?.certificateUrl || `/api/download?filename=${encodeURIComponent(`${c.serviceTitle}_Certificate.pdf`)}`;
+                      downloadFile(certUrl, `${c.serviceTitle.replace(/[^a-zA-Z0-9]/g, "_")}_Certificate.pdf`);
+                    }}
+                    className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
+                    leftIcon={<Download size={13} />}
+                  >
+                    Download License
+                  </Button>
                 </div>
               ))
             ) : (

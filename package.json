@@ -44,7 +44,6 @@
     "react-dropzone": "^19.1.1",
     "react-hook-form": "^7.80.0",
     "recharts": "^3.10.1",
-    "sharp": "^0.35.3",
     "sonner": "^2.0.7",
     "swiper": "^12.2.0",
     "tailwind-merge": "^3.6.0",

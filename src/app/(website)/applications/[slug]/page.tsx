@@ -1,5 +1,7 @@
 "use client";
 
+import { downloadFile } from "@/utils/download";
+
 import React, { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import { WorkspaceSkeleton } from "@/components/ui/skeletons";
@@ -221,50 +223,16 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
     }, 1200);
   };
 
-  // Simulate mock certificate delivery
+  // Trigger certificate download via server-side proxy
   const triggerCertificateDownload = () => {
     if (!appCase) return;
-    setIsDownloadingCert(true);
-    setTimeout(() => {
-      setIsDownloadingCert(false);
 
-      const certWindow = window.open("", "_blank");
-      if (certWindow) {
-        certWindow.document.write(`
-          <html>
-            <head>
-              <title>Certificate - ${appCase.serviceTitle}</title>
-              <style>
-                body { font-family: 'Times New Roman', serif; background: #faf8f5; padding: 60px; text-align: center; color: #2c251f; }
-                .border-outer { border: 15px solid #d4af37; padding: 50px; background: #fff; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-                .border-inner { border: 2px dashed #b8860b; padding: 40px; }
-                h1 { font-size: 3em; margin: 0 0 10px 0; color: #8b6508; letter-spacing: 2px; }
-                h3 { font-size: 1.5em; font-weight: normal; margin: 20px 0; }
-                p.desc { font-style: italic; font-size: 1.2em; margin: 30px auto; max-width: 600px; line-height: 1.6; }
-                div.meta { display: flex; justify-content: space-between; margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px; font-size: 0.9em; }
-              </style>
-            </head>
-            <body>
-              <div style="border: 15px solid #d4af37; padding: 50px; background: #fff; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                <div style="border: 2px dashed #b8860b; padding: 40px;">
-                  <h1 style="font-size:2.8em;margin:0 0 10px 0;color:#8b6508;letter-spacing:2px;">CERTIFICATE OF COMPLIANCE</h1>
-                  <p style="font-size:0.8em;letter-spacing:4px;color:#888;margin-bottom:20px;">MINISTRY OF CORPORATE AFFAIRS</p>
-                  <h3 style="font-size:1.3em;font-weight:normal;margin:20px 0;">This is to certify that the business entity</h3>
-                  <h2 style="font-size:2em;margin:10px 0;color:#111;font-weight:bold;">${appCase.customerName.toUpperCase()}</h2>
-                  <p style="font-style:italic;font-size:1.1em;margin:30px auto;max-width:600px;line-height:1.6;color:#475569;">has successfully met all statutory guidelines, document submissions, and filing audits required under Indian Ministry Regulations for the service registration of</p>
-                  <h2 style="color:#8b6508;margin:10px 0;font-size:1.8em;">${appCase.serviceTitle}</h2>
-                  <div style="display:flex;justify-content:space-between;margin-top:60px;border-top:1px solid #eee;padding-top:20px;font-size:0.9em;color:#64748b;">
-                    <div><strong>Tracking ID:</strong> ${appCase.id}</div>
-                    <div><strong>Date of Issue:</strong> ${new Date().toLocaleDateString()}</div>
-                  </div>
-                </div>
-              </div>
-            </body>
-          </html>
-        `);
-        certWindow.document.close();
-      }
-    }, 1500);
+    const certUrl = appCase.issuedCertificates?.[0]?.certificateUrl || `/api/download?filename=${encodeURIComponent(`${appCase.serviceTitle}_Certificate.pdf`)}`;
+    const filename = `${appCase.serviceTitle.replace(/[^a-zA-Z0-9]/g, "_")}_Certificate.pdf`;
+
+    setIsDownloadingCert(true);
+    downloadFile(certUrl, filename);
+    setTimeout(() => setIsDownloadingCert(false), 800);
   };
 
   if (isInitialLoading) {

@@ -13,7 +13,7 @@ import { sendApplicationNotification } from "@/lib/notifications-dispatcher";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -23,6 +23,7 @@ export async function GET(
       include: {
         documents: true,
         assignedExecutive: true,
+        certificates: true,
       },
     });
 
@@ -34,6 +35,7 @@ export async function GET(
         include: {
           documents: true,
           assignedExecutive: true,
+          certificates: true,
         },
       });
     }
@@ -41,7 +43,7 @@ export async function GET(
     if (!application) {
       return NextResponse.json(
         { error: "Application not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -50,10 +52,25 @@ export async function GET(
       ...application,
       query: application.queryText || undefined,
       queryResponse: formDataObj._queryResponse || undefined,
-      queryStatus: formDataObj._queryStatus || (application.queryText ? "QUERY_RAISED" : "RESOLVED"),
+      queryStatus:
+        formDataObj._queryStatus ||
+        (application.queryText ? "QUERY_RAISED" : "RESOLVED"),
       clientResponseFiles: formDataObj._clientResponseFiles || [],
       queryHistory: formDataObj._queryHistory || [],
-      assignedExecutive: application.assignedExecutive?.name || application.assignedExecutiveId || undefined,
+      assignedExecutive:
+        application.assignedExecutive?.name ||
+        application.assignedExecutiveId ||
+        undefined,
+      issuedCertificates: (application.certificates || []).map(
+        (certificate) => ({
+          id: certificate.id,
+          applicationId: certificate.applicationId,
+          userId: certificate.userId,
+          certificateName: certificate.certificateName,
+          certificateUrl: certificate.certificateUrl,
+          issuedDate: certificate.issuedDate.toISOString(),
+        }),
+      ),
       uploadedDocs: {
         ...formatStoredUploadMetadata(extractUploadedDocuments(formDataObj)),
         ...formatApplicationDocuments(application.documents),
@@ -68,16 +85,20 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-    const rateLimit = checkRateLimit(`patch_app:${ip}`, RATE_LIMIT_CONFIGS.userApi);
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(
+      `patch_app:${ip}`,
+      RATE_LIMIT_CONFIGS.userApi,
+    );
 
     if (!rateLimit.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait a moment." },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -100,7 +121,9 @@ export async function PATCH(
       const currentForm = (payload.formData || {}) as Record<string, any>;
       updateData.formData = {
         ...currentForm,
-        ...(payload.formData._uploadedDocs ? { _uploadedDocs: payload.formData._uploadedDocs } : {}),
+        ...(payload.formData._uploadedDocs
+          ? { _uploadedDocs: payload.formData._uploadedDocs }
+          : {}),
       };
     }
     if (payload.query !== undefined) updateData.queryText = payload.query;
@@ -112,19 +135,34 @@ export async function PATCH(
       payload.clientResponseFiles !== undefined ||
       payload.queryHistory !== undefined
     ) {
-      const existingApp = await prisma.application.findUnique({ where: { id } });
-      const currentForm = (payload.formData || existingApp?.formData || {}) as Record<string, any>;
+      const existingApp = await prisma.application.findUnique({
+        where: { id },
+      });
+      const currentForm = (payload.formData ||
+        existingApp?.formData ||
+        {}) as Record<string, any>;
       updateData.formData = {
         ...currentForm,
-        ...(payload.queryResponse !== undefined && { _queryResponse: payload.queryResponse }),
-        ...(payload.queryStatus !== undefined && { _queryStatus: payload.queryStatus }),
-        ...(payload.clientResponseFiles !== undefined && { _clientResponseFiles: payload.clientResponseFiles }),
-        ...(payload.queryHistory !== undefined && { _queryHistory: payload.queryHistory }),
+        ...(payload.queryResponse !== undefined && {
+          _queryResponse: payload.queryResponse,
+        }),
+        ...(payload.queryStatus !== undefined && {
+          _queryStatus: payload.queryStatus,
+        }),
+        ...(payload.clientResponseFiles !== undefined && {
+          _clientResponseFiles: payload.clientResponseFiles,
+        }),
+        ...(payload.queryHistory !== undefined && {
+          _queryHistory: payload.queryHistory,
+        }),
       };
     }
 
     if (payload.assignedExecutive !== undefined) {
-      if (!payload.assignedExecutive || payload.assignedExecutive === "Unassigned") {
+      if (
+        !payload.assignedExecutive ||
+        payload.assignedExecutive === "Unassigned"
+      ) {
         updateData.assignedExecutiveId = null;
       } else {
         const cleanName = payload.assignedExecutive.split(",")[0].trim();
@@ -147,38 +185,97 @@ export async function PATCH(
       }
     }
 
-    const uploadedDocs = (payload.formData?._uploadedDocs || {}) as Record<string, {
-      name?: unknown;
-      size?: unknown;
-      type?: unknown;
-      url?: unknown;
-    }>;
+    const uploadedDocs = (payload.formData?._uploadedDocs || {}) as Record<
+      string,
+      {
+        name?: unknown;
+        size?: unknown;
+        type?: unknown;
+        url?: unknown;
+      }
+    >;
+    const existingApplication = await prisma.application.findUnique({
+      where: { id },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (!existingApplication) {
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 },
+      );
+    }
+
     const existingDocuments = await prisma.document.findMany({
       where: { applicationId: id },
-      select: { fileUrl: true },
+      select: {
+        fileUrl: true,
+      },
     });
-    const existingUrls = new Set(existingDocuments.map((document) => document.fileUrl));
-    const documentsToCreate = Object.entries(uploadedDocs).flatMap(([docName, file]) => {
-      if (
-        typeof file?.name !== "string" ||
-        typeof file?.url !== "string" ||
-        !file.url ||
-        file.url.startsWith("blob:") ||
-        existingUrls.has(file.url)
-      ) {
-        return [];
-      }
 
-      existingUrls.add(file.url);
-      return [{
-        docName,
-        fileName: file.name,
-        fileUrl: file.url,
-        fileSize: String(file.size || "Unknown"),
-        fileType: typeof file.type === "string" ? file.type : "Document",
-        status: "PENDING_REVIEW",
-      }];
-    });
+    const existingUrls = new Set(
+      existingDocuments.map((document) => document.fileUrl),
+    );
+    const documentsToCreate = Object.entries(uploadedDocs).flatMap(
+      ([docName, file]) => {
+        if (
+          typeof file?.name !== "string" ||
+          typeof file?.url !== "string" ||
+          !file.url ||
+          file.url.startsWith("blob:") ||
+          existingUrls.has(file.url)
+        ) {
+          return [];
+        }
+
+        existingUrls.add(file.url);
+        return [
+          {
+            userId: existingApplication.userId,
+
+            docName,
+            fileName: file.name,
+            fileUrl: file.url,
+            fileSize: String(file.size || "Unknown"),
+            fileType: typeof file.type === "string" ? file.type : "Document",
+            status: "PENDING_REVIEW",
+          },
+        ];
+      },
+    );
+
+    // Persist issued certificates to IssuedCertificate database table
+    if (
+      payload.issuedCertificates &&
+      Array.isArray(payload.issuedCertificates) &&
+      payload.issuedCertificates.length > 0
+    ) {
+      const existingCerts = await prisma.issuedCertificate.findMany({
+        where: { applicationId: id },
+        select: { certificateUrl: true },
+      });
+      const existingCertUrls = new Set(
+        existingCerts.map((c) => c.certificateUrl),
+      );
+
+      for (const cert of payload.issuedCertificates) {
+        const certName = cert.certificateName || cert.name;
+        const certUrl = cert.certificateUrl || cert.url;
+        if (certName && certUrl && !existingCertUrls.has(certUrl)) {
+          await prisma.issuedCertificate.create({
+            data: {
+              applicationId: id,
+              userId: existingApplication.userId,
+              certificateName: certName,
+              certificateUrl: certUrl,
+            },
+          });
+          existingCertUrls.add(certUrl);
+        }
+      }
+    }
 
     const updatedApp = await prisma.application.update({
       where: { id },
@@ -192,8 +289,19 @@ export async function PATCH(
         documents: true,
         assignedExecutive: true,
         user: true,
+        certificates: true,
       },
     });
+
+    console.log(
+  JSON.stringify(
+    {
+      documentsToCreate,
+    },
+    null,
+    2
+  )
+);
 
     // Invoke Notification Dispatcher for status changes or query alerts
     if (payload.query) {
@@ -238,17 +346,60 @@ export async function PATCH(
       });
     }
 
-    const updatedFormDataObj = (updatedApp.formData as Record<string, any>) || {};
+    const updatedFormDataObj =
+      (updatedApp.formData as Record<string, any>) || {};
+    const issuedCertificates = Array.isArray(
+      (
+        updatedApp as {
+          certificates?: Array<{
+            id: string;
+            applicationId: string;
+            userId: string;
+            certificateName: string;
+            certificateUrl: string;
+            issuedDate: Date;
+          }>;
+        }
+      ).certificates,
+    )
+      ? (
+          updatedApp as {
+            certificates?: Array<{
+              id: string;
+              applicationId: string;
+              userId: string;
+              certificateName: string;
+              certificateUrl: string;
+              issuedDate: Date;
+            }>;
+          }
+        ).certificates!.map((certificate) => ({
+          id: certificate.id,
+          applicationId: certificate.applicationId,
+          userId: certificate.userId,
+          certificateName: certificate.certificateName,
+          certificateUrl: certificate.certificateUrl,
+          issuedDate: certificate.issuedDate.toISOString(),
+        }))
+      : [];
     const formatted = {
       ...updatedApp,
       query: updatedApp.queryText || undefined,
       queryResponse: updatedFormDataObj._queryResponse || undefined,
-      queryStatus: updatedFormDataObj._queryStatus || (updatedApp.queryText ? "QUERY_RAISED" : "RESOLVED"),
+      queryStatus:
+        updatedFormDataObj._queryStatus ||
+        (updatedApp.queryText ? "QUERY_RAISED" : "RESOLVED"),
       clientResponseFiles: updatedFormDataObj._clientResponseFiles || [],
       queryHistory: updatedFormDataObj._queryHistory || [],
-      assignedExecutive: updatedApp.assignedExecutive?.name || updatedApp.assignedExecutiveId || undefined,
+      assignedExecutive:
+        updatedApp.assignedExecutive?.name ||
+        updatedApp.assignedExecutiveId ||
+        undefined,
+      issuedCertificates,
       uploadedDocs: {
-        ...formatStoredUploadMetadata(extractUploadedDocuments(updatedFormDataObj)),
+        ...formatStoredUploadMetadata(
+          extractUploadedDocuments(updatedFormDataObj),
+        ),
         ...formatApplicationDocuments(updatedApp.documents),
       },
     };
@@ -261,7 +412,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -270,7 +421,10 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: "Application deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Application deleted successfully" },
+      { status: 200 },
+    );
   } catch (error) {
     return handleApiError(error, "Failed to delete application.");
   }

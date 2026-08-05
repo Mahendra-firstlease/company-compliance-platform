@@ -95,6 +95,20 @@ export type {
   ApplicationStatus,
 };
 
+export function getDashboardCertificates(applications: Array<Pick<ApplicationCase, "id" | "serviceTitle" | "status" | "issuedCertificates">>) {
+  return applications
+    .filter((application) => application.status === "APPROVED")
+    .flatMap((application) =>
+      (application.issuedCertificates || []).map((certificate) => ({
+        applicationId: application.id,
+        serviceTitle: application.serviceTitle,
+        certificateName: certificate.certificateName,
+        certificateUrl: certificate.certificateUrl,
+        issuedDate: certificate.issuedDate,
+      })),
+    );
+}
+
 /**
  * Shared helper to format Prisma document relations into UploadedFile record map
  */

@@ -1,5 +1,7 @@
 "use client";
 
+import { downloadFile } from "@/utils/download";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -752,14 +754,18 @@ export default function AdminApplicationDetailPage() {
                                 {cert.certificateName || cert.name}
                               </span>
                             </div>
-                            <a
-                              href={cert.certificateUrl || cert.url}
-                              target="_blank"
-                              download
-                              className="text-emerald-700 hover:underline font-bold flex items-center gap-1"
+                            <button
+                              type="button"
+                              onClick={() =>
+                                downloadFile(
+                                  cert.certificateUrl || cert.url,
+                                  cert.certificateName || cert.name || "Official_Certificate.pdf"
+                                )
+                              }
+                              className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1 cursor-pointer hover:underline"
                             >
                               <Download size={13} /> Download PDF
-                            </a>
+                            </button>
                           </div>
                         ))}
                       </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { FileText, ExternalLink, Download } from "lucide-react";
+import { downloadFile } from "@/utils/download";
 
 interface FieldValueProps {
   value: any;
@@ -37,7 +38,7 @@ export default function FieldValue({ value, compact = false, className = "" }: F
     );
   }
 
-  // 3. Handle Objects (Uploaded File Meta, Front/Back scans, or Generic JSON)
+// 3. Handle Objects (Uploaded File Meta, Front/Back scans, or Generic JSON)
   if (typeof value === "object") {
     // A. Front-Back scan document object
     if (value.frontUrl || value.backUrl || value.front?.url || value.back?.url) {
@@ -47,28 +48,26 @@ export default function FieldValue({ value, compact = false, className = "" }: F
       return (
         <div className="flex flex-wrap gap-2 items-center">
           {frontHref && (
-            <a
-              href={frontHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors"
+            <button
+              type="button"
+              onClick={() => downloadFile(frontHref, "Front_Scan.pdf")}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors cursor-pointer"
             >
               <FileText size={13} className="text-indigo-600 shrink-0" />
               <span>Front Scan</span>
-              <ExternalLink size={10} className="opacity-70 shrink-0" />
-            </a>
+              <Download size={10} className="opacity-70 shrink-0" />
+            </button>
           )}
           {backHref && (
-            <a
-              href={backHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors"
+            <button
+              type="button"
+              onClick={() => downloadFile(backHref, "Back_Scan.pdf")}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors cursor-pointer"
             >
               <FileText size={13} className="text-indigo-600 shrink-0" />
               <span>Back Scan</span>
-              <ExternalLink size={10} className="opacity-70 shrink-0" />
-            </a>
+              <Download size={10} className="opacity-70 shrink-0" />
+            </button>
           )}
         </div>
       );
@@ -76,37 +75,35 @@ export default function FieldValue({ value, compact = false, className = "" }: F
 
     // B. Single document file object with url or fileUrl or path
     const fileUrl = value.url || value.fileUrl || value.path || value.location;
-    const fileName = value.name || value.fileName || value.filename || value.title || "View Uploaded Document";
+    const fileName = value.name || value.fileName || value.filename || value.title || "Uploaded_Document.pdf";
 
     if (fileUrl) {
       if (compact) {
         return (
-          <a
-            href={fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-indigo-700 hover:underline font-bold text-xs"
+          <button
+            type="button"
+            onClick={() => downloadFile(fileUrl, fileName)}
+            className="inline-flex items-center gap-1 text-indigo-700 hover:underline font-bold text-xs cursor-pointer"
           >
             <FileText size={12} className="shrink-0 text-indigo-600" />
             <span className="truncate max-w-32">{fileName}</span>
-            <ExternalLink size={10} className="shrink-0 opacity-70" />
-          </a>
+            <Download size={10} className="shrink-0 opacity-70" />
+          </button>
         );
       }
 
       return (
-        <a
-          href={fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-all max-w-full group"
+        <button
+          type="button"
+          onClick={() => downloadFile(fileUrl, fileName)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-all max-w-full group cursor-pointer"
           title={fileName}
         >
           <FileText size={14} className="shrink-0 text-indigo-600 group-hover:scale-110 transition-transform" />
           <span className="truncate">{fileName}</span>
           {value.size && <span className="text-[10px] text-indigo-500 font-normal shrink-0">({value.size})</span>}
-          <ExternalLink size={11} className="shrink-0 opacity-70 group-hover:opacity-100" />
-        </a>
+          <Download size={11} className="shrink-0 opacity-70 group-hover:opacity-100" />
+        </button>
       );
     }
 

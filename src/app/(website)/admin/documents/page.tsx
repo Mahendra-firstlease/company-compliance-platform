@@ -1,5 +1,7 @@
 "use client";
 
+import { downloadFile } from "@/utils/download";
+
 import React, { useState, useEffect, useMemo } from "react";
 import {
   FileText,
@@ -241,15 +243,14 @@ export default function AdminDocumentsPage() {
                           <span>Preview</span>
                         </button>
 
-                        <a
-                          href={doc.viewUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
-                          title="Open/Download file"
+                        <button
+                          type="button"
+                          onClick={() => downloadFile(doc.viewUrl, doc.fileName)}
+                          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                          title="Download file to device"
                         >
                           <Download className="size-3.5" />
-                        </a>
+                        </button>
                       </div>
                     </td>
                   </tr>

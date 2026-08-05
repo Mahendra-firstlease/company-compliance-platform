@@ -58,6 +58,7 @@ export async function GET(request: Request) {
       include: {
         documents: true,
         assignedExecutive: true,
+        certificates: true,
       },
     });
 
@@ -70,6 +71,14 @@ export async function GET(request: Request) {
         query: app.queryText || undefined,
         assignedExecutive:
           app.assignedExecutive?.name || app.assignedExecutiveId || undefined,
+        issuedCertificates: (app.certificates || []).map((certificate) => ({
+          id: certificate.id,
+          applicationId: certificate.applicationId,
+          userId: certificate.userId,
+          certificateName: certificate.certificateName,
+          certificateUrl: certificate.certificateUrl,
+          issuedDate: certificate.issuedDate.toISOString(),
+        })),
         uploadedDocs: {
           ...savedUploads,
           ...formatApplicationDocuments(app.documents),

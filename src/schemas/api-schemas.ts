@@ -90,6 +90,18 @@ export const updateApplicationSchema = z.object({
   clientResponseFiles: z.array(z.any()).optional(),
   queryHistory: z.array(z.any()).optional(),
   assignedExecutive: z.string().max(150).optional(),
+  issuedCertificates: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().optional(),
+        certificateName: z.string().optional(),
+        url: z.string().optional(),
+        certificateUrl: z.string().optional(),
+        issuedDate: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const registerUserSchema = z.object({

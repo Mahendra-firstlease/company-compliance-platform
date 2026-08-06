@@ -21,6 +21,17 @@ export function downloadFile(url: string, filename?: string) {
     return;
   }
 
+  // Auth-gated local document route — use directly
+  if (url.startsWith("/api/documents/")) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = targetFileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+
   // Route request through Server-Side Download Proxy
   const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(targetFileName)}`;
 

@@ -10,6 +10,10 @@ import {
   formatStoredUploadMetadata,
 } from "@/lib/applications";
 import { sendApplicationNotification } from "@/lib/notifications-dispatcher";
+import {
+  DocVerificationMap,
+  getWorkflowBlockers,
+} from "@/lib/application-workflow";
 
 export async function GET(
   request: Request,
@@ -113,13 +117,64 @@ export async function PATCH(
     const payload = validation.data;
     const updateData: any = {};
 
+    const existingApplication = await prisma.application.findUnique({
+      where: { id },
+      include: {
+        documents: true,
+      },
+    });
+
+    if (!existingApplication) {
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 },
+      );
+    }
+
+    if (payload.status) {
+      const existingFormData =
+        (existingApplication.formData as Record<string, unknown>) || {};
+      const mergedFormData = {
+        ...existingFormData,
+        ...((payload.formData || {}) as Record<string, unknown>),
+      };
+      const uploadedDocs = {
+        ...formatStoredUploadMetadata(
+          extractUploadedDocuments(mergedFormData),
+        ),
+        ...formatApplicationDocuments(existingApplication.documents),
+      };
+      const docVerifications =
+        (mergedFormData._docVerification as DocVerificationMap) || {};
+
+      const blockers = getWorkflowBlockers({
+        currentStatus: existingApplication.status,
+        targetStatus: payload.status,
+        formData: mergedFormData,
+        uploadedDocs,
+        docVerifications,
+        hasActiveQuery: Boolean(
+          payload.query !== undefined
+            ? payload.query
+            : existingApplication.queryText,
+        ),
+      });
+
+      if (blockers.length > 0) {
+        return NextResponse.json({ error: blockers[0] }, { status: 400 });
+      }
+    }
+
     if (payload.status) updateData.status = payload.status as ApplicationStatus;
     if (payload.customerName) updateData.customerName = payload.customerName;
     if (payload.customerPhone) updateData.customerPhone = payload.customerPhone;
     if (payload.address) updateData.address = payload.address;
     if (payload.formData) {
+      const existingFormData =
+        (existingApplication.formData as Record<string, any>) || {};
       const currentForm = (payload.formData || {}) as Record<string, any>;
       updateData.formData = {
+        ...existingFormData,
         ...currentForm,
         ...(payload.formData._uploadedDocs
           ? { _uploadedDocs: payload.formData._uploadedDocs }
@@ -194,20 +249,6 @@ export async function PATCH(
         url?: unknown;
       }
     >;
-    const existingApplication = await prisma.application.findUnique({
-      where: { id },
-      select: {
-        userId: true,
-      },
-    });
-
-    if (!existingApplication) {
-      return NextResponse.json(
-        { error: "Application not found" },
-        { status: 404 },
-      );
-    }
-
     const existingDocuments = await prisma.document.findMany({
       where: { applicationId: id },
       select: {

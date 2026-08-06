@@ -18,6 +18,9 @@ import SearchBar from "@/components/common/SearchBar";
 import Badge from "@/components/ui/Badge/Badge";
 import { notify } from "@/lib/notify";
 import { TableSkeleton } from "@/components/ui/skeletons";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface AdminDocument {
   id: string;
@@ -82,6 +85,22 @@ export default function AdminDocumentsPage() {
     });
   }, [documents, searchTerm, docTypeFilter]);
 
+  const {
+    pageItems: paginatedDocuments,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredDocuments, {
+    initialPageSize: 10,
+    resetDeps: [searchTerm, docTypeFilter],
+  });
+
   const handleUpdateDocumentStatus = (id: string, newStatus: "VERIFIED" | "REJECTED") => {
     setDocuments((prev) =>
       prev.map((d) => (d.id === id ? { ...d, status: newStatus } : d))
@@ -122,20 +141,30 @@ export default function AdminDocumentsPage() {
       </div>
 
       {/* Filter & Search Bar using Reusable SearchBar Component */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Reusable SearchBar Component */}
-        <div className="w-full sm:w-80">
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search by file, applicant, or ref ID..."
-            size="sm"
-            fullWidth={true}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="w-full sm:w-80">
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search by file, applicant, or ref ID..."
+              size="sm"
+              fullWidth={true}
+            />
+          </div>
+
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
           />
         </div>
 
         {/* Category Filters */}
-        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
+        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto scrollbar-none">
           {[
             { label: "All Documents", value: "ALL" },
             { label: "Aadhaar / ID", value: "aadhaar" },
@@ -163,7 +192,7 @@ export default function AdminDocumentsPage() {
         <TableSkeleton rows={6} cols={6} />
       ) : filteredDocuments.length > 0 ? (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto">
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                 <tr>
@@ -176,7 +205,7 @@ export default function AdminDocumentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                {filteredDocuments.map((doc) => (
+                {paginatedDocuments.map((doc) => (
                   <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -258,6 +287,65 @@ export default function AdminDocumentsPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="sm:hidden divide-y divide-slate-100">
+            {paginatedDocuments.map((doc) => (
+              <div key={doc.id} className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDoc(doc)}
+                    className="size-12 shrink-0 overflow-hidden rounded-lg border border-indigo-100 bg-slate-950"
+                  >
+                    {isImageDocument(doc) ? (
+                      <img src={doc.viewUrl} alt="" className="size-full object-cover" />
+                    ) : (
+                      <FileText className="m-auto size-5 text-indigo-300" />
+                    )}
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-slate-900 truncate">{doc.fileName}</p>
+                    <p className="text-[11px] text-slate-500">{doc.docName}</p>
+                    <p className="text-[11px] font-semibold text-indigo-600 mt-1">{doc.serviceTitle}</p>
+                  </div>
+                  <Badge
+                    variant={doc.status === "VERIFIED" ? "green" : doc.status === "REJECTED" ? "red" : "indigo"}
+                    rounded="full"
+                    size="sm"
+                  >
+                    {doc.status}
+                  </Badge>
+                </div>
+                <div className="text-[11px] text-slate-500 space-y-1">
+                  <p className="font-bold text-slate-800">{doc.customerName}</p>
+                  <p className="truncate">{doc.userEmail}</p>
+                  <p className="font-mono text-slate-400">{doc.applicationId}</p>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setSelectedDoc(doc)}
+                    className="flex-1 min-h-[44px] rounded-lg bg-indigo-50 text-indigo-700 font-bold text-xs"
+                  >
+                    Preview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(doc.viewUrl, doc.fileName)}
+                    className="min-h-[44px] min-w-[44px] rounded-lg border border-slate-200 text-slate-600"
+                    aria-label="Download"
+                  >
+                    <Download className="size-4 mx-auto" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <TablePagination
+            entryStart={entryStart}
+            entryEnd={entryEnd}
+            totalItems={totalItems}
+          />
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg p-12 text-center space-y-4">
@@ -276,7 +364,7 @@ export default function AdminDocumentsPage() {
       {/* Document Inspector Modal */}
       {selectedDoc && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-xl max-w-4xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white border border-slate-200 rounded-lg max-w-4xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">

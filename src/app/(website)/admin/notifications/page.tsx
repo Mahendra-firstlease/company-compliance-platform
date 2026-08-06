@@ -21,6 +21,9 @@ import {
 import apiFetch from "@/lib/apiClient";
 import { notify } from "@/lib/notify";
 import { formatDate } from "@/utils/formatters";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface DbNotificationItem {
   id: string;
@@ -116,6 +119,22 @@ export default function AdminNotificationsPage() {
     return list;
   }, [notifications, filterType, searchQuery]);
 
+  const {
+    pageItems: paginatedNotifications,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredNotifications, {
+    initialPageSize: 10,
+    resetDeps: [filterType, searchQuery],
+  });
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -152,8 +171,30 @@ export default function AdminNotificationsPage() {
       </div>
 
       {/* Touch-Friendly Mobile Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
-        {/* Horizontal Scrollable Filter Pills on Mobile */}
+      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative w-full sm:max-w-xs">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search admin alerts..."
+              className="w-full pl-9 pr-3 py-2 sm:py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
+            />
+          </div>
+
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
+            className="sm:ml-auto"
+          />
+        </div>
+
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto max-w-full scrollbar-none">
           <button
             type="button"
@@ -191,18 +232,6 @@ export default function AdminNotificationsPage() {
             Read ({notifications.length - unreadCount})
           </button>
         </div>
-
-        {/* Mobile Full-Width Search Input */}
-        <div className="relative w-full sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search admin alerts..."
-            className="w-full pl-9 pr-3 py-2 sm:py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
-          />
-        </div>
       </div>
 
       {/* Responsive Notifications List Card */}
@@ -215,7 +244,7 @@ export default function AdminNotificationsPage() {
             </div>
           ) : filteredNotifications.length > 0 ? (
             <div className="divide-y divide-slate-100">
-              {filteredNotifications.map((notif) => {
+              {paginatedNotifications.map((notif) => {
                 const getIconAndColor = () => {
                   switch (notif.type) {
                     case "SUCCESS":
@@ -241,7 +270,7 @@ export default function AdminNotificationsPage() {
                     }`}
                   >
                     {/* Icon Badge */}
-                    <div className={`p-2 rounded-xl border ${color} shrink-0 mt-0.5`}>
+                    <div className={`p-2 rounded-lg border ${color} shrink-0 mt-0.5`}>
                       <Icon size={16} />
                     </div>
 
@@ -290,6 +319,11 @@ export default function AdminNotificationsPage() {
                   </div>
                 );
               })}
+              <TablePagination
+                entryStart={entryStart}
+                entryEnd={entryEnd}
+                totalItems={totalItems}
+              />
             </div>
           ) : (
             <div className="p-12 text-center space-y-3">

@@ -1,6 +1,7 @@
 import LoginForm from "@/features/auth/LoginForm";
 import CompanyLogo from "@/components/common/CompanyLogo";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowLeft, ShieldCheck, CheckCircle2, Lock, Award, Building2 } from "lucide-react";
 
 export default function LoginPage() {
@@ -23,7 +24,9 @@ export default function LoginPage() {
 
         {/* Center Auth Form Card */}
         <div className="my-auto py-8 max-w-sm w-full mx-auto space-y-6">
-          <LoginForm />
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-slate-100" />}>
+            <LoginForm />
+          </Suspense>
         </div>
 
         {/* Footer Security Badges */}

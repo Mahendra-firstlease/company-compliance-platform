@@ -19,17 +19,11 @@ import {
   TableHead,
   TableCell
 } from "./table";
-import Button from "@/components/common/Button";
 import SearchBar from "@/components/common/SearchBar";
-import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, SearchX } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, SearchX } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  UISelect as Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem
-} from "@/components/forms/Select";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 export interface ColumnDef<T> {
   header: string;
@@ -128,29 +122,9 @@ export default function DataTable<T>({
 
   return (
     <div className="space-y-3 w-full">
-      {/* 1. Top Toolbar (Entries Per Page & Search) */}
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-          <span>Show</span>
-          <Select
-            value={String(pageState.pageSize)}
-            onValueChange={(val: string) => table.setPageSize(Number(val))}
-          >
-            <SelectTrigger className="w-16 h-8 py-0 px-2 text-xs font-bold bg-slate-50">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="w-16">
-              {[5, 10, 20, 50].map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {String(size)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span>entries</span>
-        </div>
-
-        <div className="w-full sm:w-72">
+      {/* 1. Top Toolbar (Search & Pagination Controls) */}
+      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs lg:flex-row lg:items-center lg:justify-between">
+        <div className="w-full lg:max-w-sm">
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -158,10 +132,18 @@ export default function DataTable<T>({
             size="sm"
           />
         </div>
+
+        <TablePaginationToolbar
+          pageSize={pageState.pageSize}
+          pageIndex={pageState.pageIndex}
+          totalPages={totalPages || 1}
+          onPageSizeChange={(nextPageSize) => table.setPageSize(nextPageSize)}
+          onPageChange={(nextPageIndex) => table.setPageIndex(nextPageIndex)}
+        />
       </div>
 
       {/* 2. Shadcn-Styled Datatable Frame */}
-      <div className="bg-white border border-slate-200/80 rounded-xl shadow-2xs overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-lg shadow-2xs overflow-hidden">
         {/* Desktop Table View (sm+) */}
         <div className="hidden sm:block overflow-x-auto w-full scrollbar-thin scrollbar-thumb-slate-200">
           <Table>
@@ -313,39 +295,11 @@ export default function DataTable<T>({
         </div>
 
         {/* 3. Bottom Pagination Footer */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-3.5 border-t border-slate-100 bg-slate-50/50 text-xs font-semibold text-slate-500">
-          <div>
-            Showing <span className="text-slate-900 font-bold">{entryStart}</span> to{" "}
-            <span className="text-slate-900 font-bold">{entryEnd}</span> of{" "}
-            <span className="text-slate-900 font-bold">{filteredRowsCount}</span> records
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="px-2.5 py-1 text-xs font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40"
-              disabled={!table.getCanPreviousPage()}
-              onClick={() => table.previousPage()}
-            >
-              <ChevronLeft size={13} /> Prev
-            </Button>
-
-            <div className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 font-bold text-xs shadow-2xs">
-              Page {pageState.pageIndex + 1} of {totalPages || 1}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="px-2.5 py-1 text-xs font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40"
-              disabled={!table.getCanNextPage()}
-              onClick={() => table.nextPage()}
-            >
-              Next <ChevronRight size={13} />
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          entryStart={entryStart}
+          entryEnd={entryEnd}
+          totalItems={filteredRowsCount}
+        />
       </div>
     </div>
   );

@@ -11,6 +11,9 @@ import {
   cleanupUploadedFile,
 } from "@/lib/upload";
 import { uploadToS3Storage, deleteFromS3Storage } from "@/lib/s3";
+import { uploadBufferToStorage } from "@/lib/s3/uploadBuffer";
+import { convertImageToPdf } from "@/lib/pdf/convertImageToPdf";
+import { isImageExtension, toPdfFileName } from "@/lib/pdf/is-image-file";
 import fs from "fs/promises";
 import path from "path";
 
@@ -31,6 +34,7 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File | null;
     const docName = (formData.get("docName") as string) || "Verification Attachment";
     const applicationId = formData.get("applicationId") as string | null;
+    const convertToPdf = formData.get("convertToPdf") === "true";
 
     if (!file) {
       console.warn("⚠️ [SERVER UPLOAD REJECT]: No file attached in request payload.");
@@ -86,12 +90,30 @@ export async function POST(request: Request) {
 
     // 3. Verify Magic Bytes & Calculate SHA-256 Checksum
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const ext = path.extname(sanitized).replace(".", "").toLowerCase();
+    let buffer: Buffer = Buffer.from(arrayBuffer);
+    let ext = path.extname(sanitized).replace(".", "").toLowerCase();
+    let storedFileName = sanitized;
+    let storedFileType = file.type || `application/${ext}`;
+
     const magicCheck = verifyMagicBytes(buffer, ext);
     if (!magicCheck.isValid) {
       console.warn("⚠️ [SERVER UPLOAD REJECT - MAGIC BYTES]:", magicCheck.error);
       return NextResponse.json({ error: magicCheck.error || "File signature verification failed." }, { status: 400 });
+    }
+
+    const originalExt = path.extname(sanitized).replace(".", "").toLowerCase();
+    let wasConvertedToPdf = false;
+
+    if (convertToPdf && isImageExtension(originalExt)) {
+      buffer = await convertImageToPdf(buffer, originalExt);
+      storedFileName = toPdfFileName(sanitized);
+      storedFileType = "application/pdf";
+      ext = "pdf";
+      wasConvertedToPdf = true;
+      console.log("📄 [CERTIFICATE IMAGE → PDF]:", {
+        original: sanitized,
+        converted: storedFileName,
+      });
     }
 
     const checksum = calculateChecksum(buffer);
@@ -103,11 +125,24 @@ export async function POST(request: Request) {
     });
 
     // 4. Save to Private Storage (Outside /public) or S3 Storage via AWS SDK PutObjectCommand
-    const s3Result = await uploadToS3Storage(file, "compliance-documents", {
-      uploadedBy: userId,
-      applicationId: applicationId || "unassigned",
-      checksum,
-    });
+    const s3Result = wasConvertedToPdf
+      ? await uploadBufferToStorage(
+          buffer,
+          storedFileName,
+          storedFileType,
+          "compliance-documents",
+          {
+            uploadedBy: userId,
+            applicationId: applicationId || "unassigned",
+            checksum,
+            convertedFromImage: "true",
+          },
+        )
+      : await uploadToS3Storage(file, "compliance-documents", {
+          uploadedBy: userId,
+          applicationId: applicationId || "unassigned",
+          checksum,
+        });
 
     if (s3Result.isMock) {
       const privateDir = path.join(process.cwd(), "storage", "documents");
@@ -180,12 +215,13 @@ export async function POST(request: Request) {
       success: true,
       id: dbDocument?.id || `doc_${Date.now()}`,
       fileUrl: s3Result.fileUrl,
-      fileName: s3Result.fileName,
+      fileName: wasConvertedToPdf ? storedFileName : s3Result.fileName,
       fileSize: s3Result.fileSize,
-      fileType: s3Result.fileType,
+      fileType: wasConvertedToPdf ? "PDF" : s3Result.fileType,
       key: s3Result.key,
       checksum: s3Result.checksum,
       isMock: s3Result.isMock,
+      convertedToPdf: wasConvertedToPdf,
     });
   } catch (error) {
     if (createdFilePath) {

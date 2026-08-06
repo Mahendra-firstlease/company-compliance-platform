@@ -36,7 +36,7 @@ export const PasswordResetEmail = ({
       </Section>
 
       {/* Expiration Notice Box */}
-      <Section className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-[20px] my-[20px]">
+      <Section className="bg-amber-50/60 border border-amber-200/80 rounded-lg p-[20px] my-[20px]">
         <Text className="text-[13px] font-bold text-amber-900 my-0 mb-[6px]">
           ⚠️ Important Expiration Warning:
         </Text>
@@ -49,7 +49,7 @@ export const PasswordResetEmail = ({
       <Section className="text-center my-[28px]">
         <Button
           href={resetUrl}
-          className="bg-indigo-600 text-white font-bold text-[14px] rounded-xl px-[32px] py-[13px] inline-block shadow-sm"
+          className="bg-indigo-600 text-white font-bold text-[14px] rounded-lg px-[32px] py-[13px] inline-block shadow-sm"
         >
           Reset Your Account Password →
         </Button>

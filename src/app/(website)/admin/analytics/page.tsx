@@ -130,12 +130,12 @@ export default function AnalyticsConfigPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+          <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-bold">
             {["1M", "3M", "6M", "YTD"].map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-2 min-h-9 rounded-lg transition-all cursor-pointer ${
                   timeRange === range
                     ? "bg-white text-indigo-700 shadow-xs"
                     : "text-slate-500 hover:text-slate-900"
@@ -149,7 +149,7 @@ export default function AnalyticsConfigPage() {
           <button
             onClick={() => fetchAnalyticsData(true)}
             title="Refresh analytics data"
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer border border-slate-200 active:scale-95"
+            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer border border-slate-200 active:scale-95"
           >
             <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin text-indigo-600" : ""}`} />
           </button>
@@ -221,7 +221,7 @@ export default function AnalyticsConfigPage() {
             </CardTitle>
             <CardDescription className="text-xs">Gross Order Value (GTV) breakdown compared against CA/CS Net Professional Fees</CardDescription>
           </div>
-          <div className="flex items-center gap-4 text-xs font-bold text-slate-600">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-slate-600">
             <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-indigo-600" /> Gross GTV</span>
             <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-emerald-500" /> Net CA/CS Margin</span>
             <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-slate-400" /> Govt Fee Passthrough</span>
@@ -385,7 +385,7 @@ export default function AnalyticsConfigPage() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-1">
+            <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-lg space-y-1">
               <p className="font-extrabold text-emerald-950 flex items-center justify-between">
                 <span>Record Incorporation Growth</span>
                 <ArrowUpRight className="size-4 text-emerald-600" />
@@ -395,7 +395,7 @@ export default function AnalyticsConfigPage() {
               </p>
             </div>
 
-            <div className="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-xl space-y-1">
+            <div className="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-lg space-y-1">
               <p className="font-extrabold text-indigo-950 flex items-center justify-between">
                 <span>Processing SLA Rate</span>
                 <ArrowUpRight className="size-4 text-indigo-600" />
@@ -405,7 +405,7 @@ export default function AnalyticsConfigPage() {
               </p>
             </div>
 
-            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
               <p className="font-extrabold text-slate-900 flex items-center justify-between">
                 <span>Auto-Reconciliation Rate</span>
                 <ArrowUpRight className="size-4 text-slate-500" />

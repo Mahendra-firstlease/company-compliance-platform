@@ -57,6 +57,15 @@ export default function DashboardLayout({
     );
   };
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
       {/* Dedicated Dashboard Header */}
@@ -71,6 +80,15 @@ export default function DashboardLayout({
       />
 
       <div className="flex flex-1 flex-col lg:flex-row relative">
+        {mobileMenuOpen && (
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="fixed inset-0 top-16 z-10 bg-slate-900/40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Reusable Collapsible Dashboard Sidebar */}
         <DashboardSidebar
           menuItems={menuItems}
@@ -100,29 +118,6 @@ export default function DashboardLayout({
               </div>
             )}
 
-            {/* Mobile Quick Navigation Pill Bar (< lg) */}
-            <div className="lg:hidden -mt-4 pb-2 overflow-x-auto scrollbar-none flex items-center gap-2 border-b border-slate-200/80">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => onTabChange(item.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                      isActive
-                        ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/30"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900"
-                    }`}
-                  >
-                    <Icon size={14} />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Inner Dashboard Tabs Content */}
             <div className="space-y-8">{children}</div>
           </main>
 

@@ -78,19 +78,17 @@ describe("Dynamic Client File Upload & S3 Helper", () => {
       expect(result.type).toBe("PDF");
     });
 
-    it("handles S3 network fallback gracefully", async () => {
-      const mockFile = new File(["test data"], "rent_agreement.pdf", { type: "application/pdf" });
+    it("surfaces network failures instead of silently falling back", async () => {
+      const mockFile = new File(["test data"], "rent_agreement.pdf", {
+        type: "application/pdf",
+      });
 
       const globalFetch = vi.fn().mockRejectedValue(new Error("Network Error"));
       vi.stubGlobal("fetch", globalFetch);
-      vi.stubGlobal("URL", {
-        createObjectURL: vi.fn().mockReturnValue("blob:http://localhost:3000/mock-uuid"),
-      });
 
-      const result = await processSingleFileUpload(mockFile, "Rent Agreement", ["pdf"], 5);
-
-      expect(result.name).toBe("rent_agreement.pdf");
-      expect(result.url).toContain("blob:http://localhost:3000");
+      await expect(
+        processSingleFileUpload(mockFile, "Rent Agreement", ["pdf"], 5),
+      ).rejects.toThrow("Network Error");
     });
   });
 });

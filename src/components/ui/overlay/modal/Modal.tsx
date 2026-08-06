@@ -30,8 +30,8 @@ const positionClasses = {
   center: "items-center justify-center",
   top: "items-start justify-center pt-10 sm:pt-20",
   bottom: "items-end justify-center pb-10 sm:pb-20",
-  left: "items-center justify-start pl-10",
-  right: "items-center justify-end pr-10",
+  left: "items-center justify-start pl-0 sm:pl-10",
+  right: "items-center justify-end pr-0 sm:pr-10",
 };
 
 const animationClasses = {

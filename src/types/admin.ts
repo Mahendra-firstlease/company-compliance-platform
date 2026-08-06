@@ -21,7 +21,9 @@ export interface AdminDocumentItem {
 
 export interface UploadCertificatePayload {
   applicationId: string;
-  userId: string;
   certificateName: string;
-  certificateUrl: string;
+  fileUrl: string;
+  fileName?: string;
+  fileSize?: string;
+  fileType?: string;
 }

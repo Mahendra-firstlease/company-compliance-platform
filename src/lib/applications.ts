@@ -95,13 +95,117 @@ export type {
   ApplicationStatus,
 };
 
-export function getDashboardCertificates(applications: Array<Pick<ApplicationCase, "id" | "serviceTitle" | "status" | "issuedCertificates">>) {
+export interface VaultDocument {
+  id: string;
+  docName: string;
+  fileName: string;
+  fileSize: string;
+  fileType: string;
+  serviceTitle: string;
+  serviceSlug: string;
+  applicationId: string;
+  status: string;
+  fileUrl?: string;
+  uploadedAt: string;
+  source: "CLIENT" | "ADMIN";
+}
+
+export function certificateDownloadName(
+  serviceTitle: string,
+  certificateName: string,
+): string {
+  const safeService = serviceTitle.replace(/[^a-zA-Z0-9]/g, "_");
+  const safeCert = certificateName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9]/g, "_");
+  return `${safeService}_${safeCert}.pdf`;
+}
+
+export function resolveDocumentViewUrl(fileUrl?: string, docId?: string): string {
+  if (!fileUrl) return "";
+  if (fileUrl.startsWith("/api/documents/")) return fileUrl;
+  if (fileUrl.startsWith("/storage/") && docId) return `/api/documents/${docId}`;
+  return `/api/download?url=${encodeURIComponent(fileUrl)}`;
+}
+
+function formatVaultDate(dateStr?: string): string {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** Merge client uploads and admin-issued certificates into one vault list. */
+export function mergeVaultDocuments(applications: ApplicationCase[]): VaultDocument[] {
+  const list: VaultDocument[] = [];
+  const seenUrls = new Set<string>();
+
+  applications.forEach((application) => {
+    if (application.uploadedDocs) {
+      Object.entries(application.uploadedDocs).forEach(([docName, file], idx) => {
+        const rawUrl = file.url || "";
+        if (rawUrl) seenUrls.add(rawUrl);
+
+        const isVerified =
+          file.status === "VERIFIED" || application.status === "APPROVED";
+
+        list.push({
+          id: file.id || `${application.id}-${docName}-${idx}`,
+          docName,
+          fileName: file.name,
+          fileSize:
+            typeof file.size === "number"
+              ? `${(file.size / 1024).toFixed(1)} KB`
+              : String(file.size || "Unknown"),
+          fileType: file.type || "PDF / Document",
+          serviceTitle: application.serviceTitle,
+          serviceSlug: application.serviceSlug,
+          applicationId: application.id,
+          status: isVerified ? "VERIFIED" : "REGISTERED",
+          fileUrl: resolveDocumentViewUrl(rawUrl, file.id),
+          uploadedAt: formatVaultDate(file.uploadedAt || application.createdAt),
+          source: file.status === "VERIFIED" ? "ADMIN" : "CLIENT",
+        });
+      });
+    }
+
+    (application.issuedCertificates || []).forEach((cert, idx) => {
+      if (cert.certificateUrl && seenUrls.has(cert.certificateUrl)) return;
+      if (cert.certificateUrl) seenUrls.add(cert.certificateUrl);
+
+      list.push({
+        id: cert.id || `${application.id}-cert-${idx}`,
+        docName: cert.certificateName,
+        fileName: cert.certificateName,
+        fileSize: "—",
+        fileType: "application/pdf",
+        serviceTitle: application.serviceTitle,
+        serviceSlug: application.serviceSlug,
+        applicationId: application.id,
+        status: "VERIFIED",
+        fileUrl: resolveDocumentViewUrl(cert.certificateUrl),
+        uploadedAt: formatVaultDate(cert.issuedDate),
+        source: "ADMIN",
+      });
+    });
+  });
+
+  return list;
+}
+
+export function getDashboardCertificates(
+  applications: Array<
+    Pick<ApplicationCase, "id" | "serviceTitle" | "serviceSlug" | "status" | "issuedCertificates">
+  >,
+) {
   return applications
     .filter((application) => application.status === "APPROVED")
     .flatMap((application) =>
       (application.issuedCertificates || []).map((certificate) => ({
+        id: certificate.id,
         applicationId: application.id,
         serviceTitle: application.serviceTitle,
+        serviceSlug: application.serviceSlug,
         certificateName: certificate.certificateName,
         certificateUrl: certificate.certificateUrl,
         issuedDate: certificate.issuedDate,

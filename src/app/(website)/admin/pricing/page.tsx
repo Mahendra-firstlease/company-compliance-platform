@@ -19,6 +19,9 @@ import Badge from "@/components/ui/Badge/Badge";
 import { notify } from "@/lib/notify";
 import { useModal } from "@/components/ui/overlay";
 import Select from "@/components/forms/Select";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface CouponItem {
   code: string;
@@ -37,6 +40,21 @@ export default function PricingConfigPage() {
     { code: "FIRSTLEASE500", discountType: "FLAT", discountValue: 500, minOrderValue: 1499, status: "ACTIVE", usageCount: 124 },
     { code: "FESTIVE15", discountType: "PERCENTAGE", discountValue: 15, minOrderValue: 1999, status: "EXPIRED", usageCount: 210 },
   ]);
+
+  const {
+    pageItems: paginatedCoupons,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(coupons, {
+    initialPageSize: 10,
+  });
 
   const handleAddCouponModal = () => {
     let newCode = "";
@@ -180,14 +198,22 @@ export default function PricingConfigPage() {
 
       {/* Active Promo Coupons Table */}
       <Card enableHover>
-        <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        <CardHeader className="pb-3 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-base font-bold">Promotional Discount Coupons</CardTitle>
             <CardDescription className="text-xs">Active codes available for checkout discounts</CardDescription>
           </div>
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
+          />
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -201,7 +227,7 @@ export default function PricingConfigPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
-                {coupons.map((coupon) => (
+                {paginatedCoupons.map((coupon) => (
                   <tr key={coupon.code} className="hover:bg-slate-50/60 transition-colors">
                     <td className="py-3.5 px-4 font-mono font-bold text-indigo-700">
                       {coupon.code}
@@ -252,6 +278,56 @@ export default function PricingConfigPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="sm:hidden divide-y divide-slate-100">
+            {paginatedCoupons.map((coupon) => (
+              <div key={coupon.code} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono font-bold text-indigo-700">{coupon.code}</p>
+                  <Badge variant={coupon.status === "ACTIVE" ? "green" : "gray"} rounded="full" size="sm">
+                    {coupon.status}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-lg bg-slate-50 p-2.5">
+                    <p className="text-[10px] text-slate-400 uppercase font-bold">Discount</p>
+                    <p className="font-black text-slate-900">
+                      {coupon.discountType === "FLAT" ? `₹${coupon.discountValue}` : `${coupon.discountValue}%`}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-slate-50 p-2.5">
+                    <p className="text-[10px] text-slate-400 uppercase font-bold">Min Order</p>
+                    <p className="font-bold text-slate-800">₹{coupon.minOrderValue}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">{coupon.usageCount} uses</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCoupons((prev) =>
+                        prev.map((c) =>
+                          c.code === coupon.code
+                            ? { ...c, status: c.status === "ACTIVE" ? "EXPIRED" : "ACTIVE" }
+                            : c,
+                        ),
+                      );
+                      notify.success(`Toggled status for ${coupon.code}`);
+                    }}
+                    className="min-h-[44px] px-4 font-bold text-indigo-600"
+                  >
+                    Toggle Status
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <TablePagination
+            entryStart={entryStart}
+            entryEnd={entryEnd}
+            totalItems={totalItems}
+          />
         </CardContent>
       </Card>
     </div>

@@ -151,7 +151,7 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} {footerData.companyInfo.name || "FirstLease Platforms Pvt Ltd"}. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
             <Link href="/terms" className="hover:text-indigo-600 transition-colors">
               Terms & Conditions
             </Link>
@@ -160,7 +160,7 @@ const Footer: React.FC = () => {
               Privacy Policy
             </Link>
             <span>&middot;</span>
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-bold">
+            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
               <ShieldCheck className="size-3.5" />
               <span>256-Bit SSL Encrypted</span>
             </span>

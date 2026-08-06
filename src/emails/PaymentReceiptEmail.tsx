@@ -45,7 +45,7 @@ export const PaymentReceiptEmail = ({
       </Section>
 
       {/* Invoice Receipt Box */}
-      <Section className="bg-slate-50 border border-slate-200 rounded-xl p-[20px] my-[20px]">
+      <Section className="bg-slate-50 border border-slate-200 rounded-lg p-[20px] my-[20px]">
         <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
           <tr>
             <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Order Reference:</td>
@@ -86,7 +86,7 @@ export const PaymentReceiptEmail = ({
       <Section className="text-center my-[28px]">
         <Button
           href={dashboardUrl}
-          className="bg-indigo-600 text-white font-bold text-[14px] rounded-xl px-[28px] py-[12px] inline-block shadow-sm"
+          className="bg-indigo-600 text-white font-bold text-[14px] rounded-lg px-[28px] py-[12px] inline-block shadow-sm"
         >
           Track Case Progress in Portal →
         </Button>

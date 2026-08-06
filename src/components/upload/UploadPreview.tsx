@@ -22,7 +22,7 @@ export default function UploadPreview({
     Boolean(file.url?.match(/\.(jpeg|jpg|gif|png|webp)$/i));
 
   return (
-    <div className="flex items-center justify-between bg-slate-50/90 border border-slate-200 hover:border-slate-300 rounded-xl p-3 transition-colors shadow-2xs">
+    <div className="flex items-center justify-between bg-slate-50/90 border border-slate-200 hover:border-slate-300 rounded-lg p-3 transition-colors shadow-2xs">
       <div className="flex items-center gap-3 overflow-hidden">
         <div className="size-9 bg-indigo-50 text-indigo-700 rounded-lg flex items-center justify-center shrink-0 border border-indigo-100 font-bold text-xs">
           {isImage ? <FileCheck size={18} className="text-indigo-600" /> : <FileText size={18} className="text-indigo-600" />}

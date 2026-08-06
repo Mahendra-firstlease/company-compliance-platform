@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, LogIn, Loader2 } from "lucide-react";
 
 import InputField from "@/components/forms/fields/InputField";
@@ -14,6 +14,7 @@ import Button from "@/components/common/Button";
 import { loginSchema, LoginFormValues } from "@/schemas/auth.schema";
 import { notify } from "@/lib/notify";
 import { useModal } from "@/components/ui/overlay";
+import { getPostLoginPath } from "@/lib/auth-redirect";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -23,6 +24,8 @@ interface LoginFormProps {
 export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
   const modal = useModal();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -37,7 +40,9 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
         title: "Connecting to Google...",
         description: "Redirecting to Google authentication.",
       });
-      await signIn("google", { callbackUrl: "/business-profile" });
+      await signIn("google", {
+        callbackUrl: getPostLoginPath(null, callbackUrl || "/dashboard"),
+      });
     } catch (err) {
       console.error(err);
       notify.error({
@@ -70,7 +75,10 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
 
       modal.closeAll();
       if (onSuccess) onSuccess();
-      router.push("/services");
+
+      const session = await getSession();
+      const role = (session?.user as { role?: string } | undefined)?.role;
+      router.push(getPostLoginPath(role, callbackUrl));
       router.refresh();
     } catch (err: any) {
       console.error("Login error:", err);

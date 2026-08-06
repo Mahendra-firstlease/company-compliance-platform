@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     "http://localhost:3000",
     "https://assets.prebuiltui.com",
     "192.168.1.15",
+    "192.168.1.5"
 
   ],
   images: {

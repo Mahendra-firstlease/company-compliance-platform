@@ -24,6 +24,9 @@ import { useModal } from "@/components/ui/overlay";
 import apiFetch from "@/lib/apiClient";
 import Select from "@/components/forms/Select";
 import Input from "@/components/forms/Input";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface SpecialistMember {
   id: string;
@@ -62,6 +65,21 @@ export default function TeamConfigPage() {
   useEffect(() => {
     fetchTeamMembers();
   }, []);
+
+  const {
+    pageItems: paginatedTeamMembers,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(teamMembers, {
+    initialPageSize: 10,
+  });
 
   // 1. Add Specialist Modal (Create)
   const handleAddMemberModal = () => {
@@ -411,6 +429,17 @@ export default function TeamConfigPage() {
       </div>
 
       {/* Team Roster Datatable */}
+      <div className="flex justify-end bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+        <TablePaginationToolbar
+          pageSize={pageSize}
+          pageIndex={pageIndex}
+          totalPages={totalPages}
+          pageSizeOptions={pageSizeOptions}
+          onPageSizeChange={setPageSize}
+          onPageChange={setPageIndex}
+        />
+      </div>
+
       <Card enableHover>
         <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
           <div>
@@ -447,7 +476,7 @@ export default function TeamConfigPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
-                      {teamMembers.map((member) => (
+                      {paginatedTeamMembers.map((member) => (
                         <tr key={member.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
@@ -520,7 +549,7 @@ export default function TeamConfigPage() {
 
                 {/* Mobile Card List View (< sm) */}
                 <div className="sm:hidden divide-y divide-slate-100">
-                  {teamMembers.map((member) => (
+                  {paginatedTeamMembers.map((member) => (
                     <div key={member.id} className="p-4 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3">
@@ -580,6 +609,11 @@ export default function TeamConfigPage() {
                     </div>
                   ))}
                 </div>
+                <TablePagination
+                  entryStart={entryStart}
+                  entryEnd={entryEnd}
+                  totalItems={totalItems}
+                />
               </>
             )}
           </div>

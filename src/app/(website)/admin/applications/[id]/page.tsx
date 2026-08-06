@@ -48,11 +48,20 @@ import {
   getApplicationBySlug,
   updateApplication,
   ApplicationCase,
+  certificateDownloadName,
 } from "@/lib/applications";
 import { FileUpload, MultiFileUpload, UploadedFile } from "@/components/upload";
 import { notify } from "@/lib/notify";
 import apiFetch from "@/lib/apiClient";
 import { formatDate } from "@/utils/formatters";
+import {
+  areApplicantFilesApproved,
+  canAdvanceWorkflowStatus,
+  getDocumentsVerificationSummary,
+  getSubmittedFormEntries,
+  getWorkflowBlockers,
+  isFormDataApproved,
+} from "@/lib/application-workflow";
 
 interface SpecialistMember {
   id: string;
@@ -85,8 +94,8 @@ export default function AdminApplicationDetailPage() {
     docKey: string;
     file: UploadedFile;
   } | null>(null);
-  const submittedFormEntries = Object.entries(application?.formData || {}).filter(
-    ([fieldName]) => !fieldName.startsWith("_"),
+  const submittedFormEntries = getSubmittedFormEntries(
+    application?.formData || {},
   );
 
   // Load application details & team specialists
@@ -186,9 +195,58 @@ export default function AdminApplicationDetailPage() {
     }
   };
 
+  const workflowContext = application
+    ? {
+        currentStatus: application.status,
+        formData: (application.formData || {}) as Record<string, unknown>,
+        uploadedDocs: (application.uploadedDocs || {}) as Record<string, unknown>,
+        docVerifications,
+        hasActiveQuery: Boolean(application.query),
+      }
+    : null;
+
+  const formApproved = workflowContext
+    ? isFormDataApproved(workflowContext.formData)
+    : false;
+  const filesApproved = workflowContext
+    ? areApplicantFilesApproved(
+        workflowContext.uploadedDocs,
+        workflowContext.docVerifications,
+      )
+    : false;
+  const docSummary = workflowContext
+    ? getDocumentsVerificationSummary(
+        workflowContext.uploadedDocs,
+        workflowContext.docVerifications,
+      )
+    : { total: 0, verified: 0, pending: 0, defective: 0, allVerified: true };
+
+  const getStatusBlockers = (targetStatus: string) =>
+    workflowContext
+      ? getWorkflowBlockers({
+          ...workflowContext,
+          targetStatus,
+        })
+      : [];
+
+  const canAdvanceTo = (targetStatus: string) =>
+    workflowContext
+      ? canAdvanceWorkflowStatus({
+          ...workflowContext,
+          targetStatus,
+        })
+      : false;
+
   // Handle Status Update
   const handleUpdateStatus = async (newStatus: string) => {
     if (!application) return;
+
+    const blockers = getStatusBlockers(newStatus);
+    if (blockers.length > 0) {
+      notify.error(blockers[0]);
+      return;
+    }
+
     setIsUpdatingStatus(newStatus);
     try {
       const res = await updateApplication(application.id, {
@@ -197,11 +255,33 @@ export default function AdminApplicationDetailPage() {
       if (res.success && res.data) {
         setApplication(res.data);
         notify.success(`Filing stage updated to ${newStatus}.`);
+      } else {
+        notify.error(res.error || "Failed to update filing stage.");
       }
     } catch (err) {
       notify.error("Failed to update filing stage.");
     } finally {
       setIsUpdatingStatus(null);
+    }
+  };
+
+  const handleApproveFormData = async () => {
+    if (!application) return;
+
+    const currentForm = (application.formData || {}) as Record<string, any>;
+    const res = await updateApplication(application.id, {
+      formData: {
+        ...currentForm,
+        _formDataApproved: true,
+        _formDataApprovedAt: new Date().toISOString(),
+      },
+    });
+
+    if (res.success && res.data) {
+      setApplication(res.data);
+      notify.success("Applicant form details approved by compliance officer.");
+    } else {
+      notify.error("Failed to approve applicant form details.");
     }
   };
 
@@ -268,51 +348,69 @@ export default function AdminApplicationDetailPage() {
       return;
     }
 
+    if (application.status !== "SUBMITTED" && application.status !== "APPROVED") {
+      notify.error(
+        'Advance the filing stage to "Submitted to Ministry" before issuing certificates.',
+      );
+      return;
+    }
+
     setIsUploadingCert(true);
     try {
-      let newCerts: any[] = [];
+      const filesToIssue =
+        certFiles.length > 0
+          ? certFiles
+          : [
+              {
+                name: `${certName.trim()}.pdf`,
+                url: "",
+                size: "0",
+                type: "application/pdf",
+              },
+            ];
 
-      if (certFiles.length > 0) {
-        newCerts = certFiles.map((file, idx) => ({
-          id: `CERT-${Date.now()}-${idx}`,
-          name: certName.trim()
+      let successCount = 0;
+
+      for (const file of filesToIssue) {
+        if (!file.url) {
+          notify.error("Certificate file must be uploaded before issuing.");
+          continue;
+        }
+
+        const certificateName = certName.trim()
+          ? certFiles.length > 1
             ? `${certName.trim()} (${file.name})`
-            : file.name,
-          certificateName: certName.trim()
-            ? `${certName.trim()} (${file.name})`
-            : file.name,
-          issuedDate: new Date().toISOString().split("T")[0],
-          url: file.url || `/certificates/${application.id}_cert.pdf`,
-          certificateUrl:
-            file.url || `/certificates/${application.id}_cert.pdf`,
-        }));
-      } else {
-        newCerts = [
-          {
-            id: `CERT-${Date.now()}`,
-            name: certName.trim(),
-            certificateName: certName.trim(),
-            issuedDate: new Date().toISOString().split("T")[0],
-            url: `/certificates/${application.id}_cert.pdf`,
-            certificateUrl: `/certificates/${application.id}_cert.pdf`,
-          },
-        ];
+            : certName.trim()
+          : file.name;
+
+        const res = await fetch("/api/admin/certificates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            applicationId: application.id,
+            certificateName,
+            fileUrl: file.url,
+            fileName: file.name,
+            fileSize: String(file.size),
+            fileType: file.type,
+          }),
+        });
+
+        if (res.ok) {
+          successCount++;
+        } else {
+          const data = await res.json().catch(() => ({}));
+          notify.error(data.error || `Failed to issue ${file.name}.`);
+        }
       }
 
-      const updatedCerts = [
-        ...(application.issuedCertificates || []),
-        ...newCerts,
-      ];
-      const res = await updateApplication(application.id, {
-        status: "APPROVED" as any,
-        issuedCertificates: updatedCerts as any,
-      });
-      if (res.success && res.data) {
-        setApplication(res.data);
+      if (successCount > 0) {
+        const refreshed = await getApplicationBySlug(application.id);
+        if (refreshed) setApplication(refreshed);
         setCertName("");
         setCertFiles([]);
         notify.success(
-          `Issued ${newCerts.length} official certificate(s) successfully!`,
+          `Issued ${successCount} official certificate(s) to the customer.`,
         );
       }
     } catch (err) {
@@ -593,10 +691,36 @@ export default function AdminApplicationDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Move Filing Stage Forward
                   </label>
+
+                  {(!formApproved || !filesApproved) && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 space-y-1.5">
+                      <p className="font-extrabold flex items-center gap-1.5">
+                        <ShieldAlert className="size-4 shrink-0" />
+                        Complete client review before advancing
+                      </p>
+                      {!formApproved && submittedFormEntries.length > 0 && (
+                        <p>• Approve submitted form data and information.</p>
+                      )}
+                      {!filesApproved && docSummary.total > 0 && (
+                        <p>
+                          • Verify all applicant files (
+                          {docSummary.verified}/{docSummary.total} verified
+                          {docSummary.defective > 0
+                            ? `, ${docSummary.defective} defective`
+                            : ""}
+                          ).
+                        </p>
+                      )}
+                      {!filesApproved && docSummary.total === 0 && (
+                        <p>• Wait for applicant files before advancing.</p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Button
                       variant={
@@ -606,8 +730,12 @@ export default function AdminApplicationDetailPage() {
                       }
                       size="sm"
                       onClick={() => handleUpdateStatus("UNDER_REVIEW")}
-                      disabled={isUpdatingStatus !== null}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer"
+                      disabled={
+                        isUpdatingStatus !== null ||
+                        !canAdvanceTo("UNDER_REVIEW")
+                      }
+                      title={getStatusBlockers("UNDER_REVIEW")[0]}
+                      className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer disabled:cursor-not-allowed"
                       leftIcon={
                         isUpdatingStatus === "UNDER_REVIEW" ? (
                           <Loader2 className="size-4 animate-spin" />
@@ -627,8 +755,11 @@ export default function AdminApplicationDetailPage() {
                       }
                       size="sm"
                       onClick={() => handleUpdateStatus("SUBMITTED")}
-                      disabled={isUpdatingStatus !== null}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer"
+                      disabled={
+                        isUpdatingStatus !== null || !canAdvanceTo("SUBMITTED")
+                      }
+                      title={getStatusBlockers("SUBMITTED")[0]}
+                      className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer disabled:cursor-not-allowed"
                       leftIcon={
                         isUpdatingStatus === "SUBMITTED" ? (
                           <Loader2 className="size-4 animate-spin" />
@@ -648,8 +779,11 @@ export default function AdminApplicationDetailPage() {
                       }
                       size="sm"
                       onClick={() => handleUpdateStatus("APPROVED")}
-                      disabled={isUpdatingStatus !== null}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer"
+                      disabled={
+                        isUpdatingStatus !== null || !canAdvanceTo("APPROVED")
+                      }
+                      title={getStatusBlockers("APPROVED")[0]}
+                      className="rounded-lg justify-start font-bold text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       leftIcon={
                         isUpdatingStatus === "APPROVED" ? (
                           <Loader2 className="size-4 animate-spin" />
@@ -759,7 +893,10 @@ export default function AdminApplicationDetailPage() {
                               onClick={() =>
                                 downloadFile(
                                   cert.certificateUrl || cert.url,
-                                  cert.certificateName || cert.name || "Official_Certificate.pdf"
+                                  certificateDownloadName(
+                                    application.serviceTitle,
+                                    cert.certificateName || cert.name || "Official_Certificate",
+                                  ),
                                 )
                               }
                               className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1 cursor-pointer hover:underline"
@@ -781,12 +918,14 @@ export default function AdminApplicationDetailPage() {
                     />
 
                     <MultiFileUpload
-                      label="Attach Official Certificate Document(s) (PDF / Image - Up to 5 files)"
+                      label="Attach Official Certificate Document(s) (PDF / Image - auto-converted to PDF)"
                       value={certFiles}
                       onChange={setCertFiles}
                       allowedTypes={["pdf", "png", "jpg", "jpeg"]}
                       maxFiles={5}
                       maxSizeMb={10}
+                      applicationId={application.id}
+                      convertToPdf
                     />
 
                     <Button
@@ -844,15 +983,16 @@ export default function AdminApplicationDetailPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      notify.success(
-                        "Applicant form details approved by compliance officer.",
-                      )
-                    }
-                    className="text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+                    onClick={handleApproveFormData}
+                    disabled={formApproved}
+                    className={`text-xs font-bold ${
+                      formApproved
+                        ? "text-emerald-800 bg-emerald-100 border-emerald-300 opacity-90 cursor-default"
+                        : "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+                    }`}
                     leftIcon={<CheckCircle size={13} />}
                   >
-                    Approve Details
+                    {formApproved ? "Details Approved" : "Approve Details"}
                   </Button>
                 )}
             </CardHeader>
@@ -964,7 +1104,9 @@ export default function AdminApplicationDetailPage() {
                 </CardDescription>
               </div>
               <span className="shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">
-                Review queue
+                {filesApproved
+                  ? "All files verified"
+                  : `${docSummary.verified}/${docSummary.total || 0} verified`}
               </span>
             </CardHeader>
             <CardContent className="p-5">
@@ -979,7 +1121,7 @@ export default function AdminApplicationDetailPage() {
                       return (
                         <div
                           key={docKey}
-                          className={`p-4 rounded-xl border transition-all space-y-3 shadow-xs ${
+                          className={`p-4 rounded-lg border transition-all space-y-3 shadow-xs ${
                             isVerified
                               ? "bg-emerald-50/70 border-emerald-300"
                               : isDefective
@@ -1122,7 +1264,7 @@ export default function AdminApplicationDetailPage() {
         {/* Right Column: Specialist Roster & Customer Summary */}
         <div className="space-y-6">
           {/* Card 1: Specialist Roster Assignment */}
-          <Card className="overflow-visible relative z-30">
+          <Card>
             <CardHeader className="pb-3 border-b border-slate-100">
               <CardTitle>Assigned Backoffice Specialist</CardTitle>
               <CardDescription>
@@ -1264,7 +1406,7 @@ export default function AdminApplicationDetailPage() {
 
       {previewDocument && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-white shadow-2xl">
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-slate-700 bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div className="min-w-0">
                 <p className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600">{previewDocument.docKey}</p>

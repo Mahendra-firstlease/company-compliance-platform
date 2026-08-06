@@ -16,7 +16,7 @@ export default function NavigationButtons({ className }: NavigationButtonsProps)
     <div className={cn("flex items-center gap-2", className)}>
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center justify-center size-8 rounded-lg bg-white border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-3xs cursor-pointer active:scale-95"
+        className="inline-flex items-center justify-center size-11 min-h-[44px] min-w-[44px] rounded-lg bg-white border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-3xs cursor-pointer active:scale-95"
         title="Go back"
         aria-label="Go back"
       >
@@ -24,7 +24,7 @@ export default function NavigationButtons({ className }: NavigationButtonsProps)
       </button>
       <button
         onClick={() => router.forward()}
-        className="inline-flex items-center justify-center size-8 rounded-lg bg-white border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-3xs cursor-pointer active:scale-95"
+        className="inline-flex items-center justify-center size-11 min-h-[44px] min-w-[44px] rounded-lg bg-white border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-3xs cursor-pointer active:scale-95"
         title="Go forward"
         aria-label="Go forward"
       >

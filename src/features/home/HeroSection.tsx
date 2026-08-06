@@ -21,7 +21,7 @@ function HeroSection({}: Props) {
           >
             <a
               href="#"
-              className="flex items-center gap-2 bg-primary-light border border-primary-border rounded-full p-1 pr-3 text-sm mx-auto md:mx-0 mt-20"
+              className="flex items-center gap-2 bg-primary-light border border-primary-border rounded-full p-1 pr-3 text-sm mx-auto md:mx-0 mt-8 sm:mt-12 md:mt-20"
             >
               <span className="bg-primary text-white text-xs px-3 py-1 rounded-full">
                 New
@@ -56,7 +56,7 @@ function HeroSection({}: Props) {
               Fast, secure, expert-led and hassle free.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-2xl sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">
+            <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-lg sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -66,7 +66,7 @@ function HeroSection({}: Props) {
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full sm:w-auto px-6 h-10 rounded-xl sm:rounded-full text-xs font-bold text-slate-50 cursor-pointer shrink-0"
+                className="w-full sm:w-auto px-6 h-10 rounded-lg sm:rounded-full text-xs font-bold text-slate-50 cursor-pointer shrink-0"
               >
                 Subscribe now
               </Button>

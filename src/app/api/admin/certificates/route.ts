@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { handleApiError } from "@/lib/api-response";
 import { sendApplicationNotification } from "@/lib/notifications-dispatcher";
+import { toPdfFileName } from "@/lib/pdf/is-image-file";
 
 export async function POST(request: Request) {
   try {
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { applicationId, certificateName, fileUrl, fileName, fileSize, fileType } = body;
+    const { applicationId, certificateName, fileUrl, fileName, fileSize } = body;
 
     if (!applicationId || !certificateName || !fileUrl) {
       return NextResponse.json(
@@ -52,6 +53,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedFileName = fileName
+      ? fileName.toLowerCase().endsWith(".pdf")
+        ? fileName
+        : toPdfFileName(fileName)
+      : `${application.serviceSlug}_certificate.pdf`;
+
     const newCertificate = await prisma.issuedCertificate.create({
       data: {
         applicationId: application.id,
@@ -66,13 +73,15 @@ export async function POST(request: Request) {
         applicationId: application.id,
         userId: application.userId,
         docName: certificateName || `Official Issued Certificate`,
-        fileName: fileName || `${application.serviceSlug}_certificate.pdf`,
+        fileName: normalizedFileName,
         fileUrl: fileUrl,
         fileSize: fileSize || "1.2 MB",
-        fileType: fileType || "application/pdf",
+        fileType: "application/pdf",
         status: "VERIFIED",
       },
     });
+
+    const wasAlreadyApproved = application.status === "APPROVED";
 
     const updatedApplication = await prisma.application.update({
       where: { id: application.id },
@@ -82,15 +91,17 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendApplicationNotification({
-      applicationId: updatedApplication.id,
-      serviceTitle: updatedApplication.serviceTitle,
-      customerName: updatedApplication.customerName,
-      customerPhone: updatedApplication.customerPhone,
-      userEmail: application.user?.email || undefined,
-      type: "APPROVED",
-      newStatus: "APPROVED",
-    });
+    if (!wasAlreadyApproved) {
+      await sendApplicationNotification({
+        applicationId: updatedApplication.id,
+        serviceTitle: updatedApplication.serviceTitle,
+        customerName: updatedApplication.customerName,
+        customerPhone: updatedApplication.customerPhone,
+        userEmail: application.user?.email || undefined,
+        type: "APPROVED",
+        newStatus: "APPROVED",
+      });
+    }
 
     return NextResponse.json(
       {

@@ -80,7 +80,7 @@ export default function ForgotPasswordForm() {
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-left space-y-1.5 text-xs text-slate-600">
+        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200/80 text-left space-y-1.5 text-xs text-slate-600">
           <p className="font-bold text-slate-800">Didn't receive the email?</p>
           <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-500">
             <li>Check your spam or junk folder.</li>
@@ -94,7 +94,7 @@ export default function ForgotPasswordForm() {
             variant="outline"
             fullWidth
             onClick={() => setIsSubmitted(false)}
-            className="rounded-xl font-bold text-xs"
+            className="rounded-lg font-bold text-xs"
           >
             Try Another Email
           </Button>
@@ -115,7 +115,7 @@ export default function ForgotPasswordForm() {
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
+          <div className="size-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
             <KeyRound className="size-5" />
           </div>
           <div>
@@ -142,7 +142,7 @@ export default function ForgotPasswordForm() {
           variant="primary"
           fullWidth
           disabled={isSubmitting}
-          className="h-11 rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
+          className="h-11 rounded-lg font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2 justify-center">

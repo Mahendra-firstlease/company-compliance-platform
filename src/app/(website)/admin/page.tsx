@@ -32,6 +32,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { getApplications, updateApplication, ApplicationCase } from "@/lib/applications";
+import { processSingleFileUpload } from "@/components/upload/upload-utils";
 import { notify } from "@/lib/notify";
 import SearchBar from "@/components/common/SearchBar";
 import { useModal } from "@/components/ui/overlay";
@@ -42,6 +43,14 @@ import { useRouter } from "next/navigation";
 import Select from "@/components/forms/Select";
 import Textarea from "@/components/forms/Textarea";
 import StatusBadge from "@/components/common/StatusBadge";
+import {
+  canAdvanceWorkflowStatus,
+  DocVerificationMap,
+  getWorkflowBlockers,
+} from "@/lib/application-workflow";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -125,6 +134,22 @@ export default function AdminDashboardPage() {
     });
   }, [cases, statusFilter, searchTerm]);
 
+  const {
+    pageItems: paginatedCases,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredCases, {
+    initialPageSize: 10,
+    resetDeps: [statusFilter, searchTerm],
+  });
+
   // Open Manage Case Dedicated Detail Workspace
   const handleOpenManageCase = (caseId: string) => {
     router.push(`/admin/applications/${caseId}`);
@@ -158,11 +183,32 @@ export default function AdminDashboardPage() {
   };
 
   const handleUpdateStatus = async (newStatus: "PAYMENT_CONFIRMED" | "UNDER_REVIEW" | "SUBMITTED" | "APPROVED") => {
-    if (!selectedCaseId) return;
+    if (!selectedCase) return;
+
+    const formData = (selectedCase.formData || {}) as Record<string, unknown>;
+    const blockers = getWorkflowBlockers({
+      currentStatus: selectedCase.status,
+      targetStatus: newStatus,
+      formData,
+      uploadedDocs: selectedCase.uploadedDocs || {},
+      docVerifications:
+        (formData._docVerification as DocVerificationMap) || {},
+      hasActiveQuery: Boolean(selectedCase.query),
+    });
+
+    if (blockers.length > 0) {
+      notify.error(blockers[0]);
+      return;
+    }
+
     setIsUpdatingStatus(newStatus);
 
     try {
-      await updateApplication(selectedCaseId, { status: newStatus });
+      const result = await updateApplication(selectedCase.id, { status: newStatus });
+      if (!result.success) {
+        notify.error(result.error || "Could not update status.");
+        return;
+      }
       const list = await getApplications();
       setCases(list);
       notify.success(`Filing stage updated to ${newStatus.replace("_", " ")}`);
@@ -177,48 +223,54 @@ export default function AdminDashboardPage() {
   // Upload Official Certificate Handler & Modal
   const handleUploadCertificateModal = (targetApp: ApplicationCase) => {
     let certTitle = `Official ${targetApp.serviceTitle} Registration Certificate`;
-    let uploadedFileUrl = "";
-    let uploadedFileName = `${targetApp.serviceSlug}_certificate.pdf`;
+    let selectedFile: File | null = null;
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        uploadedFileName = file.name;
-        uploadedFileUrl = URL.createObjectURL(file);
-      }
+      selectedFile = e.target.files?.[0] ?? null;
     };
 
     const submitCertificate = async () => {
-      if (!uploadedFileUrl) {
-        uploadedFileUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
+      if (!selectedFile) {
+        notify.error("Please select a certificate file to upload.");
+        return;
       }
 
       setIsUploadingCert(true);
       try {
+        const uploaded = await processSingleFileUpload(
+          selectedFile,
+          certTitle,
+          ["pdf", "png", "jpg", "jpeg"],
+          5,
+          targetApp.id,
+          true,
+        );
+
         const res = await fetch("/api/admin/certificates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             applicationId: targetApp.id,
             certificateName: certTitle,
-            fileUrl: uploadedFileUrl,
-            fileName: uploadedFileName,
-            fileSize: "1.4 MB",
-            fileType: "application/pdf",
+            fileUrl: uploaded.url,
+            fileName: uploaded.name,
+            fileSize: uploaded.size,
+            fileType: uploaded.type,
           }),
         });
 
         if (res.ok) {
-          notify.success(`Official Certificate uploaded and application APPROVED!`);
+          notify.success("Official certificate uploaded and application approved.");
           const list = await getApplications();
           setCases(list);
           modal.closeAll();
         } else {
-          notify.error("Failed to upload certificate.");
+          const data = await res.json().catch(() => ({}));
+          notify.error(data.error || "Failed to upload certificate.");
         }
       } catch (err) {
         console.error(err);
-        notify.error("Error uploading certificate.");
+        notify.error(err instanceof Error ? err.message : "Error uploading certificate.");
       } finally {
         setIsUploadingCert(false);
       }
@@ -241,7 +293,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-bold text-slate-700">Select Official Certificate Document (PDF/PNG)</label>
+            <label className="block text-xs font-bold text-slate-700">Select Official Certificate Document (PDF/PNG/JPG — images auto-convert to PDF)</label>
             <div className="border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-lg p-6 text-center space-y-2 bg-slate-50 transition-colors">
               <Upload className="size-8 text-indigo-500 mx-auto" />
               <p className="text-xs font-bold text-slate-800">Click to browse or drop government certificate</p>
@@ -340,7 +392,7 @@ export default function AdminDashboardPage() {
 
       {/* KPI Stats Counters */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200/90 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200/90 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Paid Cases</span>
             <span className="p-1.5 rounded-md bg-slate-100 text-slate-600">
@@ -350,7 +402,7 @@ export default function AdminDashboardPage() {
           <p className="text-2xl font-black text-slate-900">{cases.length}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-indigo-50/40 border border-indigo-100 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-gradient-to-br from-white to-indigo-50/40 border border-indigo-100 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Under Review</span>
             <span className="p-1.5 rounded-md bg-indigo-100 text-indigo-600">
@@ -362,7 +414,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-amber-50/40 border border-amber-100 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-gradient-to-br from-white to-amber-50/40 border border-amber-100 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Active Queries</span>
             <span className="p-1.5 rounded-md bg-amber-100 text-amber-600">
@@ -374,7 +426,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-emerald-50/40 border border-emerald-100 rounded-xl p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-gradient-to-br from-white to-emerald-50/40 border border-emerald-100 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Approved & Certs</span>
             <span className="p-1.5 rounded-md bg-emerald-100 text-emerald-600">
@@ -388,20 +440,31 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Search & Filter Controls using Reusable SearchBar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
-        {/* Reusable SearchBar Component */}
-        <div className="w-full sm:w-80">
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search by customer, phone, or Ref ID..."
-            size="sm"
-            fullWidth={true}
+      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="w-full sm:w-80">
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search by customer, phone, or Ref ID..."
+              size="sm"
+              fullWidth={true}
+            />
+          </div>
+
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
+            className="sm:ml-auto"
           />
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto max-w-full scrollbar-none">
+        <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full overflow-x-auto max-w-full scrollbar-none">
           {[
             { label: "All Cases", value: "ALL" },
             { label: "New Paid", value: "NEW_PAID" },
@@ -439,7 +502,7 @@ export default function AdminDashboardPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCases.map((row) => (
+            {paginatedCases.map((row) => (
               <TableRow
                 key={row.id}
                 onClick={() => handleOpenManageCase(row.id)}
@@ -483,15 +546,23 @@ export default function AdminDashboardPage() {
             ))}
           </TableBody>
         </Table>
+        {filteredCases.length > 0 && (
+          <TablePagination
+            entryStart={entryStart}
+            entryEnd={entryEnd}
+            totalItems={totalItems}
+          />
+        )}
       </div>
 
       {/* Mobile Stacked Card View (< sm) */}
-      <div className="sm:hidden space-y-3">
-        {filteredCases.map((row) => (
+      <div className="sm:hidden space-y-3 bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden">
+        <div className="space-y-3 p-3">
+        {paginatedCases.map((row) => (
           <div
             key={row.id}
             onClick={() => handleOpenManageCase(row.id)}
-            className="bg-white border border-slate-200/90 rounded-xl p-4 space-y-3 shadow-2xs hover:shadow-xs transition-all active:bg-slate-50 cursor-pointer"
+            className="bg-white border border-slate-200/90 rounded-lg p-4 space-y-3 shadow-2xs hover:shadow-xs transition-all active:bg-slate-50 cursor-pointer"
           >
             <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
               <span className="font-mono text-xs font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -522,6 +593,14 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         ))}
+        </div>
+        {filteredCases.length > 0 && (
+          <TablePagination
+            entryStart={entryStart}
+            entryEnd={entryEnd}
+            totalItems={totalItems}
+          />
+        )}
       </div>
 
       {/* Official Project Vaul Drawer for Manage Case Details */}
@@ -641,7 +720,19 @@ export default function AdminDashboardPage() {
                     size="sm"
                     fullWidth
                     onClick={() => handleUpdateStatus("UNDER_REVIEW")}
-                    disabled={isUpdatingStatus !== null}
+                    disabled={
+                      isUpdatingStatus !== null ||
+                      !canAdvanceWorkflowStatus({
+                        currentStatus: selectedCase.status,
+                        targetStatus: "UNDER_REVIEW",
+                        formData: selectedCase.formData || {},
+                        uploadedDocs: selectedCase.uploadedDocs || {},
+                        docVerifications:
+                          ((selectedCase.formData || {})._docVerification as DocVerificationMap) ||
+                          {},
+                        hasActiveQuery: Boolean(selectedCase.query),
+                      })
+                    }
                     className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer"
                     leftIcon={isUpdatingStatus === "UNDER_REVIEW" ? <Loader2 className="size-4 animate-spin" /> : <UserCheck className="size-4" />}
                   >
@@ -653,7 +744,19 @@ export default function AdminDashboardPage() {
                     size="sm"
                     fullWidth
                     onClick={() => handleUpdateStatus("SUBMITTED")}
-                    disabled={isUpdatingStatus !== null}
+                    disabled={
+                      isUpdatingStatus !== null ||
+                      !canAdvanceWorkflowStatus({
+                        currentStatus: selectedCase.status,
+                        targetStatus: "SUBMITTED",
+                        formData: selectedCase.formData || {},
+                        uploadedDocs: selectedCase.uploadedDocs || {},
+                        docVerifications:
+                          ((selectedCase.formData || {})._docVerification as DocVerificationMap) ||
+                          {},
+                        hasActiveQuery: Boolean(selectedCase.query),
+                      })
+                    }
                     className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer"
                     leftIcon={isUpdatingStatus === "SUBMITTED" ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                   >
@@ -665,7 +768,19 @@ export default function AdminDashboardPage() {
                     size="sm"
                     fullWidth
                     onClick={() => handleUpdateStatus("APPROVED")}
-                    disabled={isUpdatingStatus !== null}
+                    disabled={
+                      isUpdatingStatus !== null ||
+                      !canAdvanceWorkflowStatus({
+                        currentStatus: selectedCase.status,
+                        targetStatus: "APPROVED",
+                        formData: selectedCase.formData || {},
+                        uploadedDocs: selectedCase.uploadedDocs || {},
+                        docVerifications:
+                          ((selectedCase.formData || {})._docVerification as DocVerificationMap) ||
+                          {},
+                        hasActiveQuery: Boolean(selectedCase.query),
+                      })
+                    }
                     className="rounded-lg justify-start font-bold text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer"
                     leftIcon={isUpdatingStatus === "APPROVED" ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
                   >

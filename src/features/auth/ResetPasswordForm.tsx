@@ -106,7 +106,7 @@ export default function ResetPasswordForm() {
 
         <div className="pt-2">
           <Link href="/forgot-password">
-            <Button variant="primary" fullWidth className="rounded-xl font-bold text-xs">
+            <Button variant="primary" fullWidth className="rounded-lg font-bold text-xs">
               Request New Reset Link →
             </Button>
           </Link>
@@ -136,7 +136,7 @@ export default function ResetPasswordForm() {
             variant="primary"
             fullWidth
             onClick={() => router.push("/login")}
-            className="rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
+            className="rounded-lg font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
           >
             Log In Now →
           </Button>
@@ -149,7 +149,7 @@ export default function ResetPasswordForm() {
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
+          <div className="size-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
             <ShieldCheck className="size-5" />
           </div>
           <div>
@@ -164,7 +164,7 @@ export default function ResetPasswordForm() {
       </div>
 
       {errorMessage && (
-        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center gap-2">
+        <div className="p-3.5 rounded-lg bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center gap-2">
           <AlertCircle className="size-4 shrink-0 text-red-600" />
           <span>{errorMessage}</span>
         </div>
@@ -190,7 +190,7 @@ export default function ResetPasswordForm() {
           variant="primary"
           fullWidth
           disabled={isSubmitting}
-          className="h-11 rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
+          className="h-11 rounded-lg font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2 justify-center">

@@ -98,7 +98,7 @@ export default function FilterControls() {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-indigo-300 hover:bg-slate-50 transition-all text-xs font-bold text-slate-700"
+          className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-2xs hover:border-indigo-300 hover:bg-slate-50 transition-all text-xs font-bold text-slate-700"
         >
           <span className="flex items-center gap-2">
             <FunnelIcon className="size-4 text-indigo-600" />

@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { TableSkeleton } from "@/components/ui/skeletons";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 export default function UserApplicationsPage() {
   const { data: session } = useSession();
@@ -57,6 +60,22 @@ export default function UserApplicationsPage() {
     });
   }, [cases, searchTerm, statusFilter]);
 
+  const {
+    pageItems: paginatedCases,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredCases, {
+    initialPageSize: 8,
+    resetDeps: [searchTerm, statusFilter],
+  });
+
   return (
     <Section className="py-12 bg-slate-50 min-h-screen">
       <Container>
@@ -95,20 +114,30 @@ export default function UserApplicationsPage() {
           </div>
 
           {/* Search & Status Filter Controls using Reusable SearchBar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Reusable SearchBar Component */}
-            <div className="w-full sm:w-80">
-              <SearchBar
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Search by ID or service name..."
-                size="sm"
-                fullWidth={true}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="w-full sm:w-80">
+                <SearchBar
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Search by ID or service name..."
+                  size="sm"
+                  fullWidth={true}
+                />
+              </div>
+
+              <TablePaginationToolbar
+                pageSize={pageSize}
+                pageIndex={pageIndex}
+                totalPages={totalPages}
+                pageSizeOptions={pageSizeOptions}
+                onPageSizeChange={setPageSize}
+                onPageChange={setPageIndex}
               />
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
+            <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg w-full sm:w-auto overflow-x-auto scrollbar-none">
               {[
                 { label: "All Cases", value: "ALL" },
                 { label: "Pending", value: "PENDING" },
@@ -135,7 +164,7 @@ export default function UserApplicationsPage() {
             <TableSkeleton rows={4} cols={5} />
           ) : filteredCases.length > 0 ? (
             <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs divide-y divide-slate-100">
-              {filteredCases.map((c) => (
+              {paginatedCases.map((c) => (
                 <div
                   key={c.id}
                   className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors"
@@ -183,6 +212,11 @@ export default function UserApplicationsPage() {
                   </div>
                 </div>
               ))}
+              <TablePagination
+                entryStart={entryStart}
+                entryEnd={entryEnd}
+                totalItems={totalItems}
+              />
             </div>
           ) : (
             <div className="bg-white border border-slate-200 rounded-lg p-12 text-center space-y-4">

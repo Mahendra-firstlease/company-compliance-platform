@@ -4,9 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 // 1. Table Skeleton matching exact table row & header height
 export function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+    <div className="w-full bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
       <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-4">
-        <Skeleton className="h-9 w-64 rounded-xl" />
+        <Skeleton className="h-9 w-64 rounded-lg" />
         <Skeleton className="h-8 w-32 rounded-lg" />
       </div>
       <div className="p-4 space-y-4">
@@ -33,7 +33,7 @@ export function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: nu
 // 2. Service Card & Grid Skeleton
 export function ServiceCardSkeleton() {
   return (
-    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-4 shadow-2xs h-[340px] flex flex-col justify-between">
+    <div className="bg-white border border-slate-200/80 rounded-lg p-6 space-y-4 shadow-2xs h-[340px] flex flex-col justify-between">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Skeleton className="h-6 w-24 rounded-full" />
@@ -48,7 +48,7 @@ export function ServiceCardSkeleton() {
           <Skeleton className="h-3 w-16 rounded" />
           <Skeleton className="h-6 w-20 rounded" />
         </div>
-        <Skeleton className="h-9 w-28 rounded-xl" />
+        <Skeleton className="h-9 w-28 rounded-lg" />
       </div>
     </div>
   );
@@ -72,7 +72,7 @@ export function WorkspaceSkeleton() {
       <Skeleton className="h-5 w-48 rounded-md" />
 
       {/* Header Banner Skeleton */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white border border-slate-200 p-6 rounded-2xl shadow-2xs">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white border border-slate-200 p-6 rounded-lg shadow-2xs">
         <div className="space-y-2">
           <Skeleton className="h-7 w-64 rounded-lg" />
           <Skeleton className="h-4 w-44 rounded-md" />
@@ -81,7 +81,7 @@ export function WorkspaceSkeleton() {
       </div>
 
       {/* Stepper Progress Tracker Skeleton */}
-      <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-2xl space-y-6 shadow-2xs">
+      <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-lg space-y-6 shadow-2xs">
         <Skeleton className="h-5 w-48 rounded-md" />
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -97,20 +97,20 @@ export function WorkspaceSkeleton() {
       {/* 2-Column Split Workspace Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
             <Skeleton className="h-6 w-40 rounded" />
-            <Skeleton className="h-10 w-full rounded-xl" />
-            <Skeleton className="h-10 w-full rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-11 w-40 rounded-xl" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+            <Skeleton className="h-11 w-40 rounded-lg" />
           </div>
         </div>
         <div className="space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
             <Skeleton className="h-5 w-36 rounded" />
             <Skeleton className="h-4 w-full rounded" />
             <Skeleton className="h-4 w-full rounded" />
-            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-10 w-full rounded-lg" />
           </div>
         </div>
       </div>
@@ -156,7 +156,7 @@ export function MobileMenuSkeleton() {
 export function ProfileSkeleton() {
   return (
     <div className="space-y-8 animate-pulse">
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-2xs">
+      <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4 shadow-2xs">
         <div className="flex items-center gap-4">
           <Skeleton className="size-16 rounded-full shrink-0" />
           <div className="space-y-2 flex-1">
@@ -166,15 +166,15 @@ export function ProfileSkeleton() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
           <Skeleton className="h-5 w-40 rounded" />
-          <Skeleton className="h-10 w-full rounded-xl" />
-          <Skeleton className="h-10 w-full rounded-xl" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
           <Skeleton className="h-5 w-40 rounded" />
-          <Skeleton className="h-10 w-full rounded-xl" />
-          <Skeleton className="h-10 w-full rounded-xl" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
         </div>
       </div>
     </div>

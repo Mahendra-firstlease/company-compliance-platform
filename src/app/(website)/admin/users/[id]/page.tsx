@@ -365,7 +365,8 @@ export default function AdminUserDetailPage() {
         </CardHeader>
         <CardContent className="p-0">
           {user.applications.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -427,6 +428,48 @@ export default function AdminUserDetailPage() {
                 </tbody>
               </table>
             </div>
+
+            <div className="sm:hidden divide-y divide-slate-100">
+              {user.applications.map((app) => (
+                <div key={app.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm text-slate-900">{app.serviceTitle}</p>
+                      <p className="text-[11px] font-mono text-slate-500">{app.id}</p>
+                    </div>
+                    <Badge
+                      variant={
+                        app.status === "APPROVED"
+                          ? "green"
+                          : app.queryText
+                            ? "red"
+                            : "indigo"
+                      }
+                      rounded="full"
+                      size="sm"
+                    >
+                      {app.queryText ? "ACTION REQUIRED" : app.status.replace(/_/g, " ")}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-slate-400">Executive</p>
+                      <p className="font-semibold">{app.assignedExecutive}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-slate-400">Fee</p>
+                      <p className="font-bold text-slate-900">{formatCurrency(app.totalFee)}</p>
+                    </div>
+                  </div>
+                  <Link href={`/applications/${app.serviceSlug}`}>
+                    <Button variant="outline" size="sm" fullWidth className="min-h-[44px] text-xs font-semibold">
+                      Open Workspace <ArrowRight size={12} />
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+            </>
           ) : (
             <div className="p-8 text-center space-y-2">
               <FileText size={24} className="text-slate-300 mx-auto" />

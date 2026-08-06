@@ -24,7 +24,7 @@ export const EmailLayout = ({ previewText, children }: EmailLayoutProps) => {
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="bg-slate-50 font-sans text-slate-800 my-auto mx-auto p-2">
-          <Container className="border border-solid border-slate-200 rounded-2xl bg-white my-[40px] mx-auto p-[32px] max-w-[600px] shadow-sm">
+          <Container className="border border-solid border-slate-200 rounded-lg bg-white my-[40px] mx-auto p-[32px] max-w-[600px] shadow-sm">
             
             {/* Header Brand Bar */}
             <Section className="mb-[24px] pb-[20px] border-b border-solid border-slate-100">

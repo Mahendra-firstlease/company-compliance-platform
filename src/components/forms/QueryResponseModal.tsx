@@ -81,7 +81,7 @@ export default function QueryResponseModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="relative w-full max-w-xl bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -93,7 +93,7 @@ export default function QueryResponseModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -102,7 +102,7 @@ export default function QueryResponseModal({
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Query Notice Banner */}
-          <div className="p-4 bg-amber-50 border border-amber-200/80 rounded-xl space-y-1.5">
+          <div className="p-4 bg-amber-50 border border-amber-200/80 rounded-lg space-y-1.5">
             <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs">
               <AlertTriangle size={14} className="text-amber-600 shrink-0" />
               <span>Query Raised by Compliance Officer:</span>

@@ -17,6 +17,8 @@ export interface MultiFileUploadProps {
   error?: string;
   disabled?: boolean;
   required?: boolean;
+  applicationId?: string;
+  convertToPdf?: boolean;
 }
 
 export default function MultiFileUpload({
@@ -28,6 +30,8 @@ export default function MultiFileUpload({
   label,
   error,
   disabled = false,
+  applicationId,
+  convertToPdf = false,
 }: MultiFileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState("");
@@ -53,7 +57,7 @@ export default function MultiFileUpload({
     try {
       // Process all files in parallel
       const uploadPromises = files.map((f) =>
-        processSingleFileUpload(f, label || f.name, allowedTypes, maxSizeMb)
+        processSingleFileUpload(f, label || f.name, allowedTypes, maxSizeMb, applicationId, convertToPdf)
       );
 
       const results = await Promise.allSettled(uploadPromises);

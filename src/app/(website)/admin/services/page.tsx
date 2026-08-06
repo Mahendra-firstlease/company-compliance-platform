@@ -22,6 +22,9 @@ import apiFetch from "@/lib/apiClient";
 import { notify } from "@/lib/notify";
 import { useModal } from "@/components/ui/overlay";
 import Link from "next/link";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface AdminServiceItem {
   id: string;
@@ -72,6 +75,22 @@ export default function AdminServicesPage() {
       return matchesSearch;
     });
   }, [services, searchQuery, categoryFilter]);
+
+  const {
+    pageItems: paginatedServices,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredServices, {
+    initialPageSize: 10,
+    resetDeps: [searchQuery, categoryFilter],
+  });
 
   // Edit Service Pricing Modal Handler
   const handleEditPricing = (service: AdminServiceItem) => {
@@ -227,8 +246,31 @@ export default function AdminServicesPage() {
       </div>
 
       {/* Toolbar: Search Bar & Filter Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto max-w-full">
+      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative w-full sm:max-w-xs">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search service title or slug..."
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-indigo-500 text-slate-700"
+            />
+          </div>
+
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
+            className="sm:ml-auto"
+          />
+        </div>
+
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto max-w-full scrollbar-none">
           <button
             type="button"
             onClick={() => setCategoryFilter("ALL")}
@@ -256,17 +298,6 @@ export default function AdminServicesPage() {
           >
             Featured ({services.filter((s) => s.featured).length})
           </button>
-        </div>
-
-        <div className="relative w-full sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search service title or slug..."
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-indigo-500 text-slate-700"
-          />
         </div>
       </div>
 
@@ -296,7 +327,7 @@ export default function AdminServicesPage() {
                       </td>
                     </tr>
                   ) : filteredServices.length > 0 ? (
-                    filteredServices.map((service) => (
+                    paginatedServices.map((service) => (
                       <tr key={service.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3.5 px-4">
                           <div>
@@ -368,7 +399,7 @@ export default function AdminServicesPage() {
               {isLoading ? (
                 <div className="p-8 text-center text-slate-400 text-xs">Loading services catalog...</div>
               ) : filteredServices.length > 0 ? (
-                filteredServices.map((service) => (
+                paginatedServices.map((service) => (
                   <div key={service.id} className="p-3.5 space-y-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -381,7 +412,7 @@ export default function AdminServicesPage() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-lg p-2.5 grid grid-cols-3 gap-2 text-xs">
+                    <div className="bg-slate-50 rounded-lg p-2.5 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div>
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Govt Fee</span>
                         <p className="font-semibold text-slate-700">₹{service.governmentFee}</p>
@@ -401,7 +432,7 @@ export default function AdminServicesPage() {
                         <Link href={`/services/${service.slug}`} target="_blank">
                           <button
                             type="button"
-                            className="p-2 text-slate-400 hover:text-indigo-600 bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center min-h-[36px] min-w-[36px]"
+                            className="p-2 text-slate-400 hover:text-indigo-600 bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center min-h-11 min-w-11"
                             title="View Public Catalog Page"
                           >
                             <SquareArrowOutUpRight size={15} />
@@ -426,6 +457,13 @@ export default function AdminServicesPage() {
                 <div className="p-8 text-center text-slate-400 text-xs">No services found matching query.</div>
               )}
             </div>
+            {filteredServices.length > 0 && (
+              <TablePagination
+                entryStart={entryStart}
+                entryEnd={entryEnd}
+                totalItems={totalItems}
+              />
+            )}
           </>
         </CardContent>
       </Card>

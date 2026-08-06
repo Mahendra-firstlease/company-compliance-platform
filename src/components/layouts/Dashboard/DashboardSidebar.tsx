@@ -48,7 +48,7 @@ export default function DashboardSidebar({
         "bg-white border-r border-slate-200 shrink-0 z-20 transition-all duration-300 flex flex-col justify-between overflow-x-hidden",
         // Mobile classes
         mobileMenuOpen
-          ? "fixed top-16 inset-x-0 bottom-0 bg-white min-h-[calc(100vh-64px)] w-full block"
+          ? "fixed top-16 inset-x-0 bottom-0 bg-white min-h-[calc(100vh-64px)] w-full block z-30"
           : "hidden lg:flex",
         // Desktop collapsed/expanded classes
         !mobileMenuOpen &&

@@ -134,7 +134,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
 
       {/* Popover Dropdown Card (Mobile Responsive: Fixed centered overlay on mobile, Absolute on desktop) */}
       {isOpen && (
-        <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-96 bg-white rounded-2xl sm:rounded-xl shadow-2xl sm:shadow-xl border border-slate-200 z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden max-h-[80vh] sm:max-h-[32rem] flex flex-col">
+        <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-96 bg-white rounded-lg sm:rounded-lg shadow-2xl sm:shadow-xl border border-slate-200 z-[60] animate-in fade-in zoom-in-95 duration-150 overflow-hidden max-h-[80vh] sm:max-h-[32rem] flex flex-col">
           {/* Header */}
           <div className="p-3.5 bg-slate-50/90 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">

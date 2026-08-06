@@ -13,6 +13,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { getApplications, ApplicationCase } from "@/lib/applications";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 export default function ApplicationsPage() {
   const [cases, setCases] = useState<ApplicationCase[]>([]);
@@ -21,25 +24,50 @@ export default function ApplicationsPage() {
     getApplications().then(setCases).catch(console.error);
   }, []);
 
+  const {
+    pageItems: paginatedCases,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(cases, {
+    initialPageSize: 10,
+  });
+
   
   return (
     <div className="animate-in fade-in duration-300">
       <Card enableHover>
-        <CardHeader className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between">
+        <CardHeader className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle className="mb-2">All Corporate Filings</CardTitle>
           </div>
-          <Link href="/dashboard/applications/new">
-            <Button variant="outline" size="sm">
-              <ClipboardList size={16} className="mr-2" />
-              New Filing
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <TablePaginationToolbar
+              pageSize={pageSize}
+              pageIndex={pageIndex}
+              totalPages={totalPages}
+              pageSizeOptions={pageSizeOptions}
+              onPageSizeChange={setPageSize}
+              onPageChange={setPageIndex}
+            />
+            <Link href="/dashboard/applications/new">
+              <Button variant="outline" size="sm">
+                <ClipboardList size={16} className="mr-2" />
+                New Filing
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {cases.length > 0 ? (
             <div className="divide-y divide-slate-100">
-              {cases.map((c) => (
+              {paginatedCases.map((c) => (
                 <div
                   key={c.id}
                   className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -82,6 +110,11 @@ export default function ApplicationsPage() {
                   </div>
                 </div>
               ))}
+              <TablePagination
+                entryStart={entryStart}
+                entryEnd={entryEnd}
+                totalItems={totalItems}
+              />
             </div>
           ) : (
             <div className="text-center py-20 text-slate-500">

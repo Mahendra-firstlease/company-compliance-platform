@@ -82,7 +82,7 @@ export default function Drawer({
 
             <button
               onClick={onClose}
-              className="size-8 rounded-lg text-slate-400 hover:text-slate-650 hover:bg-slate-50 border border-slate-100 flex items-center justify-center transition-all cursor-pointer shadow-3xs"
+              className="size-11 min-h-[44px] min-w-[44px] rounded-lg text-slate-400 hover:text-slate-650 hover:bg-slate-50 border border-slate-100 flex items-center justify-center transition-all cursor-pointer shadow-3xs"
               aria-label="Close drawer"
             >
               <X size={15} />

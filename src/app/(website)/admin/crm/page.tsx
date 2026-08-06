@@ -25,6 +25,9 @@ import { formatDate } from "@/utils/formatters";
 import Select from "@/components/forms/Select";
 import Textarea from "@/components/forms/Textarea";
 import SearchBar from "@/components/common/SearchBar";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface LeadItem {
   id: string;
@@ -77,6 +80,22 @@ export default function AdminCrmPage() {
       return matchesSearch && l.status === statusTab;
     });
   }, [leads, searchQuery, statusTab]);
+
+  const {
+    pageItems: paginatedLeads,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredLeads, {
+    initialPageSize: 10,
+    resetDeps: [searchQuery, statusTab],
+  });
 
   // Lead Detail & Status Update Modal Handler
   const handleManageLeadModal = (lead: LeadItem) => {
@@ -212,8 +231,30 @@ export default function AdminCrmPage() {
       </div>
 
       {/* Toolbar: Search & Funnel Status Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto max-w-full">
+      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-full sm:w-72">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search lead name, phone or service..."
+              size="sm"
+              fullWidth={true}
+            />
+          </div>
+
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
+            className="sm:ml-auto"
+          />
+        </div>
+
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto max-w-full scrollbar-none">
           {[
             { label: "All Leads", value: "ALL" },
             { label: "New", value: "NEW" },
@@ -232,16 +273,6 @@ export default function AdminCrmPage() {
               {tab.label}
             </button>
           ))}
-        </div>
-
-        <div className="w-full sm:w-72">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search lead name, phone or service..."
-            size="sm"
-            fullWidth={true}
-          />
         </div>
       </div>
 
@@ -270,7 +301,7 @@ export default function AdminCrmPage() {
                       </td>
                     </tr>
                   ) : filteredLeads.length > 0 ? (
-                    filteredLeads.map((lead) => (
+                    paginatedLeads.map((lead) => (
                       <tr key={lead.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3.5 px-4">
                           <div>
@@ -315,7 +346,7 @@ export default function AdminCrmPage() {
                               href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, "")}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-colors shadow-xs active:scale-95"
+                              className="size-11 min-h-11 min-w-11 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-colors shadow-xs active:scale-95"
                               title="Chat on WhatsApp"
                             >
                               <MessageSquare size={14} className="text-white" />
@@ -349,7 +380,7 @@ export default function AdminCrmPage() {
               {isLoading ? (
                 <div className="p-8 text-center text-slate-400 text-xs">Loading CRM leads...</div>
               ) : filteredLeads.length > 0 ? (
-                filteredLeads.map((lead) => (
+                paginatedLeads.map((lead) => (
                   <div key={lead.id} className="p-3.5 space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <div>
@@ -404,6 +435,13 @@ export default function AdminCrmPage() {
                 <div className="p-8 text-center text-slate-400 text-xs">No leads found matching query.</div>
               )}
             </div>
+            {filteredLeads.length > 0 && (
+              <TablePagination
+                entryStart={entryStart}
+                entryEnd={entryEnd}
+                totalItems={totalItems}
+              />
+            )}
           </>
         </CardContent>
       </Card>

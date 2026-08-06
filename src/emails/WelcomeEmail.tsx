@@ -36,7 +36,7 @@ export const WelcomeEmail = ({
       </Section>
 
       {/* Feature Highlights Box */}
-      <Section className="bg-slate-50 border border-slate-200/80 rounded-xl p-[20px] my-[20px]">
+      <Section className="bg-slate-50 border border-slate-200/80 rounded-lg p-[20px] my-[20px]">
         <Text className="text-[13px] font-bold text-slate-800 my-0 mb-[12px]">
           Your Portal Capabilities:
         </Text>
@@ -58,7 +58,7 @@ export const WelcomeEmail = ({
       <Section className="text-center my-[28px]">
         <Button
           href={loginUrl}
-          className="bg-indigo-600 text-white font-bold text-[14px] rounded-xl px-[28px] py-[12px] inline-block shadow-sm"
+          className="bg-indigo-600 text-white font-bold text-[14px] rounded-lg px-[28px] py-[12px] inline-block shadow-sm"
         >
           Access Your Client Dashboard →
         </Button>

@@ -96,7 +96,7 @@ export default function FieldValue({ value, compact = false, className = "" }: F
         <button
           type="button"
           onClick={() => downloadFile(fileUrl, fileName)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-all max-w-full group cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-all max-w-full group cursor-pointer"
           title={fileName}
         >
           <FileText size={14} className="shrink-0 text-indigo-600 group-hover:scale-110 transition-transform" />

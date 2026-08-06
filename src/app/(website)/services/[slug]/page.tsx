@@ -162,7 +162,7 @@ export default async function Page({ params }: ServiceDetailPageProps) {
           <ServiceDetailQuickFeatures service={service} />
 
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+            <div className="order-2 lg:order-1 lg:col-span-2">
               <ServiceDetailTabsContainer
                 overviewContent={<OverviewTab service={service} />}
                 benefitsContent={<BenefitsTab service={service} />}
@@ -171,7 +171,7 @@ export default async function Page({ params }: ServiceDetailPageProps) {
               />
             </div>
 
-            <div>
+            <div className="order-1 lg:order-2">
               <ServiceDetailCheckoutSidebar service={service} />
             </div>
           </div>

@@ -110,7 +110,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
             >
               <div className="flex h-full flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b px-5 py-4">
+                <div className="flex items-center justify-between shadow px-5 py-4">
                   <CompanyLogo priority className="h-8 w-auto" />
 
                   <button
@@ -233,7 +233,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                                 <div className="pt-2 px-2 pb-2">
                                   <Link
                                     href="/services"
-                                    className="flex items-center justify-between font-bold text-xs text-indigo-700 py-2.5 px-3.5 bg-indigo-50/80 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
+                                    className="flex items-center justify-between font-bold text-xs text-indigo-700 py-2.5 px-3.5 bg-indigo-50/80 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
                                     onClick={() => setOpen(false)}
                                   >
                                     <span className="flex items-center gap-1.5">
@@ -253,20 +253,20 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="border-t p-5">
+                <div className="shadow-2xs shadow-slate-200/50 p-5">
                   {status === "authenticated" && session?.user ? (
                     <div className="space-y-2">
                       <Link
                         href="/dashboard"
                         onClick={() => setOpen(false)}
-                        className="block w-full text-center font-bold text-xs py-2.5 px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs"
+                        className="block w-full text-center font-bold text-xs py-2.5 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs"
                       >
                         Client Dashboard
                       </Link>
 
                       <button
                         onClick={handleLogout}
-                        className="w-full font-bold text-xs py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="w-full font-bold text-xs py-2.5 px-4 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <ArrowRightStartOnRectangleIcon className="size-4" />
                         <span>Sign Out</span>
@@ -278,7 +278,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                         fullWidth
                         variant="primary"
                         size="md"
-                        className="rounded-xl font-bold"
+                        className="rounded-lg font-bold"
                         onClick={() => {
                           setOpen(false);
                           router.push("/login");
@@ -291,7 +291,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                         fullWidth
                         variant="outline"
                         size="md"
-                        className="rounded-xl font-bold border-slate-200"
+                        className="rounded-lg font-bold border-slate-200"
                         onClick={() => {
                           setOpen(false);
                           router.push("/register");

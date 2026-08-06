@@ -13,6 +13,7 @@ import {
   getApplicationBySlug,
   updateApplication,
   ApplicationCase,
+  certificateDownloadName,
   buildApplicationFormDataPayload,
 } from "@/lib/applications";
 import { notify } from "@/lib/notify";
@@ -223,15 +224,11 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
     }, 1200);
   };
 
-  // Trigger certificate download via server-side proxy
-  const triggerCertificateDownload = () => {
+  const triggerCertificateDownload = (certUrl: string, certName: string) => {
     if (!appCase) return;
 
-    const certUrl = appCase.issuedCertificates?.[0]?.certificateUrl || `/api/download?filename=${encodeURIComponent(`${appCase.serviceTitle}_Certificate.pdf`)}`;
-    const filename = `${appCase.serviceTitle.replace(/[^a-zA-Z0-9]/g, "_")}_Certificate.pdf`;
-
     setIsDownloadingCert(true);
-    downloadFile(certUrl, filename);
+    downloadFile(certUrl, certificateDownloadName(appCase.serviceTitle, certName));
     setTimeout(() => setIsDownloadingCert(false), 800);
   };
 
@@ -281,7 +278,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
         />
 
         {/* Executive Workspace Command Header Hero */}
-        <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-slate-950 via-slate-900 to-indigo-950 text-white p-6 md:p-8 shadow-xl border border-slate-800">
+        <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-950 via-slate-900 to-indigo-950 text-white p-6 md:p-8 shadow-xl border border-slate-800">
           <div className="absolute top-0 right-0 -mt-8 -mr-8 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -356,12 +353,12 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
         {/* Query Alert Warning Banner & Customer Response Trigger */}
         {(appCase.query || appCase.queryResponse) && (
           <div
-            className={`p-5 rounded-2xl border shadow-md space-y-3 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-50/90 border-teal-200 text-teal-950" : "bg-amber-50/90 border-amber-200 text-amber-950"}`}
+            className={`p-5 rounded-lg border shadow-md space-y-3 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-50/90 border-teal-200 text-teal-950" : "bg-amber-50/90 border-amber-200 text-amber-950"}`}
           >
             <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
               <div className="flex items-start gap-3">
                 <div
-                  className={`size-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-100 text-teal-700" : "bg-amber-100 text-amber-700 animate-pulse"}`}
+                  className={`size-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-100 text-teal-700" : "bg-amber-100 text-amber-700 animate-pulse"}`}
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -572,7 +569,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
             </div>
 
             {/* Additional Supporting Documents MultiFileUpload Portal */}
-            <div className="bg-white border border-slate-200/90 rounded-xl p-6 shadow-2xs space-y-4">
+            <div className="bg-white border border-slate-200/90 rounded-lg p-6 shadow-2xs space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
                   <UploadCloud size={16} className="text-indigo-600" />
@@ -675,36 +672,63 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               </h3>
 
               {appCase.status === "APPROVED" ? (
-                /* Unlocked Vault Panel */
-                <div className="space-y-3 text-center py-2">
-                  <div className="size-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <CheckCircle size={20} />
+                <div className="space-y-3 py-2">
+                  <div className="text-center space-y-2">
+                    <div className="size-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                      <CheckCircle size={20} />
+                    </div>
+                    <h4 className="font-semibold text-xs text-slate-800">
+                      Registration Approved!
+                    </h4>
+                    <p className="text-xs text-slate-400 leading-normal px-2">
+                      Your specialist has uploaded official documents. Download them below.
+                    </p>
                   </div>
-                  <h4 className="font-semibold text-xs text-slate-800">
-                    Registration Approved!
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-normal px-2">
-                    Ministry has successfully verified filings and issued your
-                    official compliance certificate.
-                  </p>
-                  <div className="pt-2">
-                    <Button
-                      fullWidth
-                      onClick={triggerCertificateDownload}
-                      disabled={isDownloadingCert}
-                      leftIcon={
-                        isDownloadingCert ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <Download size={14} />
-                        )
-                      }
-                    >
-                      {isDownloadingCert
-                        ? "Downloading..."
-                        : "Download Certificate"}
-                    </Button>
-                  </div>
+
+                  {(appCase.issuedCertificates?.length ?? 0) > 0 ? (
+                    <div className="space-y-2">
+                      {appCase.issuedCertificates!.map((cert) => (
+                        <div
+                          key={cert.id}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
+                        >
+                          <div className="min-w-0 text-left">
+                            <p className="text-xs font-semibold text-slate-800 truncate">
+                              {cert.certificateName}
+                            </p>
+                            {cert.issuedDate && (
+                              <p className="text-[10px] text-slate-400">
+                                Issued {new Date(cert.issuedDate).toLocaleDateString("en-IN")}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              triggerCertificateDownload(
+                                cert.certificateUrl,
+                                cert.certificateName,
+                              )
+                            }
+                            disabled={isDownloadingCert}
+                            leftIcon={
+                              isDownloadingCert ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Download size={14} />
+                              )
+                            }
+                          >
+                            Download
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center">
+                      No documents uploaded yet. Your specialist will deliver them shortly.
+                    </p>
+                  )}
                 </div>
               ) : (
                 /* Locked Vault Panel */

@@ -25,6 +25,11 @@ import { notify } from "@/lib/notify";
 import apiFetch from "@/lib/apiClient";
 import Textarea from "@/components/forms/Textarea";
 import StatusBadge from "@/components/common/StatusBadge";
+import {
+  canAdvanceWorkflowStatus,
+  DocVerificationMap,
+  getWorkflowBlockers,
+} from "@/lib/application-workflow";
 
 export default function AdminApplicationsPage() {
   const router = useRouter();
@@ -55,10 +60,33 @@ export default function AdminApplicationsPage() {
   );
 
   const handleUpdateStatus = async (status: string) => {
-    if (!selectedCaseId) return;
+    if (!selectedCase) return;
+
+    const formData = (selectedCase.formData || {}) as Record<string, unknown>;
+    const blockers = getWorkflowBlockers({
+      currentStatus: selectedCase.status,
+      targetStatus: status,
+      formData,
+      uploadedDocs: selectedCase.uploadedDocs || {},
+      docVerifications:
+        (formData._docVerification as DocVerificationMap) || {},
+      hasActiveQuery: Boolean(selectedCase.query),
+    });
+
+    if (blockers.length > 0) {
+      notify.error(blockers[0]);
+      return;
+    }
+
     setIsUpdatingStatus(status);
     try {
-      await updateApplication(selectedCaseId, { status: status as any });
+      const result = await updateApplication(selectedCase.id, {
+        status: status as any,
+      });
+      if (!result.success) {
+        notify.error(result.error || "Failed to update status.");
+        return;
+      }
       const list = await getApplications();
       setCases(list);
       notify.success(`Status updated to ${status}`);
@@ -181,7 +209,7 @@ export default function AdminApplicationsPage() {
         selectedRowId={selectedCaseId}
         getRowId={(row) => row.id}
         mobileCardRender={(row) => (
-          <div className="p-3 bg-white border border-slate-200/80 rounded-xl space-y-2 shadow-2xs">
+          <div className="p-3 bg-white border border-slate-200/80 rounded-lg space-y-2 shadow-2xs">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                 {row.id}
@@ -323,7 +351,18 @@ export default function AdminApplicationsPage() {
                     size="sm"
                     fullWidth
                     onClick={() => handleUpdateStatus("UNDER_REVIEW")}
-                    disabled={isUpdatingStatus !== null}
+                    disabled={
+                      isUpdatingStatus !== null ||
+                      !canAdvanceWorkflowStatus({
+                        currentStatus: selectedCase.status,
+                        targetStatus: "UNDER_REVIEW",
+                        formData: selectedCase.formData || {},
+                        uploadedDocs: selectedCase.uploadedDocs || {},
+                        docVerifications:
+                          ((selectedCase.formData || {})._docVerification as DocVerificationMap) ||
+                          {},
+                      })
+                    }
                     leftIcon={
                       isUpdatingStatus === "UNDER_REVIEW" ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -343,7 +382,18 @@ export default function AdminApplicationsPage() {
                     size="sm"
                     fullWidth
                     onClick={() => handleUpdateStatus("SUBMITTED")}
-                    disabled={isUpdatingStatus !== null}
+                    disabled={
+                      isUpdatingStatus !== null ||
+                      !canAdvanceWorkflowStatus({
+                        currentStatus: selectedCase.status,
+                        targetStatus: "SUBMITTED",
+                        formData: selectedCase.formData || {},
+                        uploadedDocs: selectedCase.uploadedDocs || {},
+                        docVerifications:
+                          ((selectedCase.formData || {})._docVerification as DocVerificationMap) ||
+                          {},
+                      })
+                    }
                     leftIcon={
                       isUpdatingStatus === "SUBMITTED" ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -363,7 +413,15 @@ export default function AdminApplicationsPage() {
                     onClick={() => handleUpdateStatus("APPROVED")}
                     disabled={
                       isUpdatingStatus !== null ||
-                      Object.keys(selectedCase.uploadedDocs).length === 0
+                      !canAdvanceWorkflowStatus({
+                        currentStatus: selectedCase.status,
+                        targetStatus: "APPROVED",
+                        formData: selectedCase.formData || {},
+                        uploadedDocs: selectedCase.uploadedDocs || {},
+                        docVerifications:
+                          ((selectedCase.formData || {})._docVerification as DocVerificationMap) ||
+                          {},
+                      })
                     }
                     leftIcon={
                       isUpdatingStatus === "APPROVED" ? (

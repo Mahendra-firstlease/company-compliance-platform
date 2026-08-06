@@ -65,7 +65,7 @@ export default function UploadDropzone({
       <div
         {...getRootProps()}
         className={cn(
-          "flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-xl text-center transition-all cursor-pointer select-none",
+          "flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-lg text-center transition-all cursor-pointer select-none",
           isDragAccept ? "border-emerald-500 bg-emerald-50/60 scale-[1.01]" : "",
           isDragReject ? "border-red-500 bg-red-50/60" : "",
           isDragActive && !isDragAccept && !isDragReject ? "border-indigo-500 bg-indigo-50/60 scale-[1.01]" : "",

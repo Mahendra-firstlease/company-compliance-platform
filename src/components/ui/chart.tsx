@@ -51,7 +51,7 @@ export function ChartTooltipCustom({ active, payload, label, config }: any) {
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur-md text-xs space-y-1.5 min-w-[140px] animate-in fade-in duration-150">
+    <div className="rounded-lg border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur-md text-xs space-y-1.5 min-w-[140px] animate-in fade-in duration-150">
       {label && <p className="font-extrabold text-slate-900 border-b border-slate-100 pb-1">{label}</p>}
       <div className="space-y-1">
         {payload.map((item: any, idx: number) => {

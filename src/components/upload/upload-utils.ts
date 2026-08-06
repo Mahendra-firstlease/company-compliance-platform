@@ -1,4 +1,3 @@
-import { notify } from "@/lib/notify";
 import { sanitizeFilename, MIME_MAP } from "@/lib/upload/client";
 
 export { sanitizeFilename, MIME_MAP };
@@ -9,23 +8,45 @@ export interface UploadedFile {
   size: string;
   type: string;
   url?: string;
+  key?: string;
   uploadedAt?: string;
 }
 
+interface DeleteUploadResponse {
+  success: boolean;
+  error?: string;
+}
+
+interface UploadApiResponse {
+  success: boolean;
+  id?: string;
+  key?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
+  fileType?: string;
+  checksum?: string;
+  error?: string;
+}
+
 /**
- * Perform strict client-side validation of file sizes, extensions, and MIME signatures.
+ * Performs strict client-side validation of
+ * file size, extension and MIME type.
  */
 export function validateFileSecurity(
   file: File,
   allowedExts: string[],
-  maxSizeMb: number
+  maxSizeMb: number,
 ): { isValid: boolean; error?: string } {
   const maxBytes = maxSizeMb * 1024 * 1024;
   if (file.size > maxBytes) {
-    return { isValid: false, error: `File size exceeds allowable limit of ${maxSizeMb}MB.` };
+    return {
+      isValid: false,
+      error: `File size exceeds allowable limit of ${maxSizeMb}MB.`,
+    };
   }
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  const ext = file.name.substring(file.name.lastIndexOf(".") + 1).toLowerCase();
 
   // Normalize allowed extensions so "jpg" automatically permits ".jpeg" (and vice versa)
   const normalizedAllowed = allowedExts.flatMap((e) => {
@@ -42,23 +63,37 @@ export function validateFileSecurity(
   }
 
   const expectedMimes = MIME_MAP[ext];
-  if (expectedMimes && file.type && !expectedMimes.includes(file.type)) {
-    return { isValid: false, error: "File content-type signature mismatch. Upload blocked for safety." };
+  const mime = file.type.toLowerCase();
+
+  if (
+    expectedMimes &&
+    mime &&
+    !expectedMimes.map((m) => m.toLowerCase()).includes(mime)
+  ) {
+    return {
+      isValid: false,
+      error: "File content-type signature mismatch. Upload blocked for safety.",
+    };
   }
 
   return { isValid: true };
 }
 
 /**
- * Process single file upload to S3 API with local fallback object URL.
+ * Upload a single file to the server.
+ * Performs validation and returns uploaded file metadata.
+ * Throws an error if the upload fails.
  */
 export async function processSingleFileUpload(
   file: File,
   docName: string,
   allowedTypes: string[] = ["pdf", "png", "jpg", "jpeg"],
-  maxSizeMb: number = 5
+  maxSizeMb: number = 5,
+  applicationId?: string,
+  convertToPdf = false,
 ): Promise<UploadedFile> {
   const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+  let data: UploadApiResponse;
   console.log("📤 [CLIENT FILE UPLOAD STARTED]:", {
     fileName: file.name,
     fileSizeMB: `${sizeMb} MB`,
@@ -67,76 +102,72 @@ export async function processSingleFileUpload(
   });
 
   const check = validateFileSecurity(file, allowedTypes, maxSizeMb);
+
   if (!check.isValid) {
-    console.error("❌ [CLIENT UPLOAD SECURITY REJECT]:", check.error);
-    throw new Error(check.error || "Security check failed.");
+    throw new Error(check.error || "Security validation failed.");
   }
 
   const sanitizedName = sanitizeFilename(file.name);
 
-  try {
-    const uploadData = new FormData();
-    uploadData.append("file", file);
-    uploadData.append("docName", docName || sanitizedName);
+  const uploadData = new FormData();
+  uploadData.append("file", file);
+  uploadData.append("docName", docName || sanitizedName);
+  if (applicationId) {
+    uploadData.append("applicationId", applicationId);
+  }
+  if (convertToPdf) {
+    uploadData.append("convertToPdf", "true");
+  }
 
+  try {
     const response = await fetch("/api/upload", {
       method: "POST",
       body: uploadData,
     });
-
-    const data = await response.json();
-
-    if (response.ok && data.success && data.fileUrl) {
-      console.log("✅ [CLIENT UPLOAD SUCCESS]:", {
-        fileName: data.fileName || sanitizedName,
-        fileUrl: data.fileUrl,
-        fileSize: data.fileSize || `${sizeMb} MB`,
-        fileType: data.fileType || file.type,
-        storageMode: data.isMock ? "Local Storage (/storage/documents)" : "AWS S3 Bucket",
-        checksum: data.checksum,
-      });
-
-      return {
-        id: data.id || `file_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-        name: data.fileName || sanitizedName,
-        size: data.fileSize || `${sizeMb} MB`,
-        type: data.fileType || file.type.split("/")[1]?.toUpperCase() || "PDF",
-        url: data.fileUrl,
-        uploadedAt: new Date().toISOString(),
-      };
-    } else {
-      console.error("❌ [CLIENT UPLOAD SERVER REJECT]:", data.error);
-      throw new Error(data.error || "S3 Upload failed");
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Invalid response received from upload server.");
     }
-  } catch (err: any) {
-    console.warn("⚠️ [CLIENT UPLOAD NOTICE - FALLBACK TO LOCAL OBJECT URL]:", err?.message || err);
-    const objectUrl = URL.createObjectURL(file);
+    if (!response.ok || !data.success || !data.fileUrl) {
+      throw new Error(data.error || "Upload failed.");
+    }
+
+    console.log("✅ [CLIENT UPLOAD SUCCESS]:", {
+      fileName: data.fileName || sanitizedName,
+      fileUrl: data.fileUrl,
+      fileSize: data.fileSize || `${sizeMb} MB`,
+      fileType: data.fileType || file.type,
+      checksum: data.checksum,
+    });
+
     return {
-      id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      name: sanitizedName,
-      size: `${sizeMb} MB`,
-      type: file.type.split("/")[1]?.toUpperCase() || "PDF",
-      url: objectUrl,
+      id: data.id ?? crypto.randomUUID(),
+      name: data.fileName || sanitizedName,
+      size: data.fileSize || `${sizeMb} MB`,
+      type: data.fileType || file.type.split("/")[1]?.toUpperCase() || "FILE",
+      url: data.fileUrl,
+      key: data.key || extractS3KeyFromUrl(data.fileUrl),
       uploadedAt: new Date().toISOString(),
     };
+  } catch (err: unknown) {
+    console.error(
+      "❌ [CLIENT UPLOAD FAILED]:",
+      err instanceof Error ? err.message : err,
+    );
+
+    throw new Error(
+      err instanceof Error
+        ? err.message
+        : "File upload failed. Please try again.",
+    );
   }
 }
-
-export interface UploadedFile {
-  id?: string;
-  name: string;
-  size: string;
-  type: string;
-  url?: string;
-  key?: string;
-  uploadedAt?: string;
-}
-
 /**
  * Helper to extract S3 object key from full S3 URL or storage path
  */
 export function extractS3KeyFromUrl(url?: string): string | undefined {
-  if (!url || url.startsWith("blob:")) return undefined;
+  if (!url) return undefined;
   if (url.includes(".amazonaws.com/")) {
     return url.split(".amazonaws.com/")[1];
   }
@@ -149,15 +180,28 @@ export function extractS3KeyFromUrl(url?: string): string | undefined {
 /**
  * Delete previously uploaded S3 object or database document record upon file replacement.
  */
-export async function deleteUploadedFile(keyOrUrl?: string, documentId?: string): Promise<boolean> {
+export async function deleteUploadedFile(
+  keyOrUrl?: string,
+  documentId?: string,
+): Promise<boolean> {
   const key = extractS3KeyFromUrl(keyOrUrl) || keyOrUrl;
   if (!key && !documentId) return false;
   try {
-    const query = key ? `key=${encodeURIComponent(key)}` : `documentId=${documentId}`;
+    const query = key
+      ? `key=${encodeURIComponent(key)}`
+      : `documentId=${documentId}`;
+
     const res = await fetch(`/api/upload?${query}`, { method: "DELETE" });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      console.log("🗑️ [S3 FILE REPLACEMENT DELETED OLD FILE]:", key || documentId);
+    if (!res.ok) {
+      console.warn("Delete request failed.");
+      return false;
+    }
+   const data: DeleteUploadResponse = await res.json();
+    if (data.success) {
+      console.log(
+        "🗑️ [S3 FILE REPLACEMENT DELETED OLD FILE]:",
+        key || documentId,
+      );
       return true;
     }
   } catch (err) {

@@ -471,7 +471,7 @@ export default function BusinessProfilePage() {
 
       {/* Sticky Bottom Multi-Service Batch Payment Bar (Mobile & Desktop Optimized) */}
       {selectedServices.length > 0 && businessProfile && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl p-3 sm:p-4 animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl p-3 sm:p-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] animate-in slide-in-from-bottom duration-300">
           <Container>
             <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               {/* Selected Services Info */}

@@ -207,7 +207,7 @@ export default function ProfilePage() {
         <div className="max-w-5xl mx-auto space-y-8">
           
           {/* Header Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 sm:p-8 text-white shadow-xl">
+          <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 sm:p-8 text-white shadow-xl">
             <div className="absolute -right-10 -bottom-10 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
               <div className="flex items-center gap-3 sm:gap-4">
@@ -427,7 +427,7 @@ export default function ProfilePage() {
                   <div
                     key={service.id || service.slug}
                     onClick={() => toggleSelectService(service.slug)}
-                    className={`relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden p-1 ${
+                    className={`relative rounded-lg border transition-all duration-300 cursor-pointer overflow-hidden p-1 ${
                       isSelected
                         ? "border-indigo-600 bg-indigo-50/30 ring-2 ring-indigo-500/20 shadow-md"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs"

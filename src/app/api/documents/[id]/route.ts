@@ -49,16 +49,18 @@ export async function GET(
     const fileUrl = documentRecord.fileUrl;
     let filePath = "";
 
-    if (fileUrl.startsWith("/storage/")) {
-      filePath = path.join(process.cwd(), fileUrl.replace(/^\//, ""));
+    if (fileUrl.startsWith("/storage/documents/")) {
+      filePath = path.join(process.cwd(), "storage", "documents", path.basename(fileUrl));
+    } else if (fileUrl.startsWith("/storage/")) {
+      filePath = path.join(process.cwd(), "storage", path.basename(fileUrl));
     } else if (fileUrl.startsWith("/uploads/")) {
       // Legacy fallback
-      filePath = path.join(process.cwd(), "public", fileUrl.replace(/^\//, ""));
+      filePath = path.join(process.cwd(), "public", "uploads", path.basename(fileUrl));
     } else if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
       // Remote S3 URL redirect
       return NextResponse.redirect(fileUrl);
     } else {
-      filePath = path.join(process.cwd(), "storage", "documents", fileUrl);
+      filePath = path.join(process.cwd(), "storage", "documents", path.basename(fileUrl));
     }
 
     const fileExists = await fs.stat(filePath).catch(() => null);

@@ -50,7 +50,7 @@ export default function MultiServiceCheckoutModal({
 
   if (isAdmin) {
     return (
-      <div className="p-4 sm:p-6 text-center space-y-4 bg-amber-50/70 rounded-2xl border border-amber-200">
+      <div className="p-4 sm:p-6 text-center space-y-4 bg-amber-50/70 rounded-lg border border-amber-200">
         <div className="size-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center">
           <AlertCircle size={24} />
         </div>
@@ -299,7 +299,7 @@ export default function MultiServiceCheckoutModal({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-      <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200/80">
+      <div className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200/80">
         <div className="flex items-start gap-3">
           <div className="size-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
             <ShoppingBag className="size-5" />

@@ -11,7 +11,7 @@ export default function UploadProgress({
   progressMessage = "Encrypting & Uploading to S3 Bucket...",
 }: UploadProgressProps) {
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2">
       <div className="flex items-center justify-between text-xs font-bold text-indigo-700">
         <span className="flex items-center gap-2">
           <Loader2 className="animate-spin text-indigo-600 size-4" />

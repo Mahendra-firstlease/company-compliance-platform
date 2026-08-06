@@ -27,6 +27,9 @@ import {
 } from "@/components/ui/card";
 import apiFetch from "@/lib/apiClient";
 import { formatDate } from "@/utils/formatters";
+import { useClientPagination } from "@/hooks/useClientPagination";
+import TablePagination from "@/components/ui/TablePagination";
+import TablePaginationToolbar from "@/components/ui/TablePaginationToolbar";
 
 interface AdminUserListItem {
   id: string;
@@ -111,6 +114,22 @@ export default function AdminUsersPage() {
     return list;
   }, [users, roleFilter, searchQuery]);
 
+  const {
+    pageItems: paginatedUsers,
+    pageIndex,
+    pageSize,
+    totalItems,
+    totalPages,
+    entryStart,
+    entryEnd,
+    pageSizeOptions,
+    setPageIndex,
+    setPageSize,
+  } = useClientPagination(filteredUsers, {
+    initialPageSize: 10,
+    resetDeps: [roleFilter, searchQuery],
+  });
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Summary Bar */}
@@ -165,7 +184,30 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative max-w-sm w-full">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, email, phone, business..."
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
+            />
+          </div>
+
+          <TablePaginationToolbar
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            pageSizeOptions={pageSizeOptions}
+            onPageSizeChange={setPageSize}
+            onPageChange={setPageIndex}
+            className="sm:ml-auto"
+          />
+        </div>
+
         {/* Role Filter Tabs */}
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-md">
           {["ALL", "CLIENT", "EXECUTIVE", "ADMIN"].map((r) => (
@@ -183,18 +225,6 @@ export default function AdminUsersPage() {
             </button>
           ))}
         </div>
-
-        {/* Search Bar */}
-        <div className="relative max-w-sm w-full">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, email, phone, business..."
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
-          />
-        </div>
       </div>
 
       {/* Main Datatable Card */}
@@ -207,7 +237,7 @@ export default function AdminUsersPage() {
             </CardDescription>
           </div>
           <span className="text-xs font-semibold text-slate-500">
-            Showing {filteredUsers.length} users
+            Showing {entryStart}-{entryEnd} of {totalItems} users
           </span>
         </CardHeader>
         <CardContent className="p-0">
@@ -233,7 +263,7 @@ export default function AdminUsersPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
-                      {filteredUsers.map((user) => (
+                      {paginatedUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
@@ -308,7 +338,7 @@ export default function AdminUsersPage() {
 
                 {/* Mobile Card List View (< sm) */}
                 <div className="sm:hidden divide-y divide-slate-100 p-2">
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <div key={user.id} className="p-3.5 space-y-2.5">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5">
@@ -353,6 +383,11 @@ export default function AdminUsersPage() {
                     </div>
                   ))}
                 </div>
+                <TablePagination
+                  entryStart={entryStart}
+                  entryEnd={entryEnd}
+                  totalItems={totalItems}
+                />
               </>
           ) : (
             <div className="p-12 text-center space-y-3">

@@ -338,7 +338,7 @@ export default function AboutClient() {
           />
 
           <div className="border border-slate-200/90 rounded-lg overflow-hidden shadow-2xs bg-white">
-            <div className="grid grid-cols-3 bg-slate-100 border-b border-slate-200 p-4 text-xs font-black uppercase tracking-wider text-slate-700">
+            <div className="hidden md:grid grid-cols-3 bg-slate-100 border-b border-slate-200 p-4 text-xs font-black uppercase tracking-wider text-slate-700">
               <div>Feature</div>
               <div className="text-rose-600 flex items-center gap-1.5 font-black">
                 <XCircle className="size-4 text-rose-500" /> Traditional Way
@@ -353,16 +353,26 @@ export default function AboutClient() {
               {comparisons.map((row, idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-3 p-4 text-xs font-medium items-center hover:bg-slate-50 transition-colors"
+                  className="p-4 space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:items-center hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0"
                 >
                   <div className="font-bold text-slate-900">{row.feature}</div>
-                  <div className="text-slate-500 flex items-center gap-2 pr-4 font-medium">
-                    <XCircle className="size-4 text-rose-400 shrink-0" />
-                    <span>{row.traditional}</span>
+                  <div className="text-slate-500 flex items-start gap-2 md:pr-4 font-medium">
+                    <XCircle className="size-4 text-rose-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="md:hidden block text-[10px] font-black uppercase tracking-wider text-rose-600 mb-1">
+                        Traditional Way
+                      </span>
+                      <span>{row.traditional}</span>
+                    </div>
                   </div>
-                  <div className="text-slate-900 font-bold flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-                    <span>{row.firstLease}</span>
+                  <div className="text-slate-900 font-bold flex items-start gap-2">
+                    <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="md:hidden block text-[10px] font-black uppercase tracking-wider text-emerald-700 mb-1">
+                        FirstLease Easy Way
+                      </span>
+                      <span>{row.firstLease}</span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -406,7 +416,7 @@ export default function AboutClient() {
       {/* FINAL LIGHT CTA BANNER */}
       <Section className="py-16 bg-white border-slate-200/80">
         <Container>
-          <div className="bg-linear-to-r from-indigo-600 via-indigo-700 to-blue-700 text-white p-8 md:p-12 rounded-xl text-center space-y-6 shadow-xl">
+          <div className="bg-linear-to-r from-indigo-600 via-indigo-700 to-blue-700 text-white p-8 md:p-12 rounded-lg text-center space-y-6 shadow-xl">
             <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
               Experience the Genuine, Easy Way to Comply
             </h2>

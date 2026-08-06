@@ -9,9 +9,9 @@ export default function Loading() {
         <Skeleton className="h-5 w-40 rounded-md" />
 
         {/* Hero / Header Section Placeholder */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-8 space-y-4 shadow-2xs">
+        <div className="bg-white border border-slate-200/80 rounded-lg p-8 space-y-4 shadow-2xs">
           <Skeleton className="h-4 w-28 rounded-full" />
-          <Skeleton className="h-8 w-2/3 rounded-xl" />
+          <Skeleton className="h-8 w-2/3 rounded-lg" />
           <Skeleton className="h-4 w-full max-w-2xl rounded-md" />
         </div>
 
@@ -20,7 +20,7 @@ export default function Loading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-4 shadow-2xs h-[300px] flex flex-col justify-between"
+              className="bg-white border border-slate-200/80 rounded-lg p-6 space-y-4 shadow-2xs h-[300px] flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <Skeleton className="h-5 w-20 rounded-full" />
@@ -30,7 +30,7 @@ export default function Loading() {
               </div>
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                 <Skeleton className="h-6 w-20 rounded" />
-                <Skeleton className="h-9 w-28 rounded-xl" />
+                <Skeleton className="h-9 w-28 rounded-lg" />
               </div>
             </div>
           ))}

@@ -3,110 +3,198 @@ import { getPresignedDownloadUrl } from "@/lib/s3/presigned";
 
 /**
  * Server-Side Proxy Download Route for Next.js
- * Solves CORS restrictions and forces direct file downloads across all browsers.
- * Server fetches remote file and returns it with Content-Disposition: attachment header.
+ *
+ * Features:
+ * - Supports S3 object keys or direct URLs
+ * - Generates presigned URLs for private S3 objects
+ * - Downloads the file server-side (avoids browser CORS issues)
+ * - Forces browser download with Content-Disposition
+ * - Returns proper HTTP errors instead of a mock PDF
  */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  const rawFileUrl = searchParams.get("url") || searchParams.get("fileUrl");
+  const rawFileUrl =
+    searchParams.get("url") || searchParams.get("fileUrl");
   const rawKey = searchParams.get("key");
-  const rawFilename = searchParams.get("filename") || searchParams.get("name");
+  const rawFilename =
+    searchParams.get("filename") || searchParams.get("name");
 
-  const fileUrl = rawFileUrl ? decodeURIComponent(rawFileUrl) : null;
-  const keyParam = rawKey ? decodeURIComponent(rawKey) : null;
+  const disposition =
+    searchParams.get("disposition") === "attachment"
+      ? "attachment"
+      : "inline";
+
+  const fileUrl = rawFileUrl
+    ? decodeURIComponent(rawFileUrl)
+    : null;
+
+  const keyParam = rawKey
+    ? decodeURIComponent(rawKey)
+    : null;
 
   if (!fileUrl && !keyParam) {
     return NextResponse.json(
-      { error: "Missing required 'url' or 'key' parameter" },
-      { status: 400 }
+      {
+        error: "Missing required 'url' or 'key' parameter.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  // Sanitize download filename
-  const cleanFilename = (rawFilename || keyParam?.split("/").pop() || fileUrl?.split("/").pop() || "download.pdf")
+  // Generate safe filename
+  const cleanFilename = (
+    rawFilename ||
+    keyParam?.split("/").pop() ||
+    fileUrl?.split("/").pop() ||
+    "download"
+  )
     .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
     .trim();
 
-  const finalFilename = cleanFilename.includes(".") ? cleanFilename : `${cleanFilename}.pdf`;
+  const finalFilename =
+    cleanFilename.length > 0 ? cleanFilename : "download";
 
-  // 1. Resolve Target URL (S3 Presigned URL or Direct URL)
   let targetUrl = fileUrl;
 
-  const s3Key = keyParam || (fileUrl?.includes(".amazonaws.com/") ? fileUrl.split(".amazonaws.com/")[1]?.split("?")[0] : null);
+  // Extract S3 key if URL belongs to S3
+  const s3Key =
+    keyParam ||
+    (fileUrl?.includes(".amazonaws.com/")
+      ? fileUrl
+          .split(".amazonaws.com/")[1]
+          ?.split("?")[0]
+      : null);
 
+  // Generate presigned URL
   if (s3Key) {
     try {
-      const presigned = await getPresignedDownloadUrl(s3Key, 3600);
-      if (presigned) {
-        targetUrl = presigned.startsWith("http") ? presigned : new URL(presigned, req.url).toString();
+      const presigned = await getPresignedDownloadUrl(
+        s3Key,
+        60 * 60
+      );
+
+      if (!presigned) {
+        return NextResponse.json(
+          {
+            error: "Unable to generate S3 download URL.",
+          },
+          {
+            status: 404,
+          }
+        );
       }
-    } catch (s3Err) {
-      console.warn("[Server-Side Download Proxy] S3 Presigned URL error:", s3Err);
+
+      targetUrl = presigned.startsWith("http")
+        ? presigned
+        : new URL(presigned, req.url).toString();
+    } catch (error) {
+      console.error(
+        "[Download Proxy] Failed to generate presigned URL:",
+        error
+      );
+
+      return NextResponse.json(
+        {
+          error: "Failed to generate download URL.",
+        },
+        {
+          status: 500,
+        }
+      );
     }
   }
 
-  if (targetUrl && !targetUrl.startsWith("http") && targetUrl.startsWith("/")) {
+  // Convert relative URL to absolute URL
+  if (
+    targetUrl &&
+    !targetUrl.startsWith("http") &&
+    targetUrl.startsWith("/")
+  ) {
     targetUrl = new URL(targetUrl, req.url).toString();
   }
 
-  // 2. Fetch File Server-Side (Proxy Fetch)
-  if (targetUrl && targetUrl.startsWith("http")) {
-    try {
-      const response = await fetch(targetUrl);
-      if (response.ok) {
-        const contentType = response.headers.get("content-type") || "application/octet-stream";
-        const arrayBuffer = await response.arrayBuffer();
-
-        return new NextResponse(arrayBuffer, {
-          status: 200,
-          headers: {
-            "Content-Type": contentType,
-            "Content-Disposition": `attachment; filename="${encodeURIComponent(finalFilename)}"`,
-            "Cache-Control": "public, max-age=3600",
-            "X-Content-Type-Options": "nosniff",
-          },
-        });
+  if (!targetUrl || !targetUrl.startsWith("http")) {
+    return NextResponse.json(
+      {
+        error: "Invalid download URL.",
+      },
+      {
+        status: 400,
       }
-    } catch (proxyErr) {
-      console.warn("[Server-Side Download Proxy] Fetch error:", proxyErr);
-    }
+    );
   }
 
-  // 3. Dev / Fallback Mock PDF Generator
-  const cleanTitle = finalFilename.replace(/\.[^/.]+$/, "").replace(/[()]/g, "");
-  const samplePdf = `%PDF-1.4
-1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
-2 0 obj <</Type /Pages /Kinds [3 0 R] /Count 1>> endobj
-3 0 obj <</Type /Page /Parent 2 0 R /Resources <</Font <</F1 4 0 R>>>> /MediaBox [0 0 612 792] /Contents 5 0 R>> endobj
-4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
-5 0 obj <</Length ${65 + cleanTitle.length}>> stream
-BT
-/F1 16 Tf
-50 700 Td
-(OFFICIAL FILING CERTIFICATE - ${cleanTitle}) Tj
-ET
-endstream endobj
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000244 00000 n 
-0000000318 00000 n 
-trailer <</Size 6 /Root 1 0 R>>
-startxref
-450
-%%EOF`;
+  try {
+    const response = await fetch(targetUrl, {
+      method: "GET",
+      redirect: "follow",
+      cache: "no-store",
+    });
 
-  return new NextResponse(samplePdf, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(finalFilename)}"`,
-      "Cache-Control": "public, max-age=3600",
-      "X-Content-Type-Options": "nosniff",
-    },
-  });
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          error: `Remote server responded with ${response.status}.`,
+        },
+        {
+          status: response.status,
+        }
+      );
+    }
+
+    const contentType =
+      response.headers.get("content-type") ||
+      "application/octet-stream";
+
+    const contentLength =
+      response.headers.get("content-length");
+
+    const body = response.body;
+
+    if (!body) {
+      return NextResponse.json(
+        {
+          error: "Downloaded file is empty.",
+        },
+        {
+          status: 502,
+        }
+      );
+    }
+
+    const headers = new Headers();
+
+    headers.set("Content-Type", contentType);
+    headers.set(
+      "Content-Disposition",
+      `${disposition}; filename="${encodeURIComponent(
+        finalFilename
+      )}"`
+    );
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("Cache-Control", "private, no-store");
+
+    if (contentLength) {
+      headers.set("Content-Length", contentLength);
+    }
+
+    return new NextResponse(body, {
+      status: 200,
+      headers,
+    });
+  } catch (error) {
+    console.error("[Download Proxy] Download failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to download the requested file.",
+      },
+      {
+        status: 502,
+      }
+    );
+  }
 }

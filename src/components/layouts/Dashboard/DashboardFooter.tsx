@@ -17,7 +17,7 @@ export default function DashboardFooter() {
         </div>
 
         {/* Right: Policy Links */}
-        <div className="flex gap-4">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
           <button
             onClick={() => handleLinkClick("Filing Support Guide")}
             className="hover:text-slate-600 transition-colors"

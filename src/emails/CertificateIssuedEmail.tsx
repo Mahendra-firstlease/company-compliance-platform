@@ -40,7 +40,7 @@ export const CertificateIssuedEmail = ({
       </Section>
 
       {/* Certificate Meta Box */}
-      <Section className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-[20px] my-[20px]">
+      <Section className="bg-emerald-50/60 border border-emerald-200/80 rounded-lg p-[20px] my-[20px]">
         <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
           <tr>
             <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Issued Document:</td>
@@ -64,7 +64,7 @@ export const CertificateIssuedEmail = ({
       <Section className="text-center my-[28px]">
         <Button
           href={downloadUrl}
-          className="bg-emerald-600 text-white font-bold text-[14px] rounded-xl px-[28px] py-[12px] inline-block shadow-sm"
+          className="bg-emerald-600 text-white font-bold text-[14px] rounded-lg px-[28px] py-[12px] inline-block shadow-sm"
         >
           Download Official Certificate PDF →
         </Button>

@@ -8,6 +8,7 @@ export interface ServiceDetails {
   eligibility?: string[];
   requiredDocuments?: string[];
   faqs?: FAQItem[];
+  packageDeliverables?: string[];
 }
 
 export interface Service {
@@ -28,5 +29,6 @@ export interface Service {
   eligibility?: string[];
   requiredDocuments?: string[];
   faqs?: FAQItem[];
+  packageDeliverables?: string[];
   details?: ServiceDetails;
 }

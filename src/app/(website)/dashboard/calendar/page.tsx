@@ -291,9 +291,9 @@ export default function CalendarPage() {
                   opacity: 0.85 !important;
                 }
                 .compliance-calendar-theme .fc-event-gst {
-                  background-color: #e0e7ff !important; /* indigo-100 */
-                  border: 1px solid #c7d2fe !important;
-                  color: #4338ca !important;
+                  background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+                  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent) !important;
+                  color: var(--primary) !important;
                 }
                 .compliance-calendar-theme .fc-event-labour {
                   background-color: #fef3c7 !important; /* amber-100 */

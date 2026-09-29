@@ -39,6 +39,7 @@ const fetchServiceBySlug = cache(async (slug: string): Promise<Service | null> =
         eligibility: (details?.eligibility as string[]) || [],
         requiredDocuments: (details?.requiredDocuments as string[]) || [],
         faqs: (details?.faqs as any[]) || [],
+        packageDeliverables: (details?.packageDeliverables as string[]) || [],
       } as any;
     }
   } catch (error: any) {
@@ -91,6 +92,11 @@ const fetchServiceBySlug = cache(async (slug: string): Promise<Service | null> =
         question: "Are government portal fees included in the price?",
         answer: "Yes, all statutory government fees and CA/CS verification costs are transparently itemized.",
       },
+    ],
+    packageDeliverables: [
+      "Statutory Registration Certificate",
+      "Government Portal Filing Copy",
+      "CA / CS Verified Seal",
     ],
     processingDays: 3,
   } as any;

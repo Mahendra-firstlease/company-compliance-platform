@@ -9,9 +9,9 @@ export default function TestimonialsSection() {
         {/* Section Heading */}
         <SectionHeading
           badge="Testimonials"
-          title="What Our "
-          highlight="Clients Say"
-          description="We provide a range of smart compliance assistants to help you stay compliant with the latest regulations and industry best practices."
+          title="Client Experiences "
+          highlight="That Speak for Us"
+          description="Hear from businesses that have trusted CPI to simplify their compliance journey with professional guidance, transparent processes, and dependable support."
           align="center"
         />
 

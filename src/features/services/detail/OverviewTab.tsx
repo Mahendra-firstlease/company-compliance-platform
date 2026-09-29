@@ -31,6 +31,29 @@ export default function OverviewTab({ service }: { service: Service }) {
           </span>
         </div>
       </div>
+
+      {service.packageDeliverables && service.packageDeliverables.length > 0 && (
+        <div className="space-y-3 pt-4 border-t border-gray-100">
+          <h3 className="text-base font-semibold text-gray-900">
+            Package Deliverables
+          </h3>
+          <div className="grid grid-cols-1 gap-2.5">
+            {service.packageDeliverables.map((deliverable, idx) => (
+              <div
+                key={`${deliverable}-${idx}`}
+                className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
+              >
+                <span className="size-5 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                  {idx + 1}
+                </span>
+                <span className="text-sm text-gray-700 font-medium">
+                  {deliverable}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

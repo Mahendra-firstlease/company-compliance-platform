@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
               <p className="text-xs font-semibold text-slate-500">Total Users</p>
               <h3 className="text-xl font-black text-slate-900">{stats.total}</h3>
             </div>
-            <div className="p-2.5 bg-indigo-100 text-indigo-700 rounded-lg">
+            <div className="p-2.5 bg-primary-light text-primary rounded-lg">
               <Users size={18} />
             </div>
           </CardContent>
@@ -176,7 +176,7 @@ export default function AdminUsersPage() {
               <p className="text-xs font-semibold text-slate-500">System Admins</p>
               <h3 className="text-xl font-black text-slate-900">{stats.admins}</h3>
             </div>
-            <div className="p-2.5 bg-purple-100 text-purple-700 rounded-lg">
+            <div className="p-2.5 bg-primary-light text-primary rounded-lg">
               <ShieldAlert size={18} />
             </div>
           </CardContent>
@@ -193,7 +193,7 @@ export default function AdminUsersPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, email, phone, business..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-xs outline-none focus:border-primary-border0 focus:bg-white transition-all text-slate-700"
             />
           </div>
 
@@ -217,7 +217,7 @@ export default function AdminUsersPage() {
               onClick={() => setRoleFilter(r)}
               className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
                 roleFilter === r
-                  ? "bg-white text-indigo-700 shadow-2xs"
+                  ? "bg-white text-primary shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -243,7 +243,7 @@ export default function AdminUsersPage() {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-12 text-center space-y-3">
-              <div className="size-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="size-6 border-2 border-primary-border border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-xs text-slate-400">Loading user directory...</p>
             </div>
           ) : filteredUsers.length > 0 ? (
@@ -267,7 +267,7 @@ export default function AdminUsersPage() {
                         <tr key={user.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
-                              <div className="size-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
+                              <div className="size-8 rounded-full bg-primary-light text-primary font-bold flex items-center justify-center text-xs shrink-0">
                                 {user.name.charAt(0).toUpperCase()}
                               </div>
                               <div>
@@ -309,7 +309,7 @@ export default function AdminUsersPage() {
                           </td>
 
                           <td className="py-3.5 px-4 text-center">
-                            <span className="inline-flex items-center gap-1 font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full text-xs">
+                            <span className="inline-flex items-center gap-1 font-bold text-primary bg-primary-light px-2.5 py-0.5 rounded-full text-xs">
                               <FileText size={12} />
                               {user.applicationsCount} filings
                             </span>
@@ -342,7 +342,7 @@ export default function AdminUsersPage() {
                     <div key={user.id} className="p-3.5 space-y-2.5">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          <div className="size-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0 uppercase">
+                          <div className="size-8 rounded-full bg-primary-light text-primary font-bold flex items-center justify-center text-xs shrink-0 uppercase">
                             {user.name.charAt(0)}
                           </div>
                           <div>
@@ -371,7 +371,7 @@ export default function AdminUsersPage() {
                       </div>
 
                       <div className="flex items-center justify-between text-xs pt-1">
-                        <span className="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-full text-[11px]">
+                        <span className="text-primary font-bold bg-primary-light px-2 py-0.5 rounded-full text-[11px]">
                           {user.applicationsCount} filings
                         </span>
                         <Link href={`/admin/users/${user.id}`}>

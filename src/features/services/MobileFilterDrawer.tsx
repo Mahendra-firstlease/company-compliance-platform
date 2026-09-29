@@ -47,7 +47,7 @@ export default function MobileFilterDrawer({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-indigo-600 font-semibold px-2 py-1"
+                className="text-xs text-primary font-semibold px-2 py-1"
                 onClick={onClearFilters}
               >
                 Clear
@@ -88,7 +88,8 @@ export default function MobileFilterDrawer({
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => onFilterChange(section.id, option.value)}
-                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                            className="h-4 w-4 rounded border-slate-300 focus:ring-primary cursor-pointer"
+                            style={{ accentColor: "var(--primary)" }}
                           />
                           <span className="text-slate-600 font-semibold text-xs">{option.label}</span>
                         </label>

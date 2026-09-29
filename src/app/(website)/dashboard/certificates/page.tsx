@@ -72,7 +72,7 @@ export default function CertificatesPage() {
                           certificateDownloadName(cert.serviceTitle, cert.certificateName),
                         );
                       }}
-                      className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
+                      className="text-xs font-bold bg-primary hover:bg-primary text-white cursor-pointer"
                       leftIcon={<Download size={13} />}
                     >
                       Download

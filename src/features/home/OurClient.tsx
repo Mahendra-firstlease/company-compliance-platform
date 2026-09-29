@@ -9,11 +9,12 @@ export default function ClientLogosSection({}) {
     <Section className="bg-gray-50">
       <Container>
         <SectionHeading
-          badge="our clints"
-          title="Built for"
-          highlight="Modern Businesses"
+          badge="Our Clients"
+          title="Trusted by"
+          highlight="Businesses Across India"
           align="center"
-          description="Trusted by startups, MSMEs, and enterprises for registrations, certifications, and compliance services."
+          description="From emerging startups to established enterprises, businesses trust Compliance Portal India to
+            simplify their compliance journey."
         />
         <ClientLogoCarousel clientLogos={clientLogos} />
       </Container>

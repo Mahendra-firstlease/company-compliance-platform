@@ -120,7 +120,7 @@ export default function ComponentCustomizationPage() {
           </label>
           <input
             type="text"
-            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:outline-indigo-500"
+            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:outline-primary0"
             placeholder="e.g. GST Registration"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -226,13 +226,13 @@ export default function ComponentCustomizationPage() {
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex items-center gap-2.5 px-3 py-2 text-left rounded-lg text-xs font-semibold transition-all ${
                       isActive
-                        ? "bg-indigo-50 text-indigo-600 border-l-2 border-indigo-500 pl-4.5"
+                        ? "bg-primary-light text-primary border-l-2 border-primary-border0 pl-4.5"
                         : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     <Icon
                       size={14}
-                      className={isActive ? "text-indigo-500" : ""}
+                      className={isActive ? "text-primary0" : ""}
                     />
                     <span>{tab.label}</span>
                   </button>
@@ -261,7 +261,7 @@ export default function ComponentCustomizationPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-6">
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-2">
                     <h3 className="font-semibold text-sm text-slate-800 flex items-center gap-2">
-                      <ShieldCheck size={16} className="text-indigo-500" />
+                      <ShieldCheck size={16} className="text-primary0" />
                       Strict Accessibility
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
@@ -272,7 +272,7 @@ export default function ComponentCustomizationPage() {
                   </div>
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-2">
                     <h3 className="font-semibold text-sm text-slate-800 flex items-center gap-2">
-                      <CheckCircle size={16} className="text-indigo-500" />
+                      <CheckCircle size={16} className="text-primary0" />
                       Dynamic Notifications
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
@@ -301,7 +301,7 @@ export default function ComponentCustomizationPage() {
                       <CodeBlock
                         code={`/* app/globals.css */
 :root {
-  --color-primary: #4f46e5;    /* Indigo base accent */
+  --color-primary: var(--primary); /* Global brand accent */
   --color-success: #10b981;    /* Success state green */
   --color-warning: #f59e0b;    /* Clarifications yellow */
   --color-error: #ef4444;      /* Alert labels red */
@@ -517,7 +517,7 @@ export default function MyComponent() {
                 {/* Interactive Declarative Sandbox */}
                 <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
                   <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                    <PlayCircle size={18} className="text-indigo-500" />
+                    <PlayCircle size={18} className="text-primary0" />
                     Declarative Customizer Sandbox
                   </h2>
 
@@ -608,7 +608,7 @@ export default function MyComponent() {
                     <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
                       <input
                         type="checkbox"
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        className="rounded border-slate-300 text-primary focus:ring-primary0"
                         checked={closeOnBackdrop}
                         onChange={(e) => setCloseOnBackdrop(e.target.checked)}
                       />
@@ -618,7 +618,7 @@ export default function MyComponent() {
                     <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
                       <input
                         type="checkbox"
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        className="rounded border-slate-300 text-primary focus:ring-primary0"
                         checked={closeOnEsc}
                         onChange={(e) => setCloseOnEsc(e.target.checked)}
                       />
@@ -628,7 +628,7 @@ export default function MyComponent() {
                     <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
                       <input
                         type="checkbox"
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        className="rounded border-slate-300 text-primary focus:ring-primary0"
                         checked={showCloseButton}
                         onChange={(e) => setShowCloseButton(e.target.checked)}
                       />
@@ -669,7 +669,7 @@ export default function MyComponent() {
                         integrated with custom CSS attributes and coordinate
                         states.
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-indigo-500 font-semibold">
+                      <div className="flex items-center gap-2 text-xs text-primary0 font-semibold">
                         <ShieldCheck size={14} />
                         <span>Fully Accessible & Focus Trapped</span>
                       </div>
@@ -1229,7 +1229,7 @@ export default function ServicesCatalog() {
                           </TableCell>
                           <TableCell>19th June 2026</TableCell>
                           <TableCell className="text-right">
-                            <span className="bg-indigo-50 text-indigo-600 font-semibold border border-indigo-150 px-2 py-0.5 rounded-full text-xs">
+                            <span className="bg-primary-light text-primary font-semibold border border-primary-border px-2 py-0.5 rounded-full text-xs">
                               UNDER_REVIEW
                             </span>
                           </TableCell>

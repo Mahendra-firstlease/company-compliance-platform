@@ -81,7 +81,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
         isOpenRef.current = open;
         return (
           <>
-            <PopoverButton className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer">
+            <PopoverButton className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary cursor-pointer">
               <span>{item.label}</span>
               <ChevronDownIcon aria-hidden="true" className="h-4 w-4" />
             </PopoverButton>

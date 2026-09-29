@@ -47,7 +47,7 @@ export default function PaginationControls({
           pageNumber === DOTS ? (
             <span
               key={`dots-${index}`}
-              className="inline-flex size-8 items-center justify-center text-slate-400"
+              className="inline-flex size-8 items-center justify-center text-foreground/40"
             >
               &#8230;
             </span>
@@ -60,8 +60,8 @@ export default function PaginationControls({
               className={cn(
                 "inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border text-xs font-bold transition-all",
                 pageNumber === currentPage
-                  ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-800",
+                  ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-xs"
+                  : "border-primary-border bg-background text-foreground/70 hover:bg-primary-light hover:text-foreground",
               )}
             >
               {pageNumber}
@@ -70,7 +70,7 @@ export default function PaginationControls({
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-800 shadow-2xs md:hidden">
+      <div className="rounded-lg border border-primary-border bg-background px-3 py-1 text-xs font-bold text-foreground shadow-2xs md:hidden">
         Page {currentPage} of {totalPages}
       </div>
 

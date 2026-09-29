@@ -14,7 +14,7 @@ export default function RegisterPage() {
           <CompanyLogo priority />
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-primary hover:bg-primary/10 hover:border-primary/20 transition-all cursor-pointer shadow-2xs"
           >
             <ArrowLeft className="size-3.5" />
             <span>Back to Home</span>
@@ -45,9 +45,9 @@ export default function RegisterPage() {
 
         {/* Top Feature Pill */}
         <div className="relative z-10 flex items-center gap-2">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/90 border border-indigo-200/80 text-indigo-800 text-xs font-bold shadow-2xs backdrop-blur-md">
-            <Sparkles className="size-4 text-indigo-600" />
-            <span>Get Started in 2 Simple Steps</span>
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold shadow-2xs backdrop-blur-md">
+            <Sparkles className="size-4 text-primary" />
+            <span className="text-primary">Get Started in 2 Simple Steps</span>
           </span>
         </div>
 
@@ -88,10 +88,10 @@ export default function RegisterPage() {
           <div className="p-5 rounded-lg bg-white/95 border border-slate-200/90 shadow-sm backdrop-blur-md space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-slate-800">
               <span>Setup Timeline</span>
-              <span className="text-indigo-600">Step 1 of 2</span>
+              <span className="text-primary">Step 1 of 2</span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-              <div className="w-1/2 h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-pulse" />
+              <div className="w-1/2 h-full bg-gradient-to-r from-[#207574] to-[#2F8F8C] rounded-full animate-pulse" />
             </div>
             <p className="text-[11px] text-slate-500 font-semibold pt-1">
               Account Registration $\rightarrow$ Business Profile Tailoring $\rightarrow$ Immediate Portal Access
@@ -102,7 +102,7 @@ export default function RegisterPage() {
         {/* Bottom Partner Trust Strip */}
         <div className="relative z-10 pt-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-600 font-bold">
           <div className="flex items-center gap-2">
-            <Building2 className="size-4 text-indigo-600" />
+            <Building2 className="size-4 text-primary" />
             <span>Ministry of Corporate Affairs Compliant</span>
           </div>
           <div className="flex items-center gap-1 text-slate-500 text-[11px]">

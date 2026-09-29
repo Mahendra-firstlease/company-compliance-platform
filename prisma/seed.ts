@@ -2,11 +2,9 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 dotenv.config(); // Fallback to .env
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import { services } from "../src/data/services";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log("Starting database seed with updated services catalog...");
@@ -41,10 +39,10 @@ async function main() {
     const eligibility = s.details?.eligibility || s.eligibility || [];
     const requiredDocuments = s.details?.requiredDocuments || s.requiredDocuments || [];
     const faqs = s.details?.faqs || s.faqs || [];
+    const packageDeliverables = s.details?.packageDeliverables || [];
 
     const existingService = await prisma.service.findUnique({
       where: { slug: s.slug },
-      include: { details: true },
     });
 
     if (existingService) {
@@ -66,18 +64,20 @@ async function main() {
         },
       });
 
-      // Upsert ServiceDetail relation
-      if (existingService.details) {
-        await prisma.serviceDetail.update({
-          where: { serviceId: existingService.id },
-          data: {
-            benefits,
-            eligibility,
-            requiredDocuments,
-            faqs,
-          },
-        });
-      } else {
+      // Update without reading existing JSON values, so manually added columns
+      // with invalid legacy values do not prevent the seed from repairing them.
+      const detailUpdate = await prisma.serviceDetail.updateMany({
+        where: { serviceId: existingService.id },
+        data: {
+          benefits,
+          eligibility,
+          requiredDocuments,
+          faqs,
+          packageDeliverables,
+        },
+      });
+
+      if (detailUpdate.count === 0) {
         await prisma.serviceDetail.create({
           data: {
             serviceId: existingService.id,
@@ -85,7 +85,9 @@ async function main() {
             eligibility,
             requiredDocuments,
             faqs,
+            packageDeliverables,
           },
+          select: { id: true },
         });
       }
     } else {
@@ -111,6 +113,7 @@ async function main() {
               eligibility,
               requiredDocuments,
               faqs,
+              packageDeliverables,
             },
           },
         },

@@ -8,11 +8,11 @@ export default function FeaturesSection() {
       <Container className="flex w-full flex-col items-center">
         {/* Section Heading */}
         <SectionHeading 
-          badge="Features"
-          title="Smart Compliance "
+          badge="Catalogue"
+          title="Comprehensive Compliance Solutions"
           highlight="Assistants"
-          description="We provide a range of smart compliance assistants to help you stay compliant with the latest regulations and industry best practices."
-          align="center"
+          description="From business registrations to certifications and regulatory requirements, explore solutions
+                        tailored to your business needs."
         />
         <div className="flex flex-col gap-5">
           {/* Row 1 */}

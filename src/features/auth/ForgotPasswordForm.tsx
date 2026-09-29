@@ -76,7 +76,7 @@ export default function ForgotPasswordForm() {
           </h2>
           <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
             We have sent a password reset link to{" "}
-            <strong className="font-mono text-indigo-600">{submittedEmail}</strong>. Please check your inbox and follow the instructions.
+            <strong className="font-mono text-primary">{submittedEmail}</strong>. Please check your inbox and follow the instructions.
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function ForgotPasswordForm() {
 
           <Link
             href="/login"
-            className="inline-flex items-center justify-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+            className="inline-flex items-center justify-center gap-2 text-xs font-bold text-slate-600 hover:text-primary transition-colors"
           >
             <ArrowLeft className="size-3.5" />
             <span>Return to Login</span>
@@ -115,7 +115,7 @@ export default function ForgotPasswordForm() {
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <div className="size-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
+          <div className="size-10 rounded-lg bg-primary-light border border-primary-border text-primary flex items-center justify-center">
             <KeyRound className="size-5" />
           </div>
           <div>
@@ -142,7 +142,7 @@ export default function ForgotPasswordForm() {
           variant="primary"
           fullWidth
           disabled={isSubmitting}
-          className="h-11 rounded-lg font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
+          className="h-11 rounded-lg font-bold text-xs shadow-md shadow-primary/10 cursor-pointer"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2 justify-center">
@@ -158,7 +158,7 @@ export default function ForgotPasswordForm() {
       <div className="text-center pt-2">
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-primary transition-colors"
         >
           <ArrowLeft className="size-3.5" />
           <span>Back to Login</span>

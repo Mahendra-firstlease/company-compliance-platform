@@ -4,15 +4,17 @@ import OurClient from "@/features/home/OurClient";
 import ServicesSection from "@/features/home/ServicesSection";
 import FaqSection from "@/features/home/FaqSection";
 import TestimonialsSection from "@/features/home/TestimonialsSection";
+import GetStartedSection from "@/features/home/GetStartedSection"
 export default function Home() {
   return (
     <>
       <HeroSection />
       <OurClient />
       <ServicesSection />
-      <FeaturesSection />
+      {/* <FeaturesSection /> */}
       <TestimonialsSection />
       <FaqSection />
+      <GetStartedSection/>
     </>
   );
 }

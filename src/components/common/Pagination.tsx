@@ -124,7 +124,7 @@ export default function Pagination({
                     aria-current={isCurrent ? "page" : undefined}
                     className={`inline-flex size-9 items-center justify-center rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       isCurrent
-                        ? "bg-primary border border-primary text-white shadow-xs"
+                        ? "bg-[var(--primary)] border border-[var(--primary)] text-white shadow-xs"
                         : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-800"
                     }`}
                   >

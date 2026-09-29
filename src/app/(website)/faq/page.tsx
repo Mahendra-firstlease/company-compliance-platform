@@ -8,34 +8,34 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 export default function FAQPage() {
 
   const complianceFaqs = [
-    {
-      q: "What documents are required for registrations?",
-      a: "Required documents vary per compliance product. Usually, basic KYC details (promoter PAN Cards, Aadhaar Cards, or Passports) and address proof of the registered office (Utility bill, Rent agreement, or NOC from owner) are mandatory. You can view the exact checklist on each individual Service Detail Page."
-    },
-    {
-      q: "How long does the incorporation process take?",
-      a: "Incorporating a Private Limited Company or LLP typically takes 7 to 10 working days. This timeframe covers digital signature certificates (DSC), director identification numbers (DIN), name approval reservations, and final Certificate of Incorporation (COI) issuance."
-    },
-    {
-      q: "Are the government fees included in the pricing?",
-      a: "Yes, the listed price on our portal represents a transparent fee structure. We display the breakdown of government fees and our professional filing charges clearly so you face zero hidden costs."
-    },
-    {
-      q: "Is document upload and storage secure?",
-      a: "Absolutely. We prioritize document security. All files uploaded through our secure portal are encrypted both in transit (SSL/TLS) and at rest. Access is strictly restricted to assigned compliance experts and executives handling your files."
-    },
-    {
-      q: "How can I track my application status?",
-      a: "After you complete your document uploads and fees, you will receive real-time updates directly on your dashboard. We track milestones from 'Document Review' and 'Government Submission' up to final 'Certificate Generated'."
-    },
-    {
-      q: "What is your refund policy?",
-      a: "Professional service charges are fully refundable if we have not initiated the document verification or filing process. Any statutory government fees already paid to government departments are non-refundable."
-    },
-    {
-      q: "Can I register a business at a residential address?",
-      a: "Yes. Under Indian company law, you can register a residential property (including rental properties with a landlord NOC) as your business's registered office address."
-    }
+      {
+        q: "What government registrations does my business need?",
+        a: "The registrations required depend on your business structure, industry, location, and nature of operations. Common requirements may include company or LLP incorporation, GST registration, MSME registration, Shops & Establishments registration, and other applicable registrations or licenses.",
+      },
+      {
+        q: "How long does the business incorporation process take?",
+        a: "The timeline depends on the type of business, completeness of documents, and government processing time. Once the required information and documents are submitted correctly, the application can be processed within the applicable statutory and government timelines.",
+      },
+      {
+        q: "What licenses and permits are required for my business?",
+        a: "Licensing requirements vary based on the industry, business activity, location, and applicable regulations. We help identify the relevant licenses, registrations, and approvals that may be required for your business.",
+      },
+      {
+        q: "Are government fees included in the service pricing?",
+        a: "Government or statutory fees may be separate from professional service charges, depending on the service selected. The applicable costs and fee components are communicated clearly before proceeding with the application.",
+      },
+      {
+        q: "Is my personal and business information secure?",
+        a: "We take appropriate measures to protect the personal, business, and financial information submitted through the website. Documents and information are handled securely and only used for the purposes associated with the requested service, subject to our applicable privacy and security policies.",
+      },
+      {
+        q: "How can I track the status of my application?",
+        a: "Application status can be tracked through the available status-tracking process on the website or through updates provided during the registration process. You may also be notified when important actions, documents, or approvals are required.",
+      },
+      {
+        q: "Are online payments secure?",
+        a: "Yes. Payments made through the website are processed through secure payment mechanisms. Users should always verify the payment page, transaction details, and amount before completing a payment and retain the transaction confirmation for their records.",
+      },
   ];
 
   return (

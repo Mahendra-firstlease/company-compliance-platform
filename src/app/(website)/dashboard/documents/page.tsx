@@ -106,12 +106,12 @@ export default function UserDocumentsVaultPage() {
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-lg bg-slate-900 p-6 md:p-8 text-white shadow-xl border border-slate-800">
-        <div className="absolute top-0 right-0 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 size-64 bg-primary-light0/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold uppercase tracking-wider">
-              <Lock className="size-3.5 text-indigo-400" />
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary-light0/20 border border-primary-border/30 text-primary text-xs font-bold uppercase tracking-wider">
+              <Lock className="size-3.5 text-primary" />
               <span>256-Bit Encrypted AWS S3 Vault</span>
             </span>
 
@@ -174,14 +174,14 @@ export default function UserDocumentsVaultPage() {
             <span className="text-[10px] font-bold text-slate-400 uppercase">
               Active Filings
             </span>
-            <p className="text-xl font-black text-indigo-400">{cases.length}</p>
+            <p className="text-xl font-black text-primary">{cases.length}</p>
           </div>
 
           <div className="bg-slate-800/60 p-3.5 rounded-lg border border-slate-700/60 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase">
               Security Protocol
             </span>
-            <p className="text-xs font-bold text-indigo-300 flex items-center gap-1 mt-1">
+            <p className="text-xs font-bold text-primary flex items-center gap-1 mt-1">
               <ShieldCheck className="size-4 text-emerald-400" />
               <span>Magic-Byte Verified</span>
             </p>
@@ -225,7 +225,7 @@ export default function UserDocumentsVaultPage() {
               onClick={() => setCategoryFilter(tab.value)}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 categoryFilter === tab.value
-                  ? "bg-white text-indigo-600 shadow-2xs"
+                  ? "bg-white text-primary shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -244,11 +244,11 @@ export default function UserDocumentsVaultPage() {
           {paginatedDocuments.map((doc) => (
             <div
               key={doc.id}
-              className="bg-white border border-slate-200 rounded-lg p-5 space-y-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+              className="bg-white border border-slate-200 rounded-lg p-5 space-y-4 hover:border-primary hover:shadow-md transition-all duration-200 flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="size-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold shrink-0">
+                  <div className="size-10 rounded-lg bg-primary-light border border-primary-border text-primary flex items-center justify-center font-bold shrink-0">
                     <FileText className="size-5" />
                   </div>
 
@@ -274,7 +274,7 @@ export default function UserDocumentsVaultPage() {
                   >
                     {doc.fileName}
                   </p>
-                  <span className="text-[10px] font-bold text-indigo-600 block mt-1">
+                  <span className="text-[10px] font-bold text-primary block mt-1">
                     {doc.serviceTitle}
                   </span>
                 </div>
@@ -282,7 +282,7 @@ export default function UserDocumentsVaultPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedDoc(doc)}
-                  className="group relative h-24 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/50"
+                  className="group relative h-24 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-left transition-colors hover:border-primary hover:bg-primary-light/50"
                   title={`Preview ${doc.fileName}`}
                 >
                   {doc.fileUrl && /\.(png|jpe?g|webp)$/i.test(doc.fileName) ? (
@@ -293,7 +293,7 @@ export default function UserDocumentsVaultPage() {
                     />
                   ) : (
                     <div className="flex size-full items-center justify-center gap-2 text-slate-500">
-                      <FileText className="size-7 text-indigo-500" />
+                      <FileText className="size-7 text-primary0" />
                       <span className="text-[11px] font-bold">
                         {doc.fileType.includes("PDF")
                           ? "PDF document"
@@ -315,7 +315,7 @@ export default function UserDocumentsVaultPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setSelectedDoc(doc)}
-                    className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-primary-light text-primary hover:bg-primary-light transition-colors cursor-pointer"
                     title="Preview file"
                   >
                     <Eye className="size-4" />
@@ -362,7 +362,7 @@ export default function UserDocumentsVaultPage() {
       ) : (
         <Card>
           <CardContent className="p-12 text-center space-y-4">
-            <div className="size-12 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+            <div className="size-12 rounded-lg bg-primary-light border border-primary-border text-primary flex items-center justify-center mx-auto">
               <FileCheck2 className="size-6" />
             </div>
             <h3 className="text-base font-bold text-slate-900">
@@ -392,7 +392,7 @@ export default function UserDocumentsVaultPage() {
           <div className="bg-white border border-slate-200 rounded-lg max-w-lg w-full p-6 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <div className="size-10 rounded-lg bg-primary-light text-primary flex items-center justify-center font-bold">
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
@@ -452,7 +452,7 @@ export default function UserDocumentsVaultPage() {
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">
                   Original File Name
                 </span>
-                <span className="font-mono text-indigo-600 font-bold">
+                <span className="font-mono text-primary font-bold">
                   {selectedDoc.fileName}
                 </span>
               </div>

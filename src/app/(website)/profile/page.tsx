@@ -207,11 +207,11 @@ export default function ProfilePage() {
         <div className="max-w-5xl mx-auto space-y-8">
           
           {/* Header Banner */}
-          <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 sm:p-8 text-white shadow-xl">
-            <div className="absolute -right-10 -bottom-10 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-900 via-primary to-slate-900 p-4 sm:p-8 text-white shadow-xl">
+            <div className="absolute -right-10 -bottom-10 size-64 bg-primary-light0/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="size-12 sm:size-16 rounded-lg bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-white text-xl sm:text-2xl font-black uppercase shadow-inner">
+                <div className="size-12 sm:size-16 rounded-lg bg-primary/30 border border-primary-border/30 flex items-center justify-center text-white text-xl sm:text-2xl font-black uppercase shadow-inner">
                   {session?.user?.name?.[0] || session?.user?.email?.[0] || "U"}
                 </div>
                 <div>
@@ -219,12 +219,12 @@ export default function ProfilePage() {
                     <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       {session?.user?.name || "User Account"}
                     </h1>
-                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-full bg-primary-light0/20 text-primary border border-primary-border0/30 text-[10px] font-bold uppercase tracking-wider">
                       {((session?.user as { role?: string } | undefined)?.role || "CLIENT")}
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1 flex items-center gap-2">
-                    <Mail className="size-3.5 text-indigo-400 shrink-0" />
+                    <Mail className="size-3.5 text-primary shrink-0" />
                     <span>{session?.user?.email}</span>
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg border border-slate-200/80 p-6 shadow-xs space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="size-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                  <div className="size-9 rounded-lg bg-primary-light text-primary flex items-center justify-center font-bold">
                     <UserCircle className="size-5" />
                   </div>
                   <div>
@@ -300,7 +300,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg border border-slate-200/80 p-6 shadow-xs space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="size-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                  <div className="size-9 rounded-lg bg-primary-light text-primary flex items-center justify-center font-bold">
                     <Building2 className="size-5" />
                   </div>
                   <div>
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsEditingBusiness(true)}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary bg-primary-light hover:bg-primary-light px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                   >
                     <Edit3 className="size-3.5" />
                     <span>Edit Profile</span>
@@ -325,7 +325,7 @@ export default function ProfilePage() {
               {isEditingBusiness || !businessProfile ? (
                 <div className="space-y-4">
                   {!businessProfile && (
-                    <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-800 font-medium">
+                    <div className="p-3 bg-primary-light border border-primary-border rounded-lg text-xs text-primary font-medium">
                       👋 Welcome! Complete the 2-step business details below to get dynamic statutory service suggestions.
                     </div>
                   )}
@@ -397,7 +397,7 @@ export default function ProfilePage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="size-5 text-indigo-600" />
+                  <Sparkles className="size-5 text-primary" />
                   <h2 className="text-base sm:text-lg font-bold text-slate-900">
                     Suggested Statutory Services for Your Business
                   </h2>
@@ -429,7 +429,7 @@ export default function ProfilePage() {
                     onClick={() => toggleSelectService(service.slug)}
                     className={`relative rounded-lg border transition-all duration-300 cursor-pointer overflow-hidden p-1 ${
                       isSelected
-                        ? "border-indigo-600 bg-indigo-50/30 ring-2 ring-indigo-500/20 shadow-md"
+                        ? "border-primary-border bg-primary-light/30 ring-2 ring-primary0/20 shadow-md"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs"
                     }`}
                   >
@@ -439,7 +439,7 @@ export default function ProfilePage() {
                         <div
                           className={`size-4 rounded border flex items-center justify-center transition-colors ${
                             isSelected
-                              ? "bg-indigo-600 border-indigo-600 text-white"
+                              ? "bg-primary border-primary-border text-white"
                               : "border-slate-300 bg-white"
                           }`}
                         >
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                         <span>{isSelected ? "Selected for Package" : "Click to Add"}</span>
                       </div>
 
-                      <span className="font-bold text-indigo-700">₹{service.price}</span>
+                      <span className="font-bold text-primary">₹{service.price}</span>
                     </div>
 
                     {/* Service Card Content */}
@@ -471,7 +471,7 @@ export default function ProfilePage() {
             <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
               {/* Selected Services Info */}
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="size-9 sm:size-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                <div className="size-9 sm:size-10 rounded-lg bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
                   <ShoppingBag className="size-4 sm:size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -479,7 +479,7 @@ export default function ProfilePage() {
                     <span className="font-bold text-xs sm:text-sm text-slate-900 truncate">
                       {selectedServices.length} {selectedServices.length === 1 ? "Service" : "Services"} Selected
                     </span>
-                    <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 shrink-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-primary bg-primary-light px-2 py-0.5 rounded-full border border-primary-border shrink-0">
                       Package
                     </span>
                   </div>
@@ -495,7 +495,7 @@ export default function ProfilePage() {
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-none">
                     Total Amount:
                   </span>
-                  <span className="text-lg sm:text-xl font-black text-indigo-700 leading-tight">
+                  <span className="text-lg sm:text-xl font-black text-primary leading-tight">
                     ₹{totalSelectedPrice}
                   </span>
                 </div>

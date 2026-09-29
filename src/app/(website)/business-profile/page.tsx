@@ -237,11 +237,11 @@ export default function BusinessProfilePage() {
       <Container>
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Top Banner */}
-          <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 text-white shadow-xl">
-            <div className="absolute -right-10 -bottom-10 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-900 via-primary to-slate-900 p-8 text-white shadow-xl">
+            <div className="absolute -right-10 -bottom-10 size-64 bg-primary-light0/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold uppercase tracking-wider">
+                <span className="px-3 py-1 rounded-full bg-primary-light0/20 text-primary border border-primary-border0/30 text-xs font-bold uppercase tracking-wider">
                   🏢 Business Regulatory Hub
                 </span>
                 <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight mt-2">
@@ -256,13 +256,13 @@ export default function BusinessProfilePage() {
               </div>
 
               {businessProfile && (
-                <div className="flex items-center gap-2 bg-indigo-500/15 border border-indigo-500/30 rounded-lg p-3 shrink-0">
-                  <ShieldCheck className="size-5 text-indigo-400" />
+                <div className="flex items-center gap-2 bg-primary-light0/15 border border-primary-border0/30 rounded-lg p-3 shrink-0">
+                  <ShieldCheck className="size-5 text-primary" />
                   <div className="text-xs">
                     <p className="font-bold text-white">
                       {businessProfile.businessType}
                     </p>
-                    <p className="text-[11px] text-indigo-300">
+                    <p className="text-[11px] text-primary">
                       {businessProfile.state}, India
                     </p>
                   </div>
@@ -275,8 +275,8 @@ export default function BusinessProfilePage() {
           {isEditingBusiness || !businessProfile ? (
             <div className="space-y-4">
               {!businessProfile && (
-                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-900 font-medium flex items-center gap-3">
-                  <AlertCircle className="size-5 text-indigo-600 shrink-0" />
+                <div className="p-4 bg-primary-light border border-primary-border rounded-lg text-xs text-primary font-medium flex items-center gap-3">
+                  <AlertCircle className="size-5 text-primary shrink-0" />
                   <span>
                     👋 Welcome! Complete the 2-step business details below to
                     unlock personalized statutory compliance packages.
@@ -298,7 +298,7 @@ export default function BusinessProfilePage() {
             <div className="bg-white rounded-lg border border-slate-200/80 p-6 shadow-xs space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="size-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                  <div className="size-10 rounded-lg bg-primary-light text-primary flex items-center justify-center font-bold">
                     <Building2 className="size-5" />
                   </div>
                   <div>
@@ -314,7 +314,7 @@ export default function BusinessProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditingBusiness(true)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary bg-primary-light hover:bg-primary-light px-4 py-2 rounded-lg transition-colors cursor-pointer"
                 >
                   <Edit3 className="size-4" />
                   <span>Edit</span>
@@ -391,7 +391,7 @@ export default function BusinessProfilePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    {/* <Sparkles className="size-5 text-indigo-600" /> */}
+                    {/* <Sparkles className="size-5 text-primary" /> */}
                     <h2 className="text-lg font-bold text-slate-900">
                       Suggested Statutory Services for{" "}
                       {businessProfile.businessName}
@@ -426,7 +426,7 @@ export default function BusinessProfilePage() {
                       onClick={() => toggleSelectService(service.slug)}
                       className={`relative rounded-lg border transition-all duration-300 cursor-pointer overflow-hidden p-1 ${
                         isSelected
-                          ? "border-indigo-600 bg-indigo-50/30 ring-2 ring-indigo-500/20 shadow-md"
+                          ? "border-primary-border bg-primary-light/30 ring-2 ring-primary0/20 shadow-md"
                           : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs"
                       }`}
                     >
@@ -436,7 +436,7 @@ export default function BusinessProfilePage() {
                           <div
                             className={`size-4 rounded border flex items-center justify-center transition-colors ${
                               isSelected
-                                ? "bg-indigo-600 border-indigo-600 text-white"
+                                ? "bg-primary border-primary-border text-white"
                                 : "border-slate-300 bg-white"
                             }`}
                           >
@@ -451,7 +451,7 @@ export default function BusinessProfilePage() {
                           </span>
                         </div>
 
-                        <span className="font-bold text-indigo-700">
+                        <span className="font-bold text-primary">
                           ₹{service.price}
                         </span>
                       </div>
@@ -476,7 +476,7 @@ export default function BusinessProfilePage() {
             <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               {/* Selected Services Info */}
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="size-9 sm:size-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                <div className="size-9 sm:size-10 rounded-lg bg-primary text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
                   <ShoppingBag className="size-4 sm:size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -486,7 +486,7 @@ export default function BusinessProfilePage() {
                       {selectedServices.length === 1 ? "Service" : "Services"}{" "}
                       Selected
                     </span>
-                    <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 shrink-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-primary bg-primary-light px-2 py-0.5 rounded-full border border-primary-border shrink-0">
                       Package
                     </span>
                   </div>
@@ -502,7 +502,7 @@ export default function BusinessProfilePage() {
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block leading-none">
                     Total Amount:
                   </span>
-                  <span className="text-balance sm:text-xl font-black text-indigo-700 leading-tight">
+                  <span className="text-balance sm:text-xl font-black text-primary leading-tight">
                     ₹{totalSelectedPrice}
                   </span>
                 </div>

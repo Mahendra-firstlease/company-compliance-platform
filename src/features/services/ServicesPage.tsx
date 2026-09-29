@@ -59,7 +59,7 @@ export default function ServicesPage({
             </>
           ) : (
             <div className="text-center py-20 bg-white border border-slate-200/80 rounded-lg p-8 space-y-4 shadow-2xs">
-              <div className="size-16 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+              <div className="size-16 rounded-lg border border-primary/20 bg-primary/10 text-primary flex items-center justify-center mx-auto">
                 <FileX className="size-8" />
               </div>
               <div className="space-y-1.5 max-w-md mx-auto">

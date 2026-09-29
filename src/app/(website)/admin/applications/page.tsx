@@ -180,7 +180,7 @@ export default function AdminApplicationsPage() {
             <Button
               variant="outline"
               size="sm"
-              className="text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300"
+              className=" text-xs font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap hover:bg-primary-light hover:text-primary hover:border-primary"
             >
               View Case Details <ArrowRight size={13} />
             </Button>

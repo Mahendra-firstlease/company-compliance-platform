@@ -43,10 +43,10 @@ const fallbackRevenueTrend = [
 ];
 
 const fallbackCategoryDistribution = [
-  { name: "Company & LLP Incorporations", value: 220275, percent: 45, color: "#4F46E5" },
+  { name: "Company & LLP Incorporations", value: 220275, percent: 45, color: "var(--primary)" },
   { name: "GST & Tax Registrations", value: 122375, percent: 25, color: "#10B981" },
   { name: "Trademark & IP Filings", value: 88110, percent: 18, color: "#F59E0B" },
-  { name: "FSSAI & Statutory Licenses", value: 58740, percent: 12, color: "#3B82F6" },
+  { name: "FSSAI & Statutory Licenses", value: 58740, percent: 12, color: "var(--primary)" },
 ];
 
 const fallbackFilingVolume = [
@@ -58,11 +58,11 @@ const fallbackFilingVolume = [
 ];
 
 const chartConfig: ChartConfig = {
-  gtv: { label: "Gross Order Value (GTV)", color: "#4F46E5" },
+  gtv: { label: "Gross Order Value (GTV)", color: "var(--primary)" },
   proFee: { label: "CA/CS Professional Fee", color: "#10B981" },
   govtFee: { label: "Govt Statutory Fee", color: "#64748B" },
   approved: { label: "Approved Filings", color: "#10B981" },
-  active: { label: "Active In-Progress", color: "#4F46E5" },
+  active: { label: "Active In-Progress", color: "var(--primary)" },
 };
 
 export default function AnalyticsConfigPage() {
@@ -122,7 +122,7 @@ export default function AnalyticsConfigPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-            <BarChart3 className="size-5 text-indigo-600" /> Dynamic Revenue & Growth Analytics
+            <BarChart3 className="size-5 text-primary" /> Dynamic Revenue & Growth Analytics
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Real-time transaction values, statutory fee passthroughs, tax margins, and live filing metrics.
@@ -137,7 +137,7 @@ export default function AnalyticsConfigPage() {
                 onClick={() => setTimeRange(range)}
                 className={`px-3 py-2 min-h-9 rounded-lg transition-all cursor-pointer ${
                   timeRange === range
-                    ? "bg-white text-indigo-700 shadow-xs"
+                    ? "bg-white text-primary shadow-xs"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
@@ -151,7 +151,7 @@ export default function AnalyticsConfigPage() {
             title="Refresh analytics data"
             className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer border border-slate-200 active:scale-95"
           >
-            <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin text-indigo-600" : ""}`} />
+            <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin text-primary" : ""}`} />
           </button>
 
           <Button
@@ -182,10 +182,10 @@ export default function AnalyticsConfigPage() {
         <Card enableHover>
           <CardContent className="p-4 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">CA/CS Professional Revenue</span>
-            <p className="text-2xl font-black text-indigo-600 tracking-tight">
-              {isLoading ? <Loader2 className="size-6 animate-spin text-indigo-400" /> : `₹${kpis.proFee.toLocaleString("en-IN")}`}
+            <p className="text-2xl font-black text-primary tracking-tight">
+              {isLoading ? <Loader2 className="size-6 animate-spin text-primary" /> : `₹${kpis.proFee.toLocaleString("en-IN")}`}
             </p>
-            <span className="text-[10px] font-bold text-indigo-600 flex items-center gap-0.5">
+            <span className="text-[10px] font-bold text-primary flex items-center gap-0.5">
               Net Profit Margin {kpis.profitMargin}%
             </span>
           </CardContent>
@@ -222,7 +222,7 @@ export default function AnalyticsConfigPage() {
             <CardDescription className="text-xs">Gross Order Value (GTV) breakdown compared against CA/CS Net Professional Fees</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-slate-600">
-            <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-indigo-600" /> Gross GTV</span>
+            <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-primary" /> Gross GTV</span>
             <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-emerald-500" /> Net CA/CS Margin</span>
             <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-slate-400" /> Govt Fee Passthrough</span>
           </div>
@@ -233,8 +233,8 @@ export default function AnalyticsConfigPage() {
               <AreaChart data={revenueTrend} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gtvGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="proFeeGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
@@ -254,7 +254,7 @@ export default function AnalyticsConfigPage() {
                   type="monotone"
                   dataKey="gtv"
                   name="Gross Order Value"
-                  stroke="#4F46E5"
+                  stroke="var(--primary)"
                   strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#gtvGradient)"
@@ -289,7 +289,7 @@ export default function AnalyticsConfigPage() {
         <Card enableHover>
           <CardHeader className="pb-3 border-b border-slate-100">
             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900">
-              <PieIcon className="size-4 text-indigo-600" /> Live Revenue Share by Service Category
+              <PieIcon className="size-4 text-primary" /> Live Revenue Share by Service Category
             </CardTitle>
             <CardDescription className="text-xs">Category contribution breakdown for active billing cycle</CardDescription>
           </CardHeader>
@@ -350,7 +350,7 @@ export default function AnalyticsConfigPage() {
         <Card enableHover>
           <CardHeader className="pb-3 border-b border-slate-100">
             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900">
-              <Layers className="size-4 text-indigo-600" /> Dynamic Filing Volume Breakdown
+              <Layers className="size-4 text-primary" /> Dynamic Filing Volume Breakdown
             </CardTitle>
             <CardDescription className="text-xs">Approved vs Active applications across key service categories</CardDescription>
           </CardHeader>
@@ -363,13 +363,13 @@ export default function AnalyticsConfigPage() {
                   <YAxis tick={{ fontSize: 10, fill: "#64748B" }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTooltipCustom config={chartConfig} />} />
                   <Bar dataKey="approved" name="Approved Filings" fill="#10B981" radius={[4, 4, 0, 0]} barSize={16} />
-                  <Bar dataKey="active" name="Active In-Progress" fill="#4F46E5" radius={[4, 4, 0, 0]} barSize={16} />
+                  <Bar dataKey="active" name="Active In-Progress" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={16} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="flex items-center justify-center gap-6 pt-3 border-t border-slate-100 text-xs font-bold text-slate-600">
               <span className="flex items-center gap-1.5"><span className="size-3 rounded-md bg-emerald-500" /> Approved Certificates ({kpis.approvedCount})</span>
-              <span className="flex items-center gap-1.5"><span className="size-3 rounded-md bg-indigo-600" /> Active Desk Cases ({kpis.activeCount})</span>
+              <span className="flex items-center gap-1.5"><span className="size-3 rounded-md bg-primary" /> Active Desk Cases ({kpis.activeCount})</span>
             </div>
           </CardContent>
         </Card>
@@ -395,12 +395,12 @@ export default function AnalyticsConfigPage() {
               </p>
             </div>
 
-            <div className="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-lg space-y-1">
-              <p className="font-extrabold text-indigo-950 flex items-center justify-between">
+            <div className="p-3.5 bg-primary-light/80 border border-primary-border rounded-lg space-y-1">
+              <p className="font-extrabold text-primary flex items-center justify-between">
                 <span>Processing SLA Rate</span>
-                <ArrowUpRight className="size-4 text-indigo-600" />
+                <ArrowUpRight className="size-4 text-primary" />
               </p>
-              <p className="text-indigo-800 leading-relaxed font-medium">
+              <p className="text-primary leading-relaxed font-medium">
                 Average document audit turn-around time reduced from 8.2 hours to 3.4 hours across backoffice legal desks.
               </p>
             </div>

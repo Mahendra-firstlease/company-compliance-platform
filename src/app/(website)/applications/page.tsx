@@ -84,7 +84,7 @@ export default function UserApplicationsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-6 shadow-2xs">
             <div>
-              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider block">
                 Client Workspace
               </span>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -149,7 +149,7 @@ export default function UserApplicationsPage() {
                   onClick={() => setStatusFilter(tab.value)}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === tab.value
-                      ? "bg-white text-indigo-600 shadow-2xs"
+                      ? "bg-white text-primary shadow-2xs"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -220,7 +220,7 @@ export default function UserApplicationsPage() {
             </div>
           ) : (
             <div className="bg-white border border-slate-200 rounded-lg p-12 text-center space-y-4">
-              <div className="size-12 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+              <div className="size-12 rounded-lg bg-primary-light border border-primary-border text-primary flex items-center justify-center mx-auto">
                 <FileText className="size-6" />
               </div>
               <h3 className="text-base font-bold text-slate-900">No Applications Found</h3>

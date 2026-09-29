@@ -203,7 +203,7 @@ export default function TeamConfigPage() {
             <Button variant="outline" size="sm" onClick={() => modal.closeAll()} className="text-xs font-bold">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={createMember} className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700">
+            <Button variant="primary" size="sm" onClick={createMember} className="text-xs font-bold bg-primary hover:bg-primary">
               Save Specialist
             </Button>
           </div>
@@ -320,7 +320,7 @@ export default function TeamConfigPage() {
             <Button variant="outline" size="sm" onClick={() => modal.closeAll()} className="text-xs font-bold">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={updateMember} className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700">
+            <Button variant="primary" size="sm" onClick={updateMember} className="text-xs font-bold bg-primary hover:bg-primary">
               Save Changes
             </Button>
           </div>
@@ -387,7 +387,7 @@ export default function TeamConfigPage() {
           variant="primary"
           size="sm"
           onClick={handleAddMemberModal}
-          className="text-xs font-bold flex items-center gap-1.5 shrink-0 bg-indigo-600 hover:bg-indigo-700"
+          className="text-xs font-bold flex items-center gap-1.5 shrink-0 bg-primary hover:bg-primary"
         >
           <Plus size={14} /> Add Executive
         </Button>
@@ -405,7 +405,7 @@ export default function TeamConfigPage() {
         <Card enableHover>
           <CardContent className="p-4 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Queue Cases</span>
-            <p className="text-2xl font-black text-indigo-600">
+            <p className="text-2xl font-black text-primary">
               {teamMembers.reduce((a, b) => a + (b.activeCases || 0), 0)}
             </p>
           </CardContent>
@@ -451,7 +451,7 @@ export default function TeamConfigPage() {
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="p-12 text-center space-y-3">
-                <Loader2 className="size-6 animate-spin text-indigo-600 mx-auto" />
+                <Loader2 className="size-6 animate-spin text-primary mx-auto" />
                 <p className="text-xs text-slate-500 font-medium">Loading backoffice team from MySQL...</p>
               </div>
             ) : teamMembers.length === 0 ? (
@@ -480,7 +480,7 @@ export default function TeamConfigPage() {
                         <tr key={member.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
-                              <div className="size-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0 uppercase">
+                              <div className="size-8 rounded-full bg-primary-light text-primary font-bold flex items-center justify-center text-xs shrink-0 uppercase">
                                 {member.name.charAt(0)}
                               </div>
                               <div>
@@ -492,10 +492,10 @@ export default function TeamConfigPage() {
 
                           <td className="py-3.5 px-4">
                             <p className="font-bold text-slate-800">{member.role}</p>
-                            <span className="text-[10px] text-indigo-600 font-semibold">{member.specialization}</span>
+                            <span className="text-[10px] text-primary font-semibold">{member.specialization}</span>
                           </td>
 
-                          <td className="py-3.5 px-4 text-center font-black text-indigo-700">
+                          <td className="py-3.5 px-4 text-center font-black text-primary">
                             {member.activeCases} active
                           </td>
 
@@ -527,7 +527,7 @@ export default function TeamConfigPage() {
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => handleEditMemberModal(member)}
-                                className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-colors"
+                                className="p-1.5 text-slate-500 hover:text-primary hover:bg-slate-100 rounded-md transition-colors"
                                 title="Edit Specialist"
                               >
                                 <Edit2 size={14} />
@@ -553,7 +553,7 @@ export default function TeamConfigPage() {
                     <div key={member.id} className="p-4 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs uppercase shrink-0">
+                          <div className="size-9 rounded-full bg-primary-light text-primary font-bold flex items-center justify-center text-xs uppercase shrink-0">
                             {member.name.charAt(0)}
                           </div>
                           <div>
@@ -578,12 +578,12 @@ export default function TeamConfigPage() {
 
                       <div className="bg-slate-50 rounded-lg p-2.5 space-y-1 text-xs">
                         <p className="font-bold text-slate-800">{member.role}</p>
-                        <p className="text-[11px] text-indigo-600 font-medium">{member.specialization}</p>
+                        <p className="text-[11px] text-primary font-medium">{member.specialization}</p>
                       </div>
 
                       <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
                         <div className="flex gap-3">
-                          <span className="font-bold text-indigo-700">{member.activeCases} active</span>
+                          <span className="font-bold text-primary">{member.activeCases} active</span>
                           <span className="text-slate-500">{member.completedCases} done</span>
                         </div>
 

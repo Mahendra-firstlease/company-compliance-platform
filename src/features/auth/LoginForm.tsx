@@ -93,8 +93,8 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-1.5">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 font-bold text-[10px] uppercase tracking-wider border border-indigo-100">
-          <ShieldCheck className="size-3 text-indigo-600" />
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary-light text-primary font-bold text-[10px] uppercase tracking-wider border border-primary-border">
+          <ShieldCheck className="size-3 text-primary" />
           <span>Statutory Portal Sign In</span>
         </div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -123,7 +123,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
           <div className="flex justify-end pt-1">
             <Link
               href="/forgot-password"
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
+              className="text-xs font-bold text-primary hover:text-primary-hover hover:underline"
             >
               Forgot password?
             </Link>
@@ -133,7 +133,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
-          className="w-full font-bold text-xs py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
+          className="w-full font-bold text-xs py-3 bg-primary hover:bg-primary-hover text-white rounded-lg shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
         >
           {form.formState.isSubmitting ? (
             <>
@@ -161,7 +161,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
           onClick={() => handleGoogleLogin()}
           variant="outline"
           fullWidth
-          className="flex items-center justify-center gap-2.5 border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold py-2.5 rounded-lg shadow-2xs cursor-pointer transition-all"
+          className="flex items-center justify-center gap-2.5 border-primary-border hover:bg-primary-light text-foreground text-xs font-bold py-2.5 rounded-lg shadow-2xs cursor-pointer transition-all"
         >
           <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -180,7 +180,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
             onClick={() => {
               if (onSwitchToRegister) onSwitchToRegister();
             }}
-            className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
+            className="font-bold text-primary hover:text-primary-hover hover:underline"
           >
             Sign Up for Free
           </Link>

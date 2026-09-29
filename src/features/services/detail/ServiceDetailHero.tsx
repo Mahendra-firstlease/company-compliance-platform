@@ -11,7 +11,7 @@ export default function ServiceDetailHero({ service }: { service: Service }) {
         {service.title}
       </h1>
        <div className="flex flex-wrap gap-2 items-center">
-        <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+        <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
           Government Filing
         </span>
         <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">

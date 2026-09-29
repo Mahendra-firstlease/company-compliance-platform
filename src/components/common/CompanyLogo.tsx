@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 const logoVariants = cva("", {
   variants: {
     variant: {
-      header: "h-8 w-auto",
+      header: "h-14 w-auto",
       footer: "h-12 w-auto",
       sidebar: "h-10 w-auto",
       mobile: "h-8 w-auto",
@@ -30,21 +30,21 @@ export default function CompanyLogo({
   return (
     <div className="flex items-center">
       <Image
-        src="/company-logo/logo-sm.svg"
+        src="/company-logo/logo-sm.png"
         alt={companyName}
-        width={32}
+        width={200}
         height={32}
         priority={priority}
         className={cn("block lg:hidden", logoVariants({ variant }),className)}
       />
       <Image
         // className={`hidden h-8 w-auto lg:block ${className}`}
-        src="/company-logo/logo-lg.svg"
+        src="/company-logo/logo-lg.png"
         alt={companyName}
         width={180}
         height={40}
         priority={priority}
-        className={cn("hidden lg:block",logoVariants({variant}),className)}
+        className={cn("hidden lg:block ",logoVariants({variant}),className)}
 
       />
     </div>

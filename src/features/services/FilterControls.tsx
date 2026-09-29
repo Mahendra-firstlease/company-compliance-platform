@@ -63,7 +63,7 @@ export default function FilterControls() {
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-slate-800">Filters</h2>
           {activeFilterCount > 0 && (
-            <span className="size-5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black flex items-center justify-center">
+            <span className="size-5 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">
               {activeFilterCount}
             </span>
           )}
@@ -98,14 +98,14 @@ export default function FilterControls() {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-2xs hover:border-indigo-300 hover:bg-slate-50 transition-all text-xs font-bold text-slate-700"
+          className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-2xs hover:border-primary/30 hover:bg-slate-50 transition-all text-xs font-bold text-slate-700"
         >
           <span className="flex items-center gap-2">
-            <FunnelIcon className="size-4 text-indigo-600" />
+            <FunnelIcon className="size-4 text-primary" />
             <span>Filter Catalog Services</span>
           </span>
           {activeFilterCount > 0 ? (
-            <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[11px] font-black">
+            <span className="px-2 py-0.5 rounded-full bg-primary text-white text-[11px] font-black">
               {activeFilterCount} Active
             </span>
           ) : (
@@ -142,7 +142,7 @@ export default function FilterControls() {
                 {/* Header */}
                 <div className="flex items-center justify-between border-b px-5 py-4">
                   <div className="flex items-center gap-2">
-                    <FunnelIcon className="size-5 text-indigo-600" />
+                    <FunnelIcon className="size-5 text-primary" />
                     <h3 className="font-bold text-slate-900 text-sm">
                       Filter Services Catalog
                     </h3>

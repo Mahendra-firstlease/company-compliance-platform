@@ -26,7 +26,8 @@ const FaqSection = () => {
             badge="FAQs"
             title="Frequently Asked "
             highlight="Questions"
-            description="We provide a range of smart compliance assistants to help you stay compliant with the latest regulations and industry best practices."
+            description="Find quick answers to common questions about our compliance services, processes, registrations,
+                  and certifications."
           />
           <Accordion type="single" className="divide-y-0 mt-4">
             {faqs.map((faq, index) => (

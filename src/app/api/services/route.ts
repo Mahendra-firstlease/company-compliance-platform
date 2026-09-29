@@ -20,6 +20,7 @@ export async function GET() {
         eligibility: (details?.eligibility as string[]) || [],
         requiredDocuments: (details?.requiredDocuments as string[]) || [],
         faqs: (details?.faqs as any[]) || [],
+        packageDeliverables: (details?.packageDeliverables as string[]) || [],
       };
     });
 

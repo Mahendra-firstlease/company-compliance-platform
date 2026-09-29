@@ -111,7 +111,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
               <div className="flex h-full flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between shadow px-5 py-4">
-                  <CompanyLogo priority className="h-8 w-auto" />
+                  <CompanyLogo priority />
 
                   <button
                     onClick={() => setOpen(false)}

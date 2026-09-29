@@ -67,7 +67,7 @@ export default function DashboardLayout({
   }, [mobileMenuOpen]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Dedicated Dashboard Header */}
       <DashboardHeader
         title={title}
@@ -101,7 +101,7 @@ export default function DashboardLayout({
         />
 
         {/* Main Content Area & Footer wrapper */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[calc(100vh-64px)] bg-slate-50/50">
+        <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[calc(100vh-64px)] bg-background">
           <main className="p-3.5 sm:p-6 md:p-8 space-y-6 sm:space-y-8 overflow-x-hidden flex-1 min-w-0">
             {/* Page Header Ribbon (Rendered for top-level admin tabs only) */}
             {pathname.split("/").filter(Boolean).length <= 2 && (

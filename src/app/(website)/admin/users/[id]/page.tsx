@@ -168,7 +168,7 @@ export default function AdminUserDetailPage() {
   if (isLoading) {
     return (
       <div className="p-12 text-center space-y-3 animate-in fade-in duration-300">
-        <div className="size-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="size-8 border-2 border-primary-border border-t-transparent rounded-full animate-spin mx-auto" />
         <p className="text-xs text-slate-500 font-semibold">Loading 360-degree user profile...</p>
       </div>
     );
@@ -250,7 +250,7 @@ export default function AdminUserDetailPage() {
         <Card enableHover>
           <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <User size={16} className="text-indigo-600" />
+              <User size={16} className="text-primary" />
               Basic Account Information
             </CardTitle>
             <ShieldCheck size={16} className="text-emerald-500" />
@@ -297,7 +297,7 @@ export default function AdminUserDetailPage() {
         <Card enableHover>
           <CardHeader className="pb-3 border-b border-slate-100">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Building2 size={16} className="text-indigo-600" />
+              <Building2 size={16} className="text-primary" />
               Registered Business Profile
             </CardTitle>
           </CardHeader>
@@ -355,7 +355,7 @@ export default function AdminUserDetailPage() {
         <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <FileText size={16} className="text-indigo-600" />
+              <FileText size={16} className="text-primary" />
               Applied Statutory Services ({user.applications.length})
             </CardTitle>
             <CardDescription>
@@ -485,7 +485,7 @@ export default function AdminUserDetailPage() {
         <Card enableHover size="sm">
           <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Award size={16} className="text-indigo-600" />
+              <Award size={16} className="text-primary" />
               Issued Certificates ({user.certificates.length})
             </CardTitle>
           </CardHeader>
@@ -504,7 +504,7 @@ export default function AdminUserDetailPage() {
                     href={cert.certificateUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 text-xs"
+                    className="text-primary hover:text-primary font-semibold flex items-center gap-1 text-xs"
                   >
                     Download <ExternalLink size={12} />
                   </a>
@@ -522,7 +522,7 @@ export default function AdminUserDetailPage() {
         <Card enableHover size="sm">
           <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <CreditCard size={16} className="text-indigo-600" />
+              <CreditCard size={16} className="text-primary" />
               Payment History ({user.payments.length})
             </CardTitle>
           </CardHeader>

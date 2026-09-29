@@ -167,6 +167,10 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
       const invoiceWindow = window.open("", "_blank");
       if (invoiceWindow) {
+      const primaryColor =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--primary")
+          .trim();
         invoiceWindow.document.write(`
           <html>
             <head>
@@ -179,14 +183,14 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                 .tbl { width: 100%; border-collapse: collapse; margin-top: 20px; }
                 .tbl th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
                 .tbl td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
-                .total { text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 30px; color: #4f46e5; }
+                .total { text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 30px; color: ${primaryColor}; }
               </style>
             </head>
             <body>
               <div style="max-width:600px;margin:0 auto;border:1px solid #e2e8f0;padding:40px;border-radius:12px;background:#fff;">
                 <div style="display:flex;justify-content:space-between;border-bottom:2px solid #f1f5f9;padding-bottom:20px;">
                   <div>
-                    <h2 style="color:#4f46e5;margin:0;font-size:1.4em;">FIRSTLEASE COMPLIANCE PORTAL</h2>
+                    <h2 style="color:${primaryColor};margin:0;font-size:1.4em;">FIRSTLEASE COMPLIANCE PORTAL</h2>
                     <p style="font-size:0.8em;color:#64748b;margin:4px 0 0 0;">Secured Corporate Filings</p>
                   </div>
                   <div style="text-align:right;">
@@ -214,7 +218,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                     <tr><td style="padding:12px;border-bottom:1px solid #f1f5f9;font-size:0.9em;color:#334155;">Professional Processing Charges</td><td style="text-align:right;padding:12px;border-bottom:1px solid #f1f5f9;font-size:0.9em;color:#334155;">₹${appCase.professionalFee}</td></tr>
                   </tbody>
                 </table>
-                <div style="text-align:right;font-size:1.2em;font-weight:bold;margin-top:30px;color:#4f46e5;">Total Paid: ₹${appCase.totalFee}</div>
+                <div style="text-align:right;font-size:1.2em;font-weight:bold;margin-top:30px;color:${primaryColor};">Total Paid: ₹${appCase.totalFee}</div>
               </div>
             </body>
           </html>
@@ -278,11 +282,11 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
         />
 
         {/* Executive Workspace Command Header Hero */}
-        <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-950 via-slate-900 to-indigo-950 text-white p-6 md:p-8 shadow-xl border border-slate-800">
-          <div className="absolute top-0 right-0 -mt-8 -mr-8 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-950 via-slate-900 to-primary text-white p-6 md:p-8 shadow-xl border border-slate-800">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 size-64 bg-primary-light0/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[11px] font-mono text-indigo-300 bg-indigo-500/20 border border-indigo-400/30 px-3 py-1 rounded-full font-bold backdrop-blur-md">
+              <span className="text-[11px] font-mono text-primary bg-primary-light0/20 border border-primary-border/30 px-3 py-1 rounded-full font-bold backdrop-blur-md">
                 Ref ID: {appCase.id}
               </span>
               <StatusBadge
@@ -353,12 +357,12 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
         {/* Query Alert Warning Banner & Customer Response Trigger */}
         {(appCase.query || appCase.queryResponse) && (
           <div
-            className={`p-5 rounded-lg border shadow-md space-y-3 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-50/90 border-teal-200 text-teal-950" : "bg-amber-50/90 border-amber-200 text-amber-950"}`}
+            className={`p-5 rounded-lg border shadow-md space-y-3 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-primary-light/90 border-primary-border text-primary" : "bg-amber-50/90 border-amber-200 text-amber-950"}`}
           >
             <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
               <div className="flex items-start gap-3">
                 <div
-                  className={`size-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-teal-100 text-teal-700" : "bg-amber-100 text-amber-700 animate-pulse"}`}
+                  className={`size-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-primary-light text-primary" : "bg-amber-100 text-amber-700 animate-pulse"}`}
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -389,7 +393,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   Respond to Query & Re-upload
                 </Button>
               ) : (
-                <span className="text-[11px] font-extrabold text-teal-800 bg-teal-100 px-3 py-1 rounded-full border border-teal-300 shrink-0">
+                <span className="text-[11px] font-extrabold text-primary bg-primary-light px-3 py-1 rounded-full border border-primary-border shrink-0">
                   Pending Officer Audit
                 </span>
               )}
@@ -397,11 +401,11 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
             {/* Client Reply Summary if present */}
             {appCase.queryResponse && (
-              <div className="pt-2 border-t border-teal-200/80 text-xs text-slate-700 space-y-1">
-                <span className="font-bold text-[11px] text-teal-900 uppercase tracking-wider block">
+              <div className="pt-2 border-t border-primary-border/80 text-xs text-slate-700 space-y-1">
+                <span className="font-bold text-[11px] text-primary uppercase tracking-wider block">
                   Your Submitted Reply:
                 </span>
-                <p className="italic bg-white/80 p-2.5 rounded-lg border border-teal-100 text-slate-800 font-medium">
+                <p className="italic bg-white/80 p-2.5 rounded-lg border border-primary-border text-slate-800 font-medium">
                   "{appCase.queryResponse}"
                 </p>
               </div>
@@ -572,7 +576,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
             <div className="bg-white border border-slate-200/90 rounded-lg p-6 shadow-2xs space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                  <UploadCloud size={16} className="text-indigo-600" />
+                  <UploadCloud size={16} className="text-primary" />
                   Upload Additional Supporting Documents & Attachments
                 </h3>
               </div>

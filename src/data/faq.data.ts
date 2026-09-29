@@ -2,23 +2,23 @@ import { Faq } from "@/types";
 
 export const faqs :Faq[] = [
     {
-      question: "How to use this component?",
+      question: "What services does Compliance Portal India provide?",
       answer:
-        "To use this component, you need to import it in your project and use it in your JSX code. Here's an example of how to use it:",
+        "Compliance Portal India offers a wide range of services, including Startup India (DPIIT) recognition, GST registration, ITR filing, PAN services, MCA company/LLP registration, MSME/Udyam registration, ISO certifications, and other regulatory compliance solutions.",
     },
     {
-      question: "Are there any other components available?",
+      question: "Can Compliance Portal India help startups with registrations and government compliances?",
       answer:
-        "Yes, there are many other components available in this library. You can find them in the 'Components' section of the website.",
+        "Yes. We assist startups with essential registrations such as Startup India (DPIIT), GST, MSME/Udyam, PAN, and company/LLP registration, helping them establish their business with the right documentation and compliance support.",
     },
     {
-      question: "Are components responsive?",
+      question: "Why should I choose Compliance Portal India for compliance services?",
       answer:
-        "Yes, all components are responsive and can be used on different screen sizes.",
+        "We bring multiple business compliance requirements together under one platform, offering professional guidance, a simplified process, transparent support, and assistance from registration to ongoing regulatory requirements.",
     },
     {
-      question: "Can I customize the components?",
+      question: "Can I manage multiple business compliance requirements through one platform?",
       answer:
-        "Yes, you can customize the components by passing props to them. You can find more information about customizing components in the 'Customization' section of the website.",
+        "Absolutely. Compliance Portal India is designed as a one-stop compliance platform where businesses can access multiple registration, tax, certification, and regulatory services without having to manage each requirement separately.",
     },
   ];

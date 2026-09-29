@@ -19,7 +19,8 @@ export default function FilterCheckbox({
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+        className="h-4 w-4 rounded border-gray-300 focus:ring-primary"
+        style={{ accentColor: "var(--primary)" }}
       />
 
       <span className="text-sm text-gray-700">

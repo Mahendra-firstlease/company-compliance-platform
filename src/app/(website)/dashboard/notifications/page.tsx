@@ -163,7 +163,7 @@ export default function NotificationsPage() {
             onClick={handleMarkAllRead}
             className="text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shrink-0 w-full sm:w-auto"
           >
-            <CheckCheck size={14} className="text-indigo-600" />
+            <CheckCheck size={14} className="text-primary" />
             Mark all as read
           </Button>
         )}
@@ -179,7 +179,7 @@ export default function NotificationsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search notifications..."
-              className="w-full pl-9 pr-3 py-2 sm:py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
+              className="w-full pl-9 pr-3 py-2 sm:py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-primary-border0 focus:bg-white transition-all text-slate-700"
             />
           </div>
 
@@ -200,7 +200,7 @@ export default function NotificationsPage() {
             onClick={() => setFilterType("ALL")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 ${
               filterType === "ALL"
-                ? "bg-white text-indigo-700 shadow-2xs"
+                ? "bg-white text-primary shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -212,7 +212,7 @@ export default function NotificationsPage() {
             onClick={() => setFilterType("UNREAD")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 ${
               filterType === "UNREAD"
-                ? "bg-white text-indigo-700 shadow-2xs"
+                ? "bg-white text-primary shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -224,7 +224,7 @@ export default function NotificationsPage() {
             onClick={() => setFilterType("READ")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 ${
               filterType === "READ"
-                ? "bg-white text-indigo-700 shadow-2xs"
+                ? "bg-white text-primary shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -238,7 +238,7 @@ export default function NotificationsPage() {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-12 text-center space-y-3">
-              <div className="size-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="size-6 border-2 border-primary-border border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-xs text-slate-400">Loading notifications feed...</p>
             </div>
           ) : filteredNotifications.length > 0 ? (
@@ -253,7 +253,7 @@ export default function NotificationsPage() {
                     case "URGENT":
                       return { Icon: AlertCircle, color: "text-amber-600 bg-amber-50 border-amber-200" };
                     default:
-                      return { Icon: ShieldCheck, color: "text-indigo-600 bg-indigo-50 border-indigo-200" };
+                      return { Icon: ShieldCheck, color: "text-primary bg-primary-light border-primary-border" };
                   }
                 };
 
@@ -265,7 +265,7 @@ export default function NotificationsPage() {
                     className={`p-3.5 sm:p-4 flex items-start gap-3 sm:gap-4 transition-colors ${
                       notif.isRead
                         ? "bg-white hover:bg-slate-50/50"
-                        : "bg-indigo-50/20 hover:bg-indigo-50/40 font-medium"
+                        : "bg-primary-light/20 hover:bg-primary-light/40 font-medium"
                     }`}
                   >
                     {/* Icon Badge */}
@@ -298,7 +298,7 @@ export default function NotificationsPage() {
                         {notif.link ? (
                           <Link
                             href={notif.link}
-                            className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 hover:underline py-1"
+                            className="text-primary hover:text-primary flex items-center gap-1 hover:underline py-1"
                           >
                             View Workspace <ArrowRight size={12} />
                           </Link>

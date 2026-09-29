@@ -10,10 +10,10 @@
   --font-family: var(--font-poppins);
 
   /* 100% Unified Corporate Brand Primary Color System */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-light: #eef2ff;
-  --primary-border: #c7d2fe;
+  --primary: #207574;
+  --primary-hover: #207574;
+  --primary-light: #ffffff;
+  --primary-border: #0a2747;
 }
 
 @theme {

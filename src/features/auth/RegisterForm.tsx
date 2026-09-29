@@ -100,8 +100,8 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-1.5">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 font-bold text-[10px] uppercase tracking-wider border border-indigo-100">
-          <Sparkles className="size-3 text-indigo-600" />
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary-light text-primary font-bold text-[10px] uppercase tracking-wider border border-primary-border">
+          <Sparkles className="size-3 text-primary" />
           <span>New Business Account</span>
         </div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -168,7 +168,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
-          className="w-full font-bold text-xs py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer transition-all mt-2"
+          className="w-full font-bold text-xs py-3 bg-primary hover:bg-primary-hover text-white rounded-lg shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer transition-all mt-2"
         >
           {form.formState.isSubmitting ? (
             <>
@@ -226,7 +226,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             onClick={() => {
               if (onSwitchToLogin) onSwitchToLogin();
             }}
-            className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
+            className="font-bold text-primary hover:text-primary-hover hover:underline"
           >
             Login
           </Link>

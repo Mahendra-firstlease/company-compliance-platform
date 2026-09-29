@@ -131,7 +131,7 @@ export default function PricingConfigPage() {
             <Button variant="outline" size="sm" onClick={() => modal.closeAll()} className="text-xs font-bold">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={createCoupon} className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700">
+            <Button variant="primary" size="sm" onClick={createCoupon} className="text-xs font-bold bg-primary hover:bg-primary">
               Publish Coupon
             </Button>
           </div>
@@ -157,7 +157,7 @@ export default function PricingConfigPage() {
           variant="primary"
           size="sm"
           onClick={handleAddCouponModal}
-          className="text-xs font-bold flex items-center gap-1.5 shrink-0 bg-indigo-600 hover:bg-indigo-700"
+          className="text-xs font-bold flex items-center gap-1.5 shrink-0 bg-primary hover:bg-primary"
         >
           <Plus size={14} /> Create Promo Code
         </Button>
@@ -175,7 +175,7 @@ export default function PricingConfigPage() {
         <Card enableHover>
           <CardContent className="p-4 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Promo Coupons</span>
-            <p className="text-2xl font-black text-indigo-600">{coupons.filter((c) => c.status === "ACTIVE").length}</p>
+            <p className="text-2xl font-black text-primary">{coupons.filter((c) => c.status === "ACTIVE").length}</p>
           </CardContent>
         </Card>
 
@@ -229,7 +229,7 @@ export default function PricingConfigPage() {
               <tbody className="divide-y divide-slate-100 text-xs">
                 {paginatedCoupons.map((coupon) => (
                   <tr key={coupon.code} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-indigo-700">
+                    <td className="py-3.5 px-4 font-mono font-bold text-primary">
                       {coupon.code}
                     </td>
 
@@ -268,7 +268,7 @@ export default function PricingConfigPage() {
                           );
                           notify.success(`Toggled status for ${coupon.code}`);
                         }}
-                        className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                        className="text-xs font-bold text-primary hover:underline cursor-pointer"
                       >
                         Toggle Status
                       </button>
@@ -283,7 +283,7 @@ export default function PricingConfigPage() {
             {paginatedCoupons.map((coupon) => (
               <div key={coupon.code} className="p-4 space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono font-bold text-indigo-700">{coupon.code}</p>
+                  <p className="font-mono font-bold text-primary">{coupon.code}</p>
                   <Badge variant={coupon.status === "ACTIVE" ? "green" : "gray"} rounded="full" size="sm">
                     {coupon.status}
                   </Badge>
@@ -314,7 +314,7 @@ export default function PricingConfigPage() {
                       );
                       notify.success(`Toggled status for ${coupon.code}`);
                     }}
-                    className="min-h-[44px] px-4 font-bold text-indigo-600"
+                    className="min-h-[44px] px-4 font-bold text-primary"
                   >
                     Toggle Status
                   </button>

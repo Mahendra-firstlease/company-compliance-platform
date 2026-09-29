@@ -77,7 +77,7 @@ export default function ApplyNowButton({ service }: { service: Service }) {
         <div className="text-center">
           <Link
             href="/admin/applications"
-            className="text-[11px] font-bold text-indigo-600 hover:underline inline-flex items-center gap-1"
+            className="text-[11px] font-bold text-primary hover:underline inline-flex items-center gap-1"
           >
             Manage Filings in Admin Console <ExternalLink size={11} />
           </Link>

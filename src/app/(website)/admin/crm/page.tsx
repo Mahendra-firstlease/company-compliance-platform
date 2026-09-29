@@ -124,7 +124,7 @@ export default function AdminCrmPage() {
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
             <p className="font-bold text-slate-800">{lead.name}</p>
             <p className="text-slate-500">{lead.email} &middot; {lead.phone}</p>
-            <p className="text-indigo-600 font-semibold pt-1">Target Service: {lead.serviceRequested}</p>
+            <p className="text-primary font-semibold pt-1">Target Service: {lead.serviceRequested}</p>
           </div>
 
           <div className="space-y-1">
@@ -172,7 +172,7 @@ export default function AdminCrmPage() {
             <Button variant="outline" size="sm" onClick={() => modal.closeAll()} className="text-xs font-bold">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={updateLead} className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700">
+            <Button variant="primary" size="sm" onClick={updateLead} className="text-xs font-bold bg-primary hover:bg-primary">
               Save Lead Updates
             </Button>
           </div>
@@ -218,7 +218,7 @@ export default function AdminCrmPage() {
         <Card enableHover>
           <CardContent className="p-4 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quotations Sent</span>
-            <p className="text-2xl font-black text-indigo-600">{leads.filter((l) => l.status === "QUOTATION_SENT").length}</p>
+            <p className="text-2xl font-black text-primary">{leads.filter((l) => l.status === "QUOTATION_SENT").length}</p>
           </CardContent>
         </Card>
 
@@ -267,7 +267,7 @@ export default function AdminCrmPage() {
               type="button"
               onClick={() => setStatusTab(tab.value)}
               className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                statusTab === tab.value ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+                statusTab === tab.value ? "bg-white text-primary shadow-2xs" : "text-slate-600"
               }`}
             >
               {tab.label}
@@ -405,7 +405,7 @@ export default function AdminCrmPage() {
                     </div>
 
                     <div className="bg-slate-50 rounded-lg p-2.5 space-y-1 text-xs">
-                      <p className="font-bold text-indigo-700">{lead.serviceRequested}</p>
+                      <p className="font-bold text-primary">{lead.serviceRequested}</p>
                       <p className="text-[11px] text-slate-500">
                         Officer: <strong className="text-slate-800">{lead.assignedExecutive || "Unassigned"}</strong>
                       </p>

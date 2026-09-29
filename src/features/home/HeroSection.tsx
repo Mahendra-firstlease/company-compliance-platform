@@ -13,7 +13,7 @@ function HeroSection({}: Props) {
     <>
       <Section
       id="home"
-      className="w-full bg-cover bg-center bg-no-repeat bg-linear-to from-indigo-50/80 via-slate-50 to-blue-50/60 border-b border-slate-200/80 px-4 pb-10 heroSection-bg"
+      className="w-full bg-cover bg-center bg-no-repeat bg-primary-light border-b border-primary-border/30 px-4 pb-10 heroSection-bg"
       >
         <Container className="container flex flex-col-reverse md:flex-row items-center justify-between gap-8">
           {/* Left */}
@@ -48,12 +48,12 @@ function HeroSection({}: Props) {
             </a>
 
             <h1 className="text-center lg:text-left text-neutral-900 text-4xl md:text-5xl lg:text-[52px]/16 leading-tight font-semibold max-w-156.5 mt-4">
-              Get Licenses &{" "}
-              <span className="text-primary"> Certifications </span> Easily
+              Compliance Made Simple{" "}
+              <span className="text-primary"> Business Made </span> Strong
             </h1>
             <p className="text-center lg:text-left text-base/7 text-neutral-600 max-w-md mt-4 mx-auto md:mx-0">
-              The Most comprehensive B2B portal for government registration.
-              Fast, secure, expert-led and hassle free.
+             Your trusted partner for regulatory, statutory, ISO, and government compliance solutions - all
+              under one platform.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-lg sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">

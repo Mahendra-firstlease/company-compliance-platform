@@ -117,7 +117,7 @@ export default function AdminDocumentsPage() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-6 shadow-2xs">
         <div>
-          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block">
+          <span className="text-xs font-bold text-primary uppercase tracking-wider block">
             Backoffice Verification Portal
           </span>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -177,7 +177,7 @@ export default function AdminDocumentsPage() {
               onClick={() => setDocTypeFilter(tab.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 docTypeFilter === tab.value
-                  ? "bg-white text-indigo-600 shadow-2xs"
+                  ? "bg-white text-primary shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -212,7 +212,7 @@ export default function AdminDocumentsPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedDoc(doc)}
-                          className="group relative size-12 shrink-0 overflow-hidden rounded-lg border border-indigo-100 bg-slate-950 text-indigo-300"
+                          className="group relative size-12 shrink-0 overflow-hidden rounded-lg border border-primary-border bg-slate-950 text-primary"
                           title={`Preview ${doc.fileName}`}
                         >
                           {isImageDocument(doc) ? (
@@ -266,7 +266,7 @@ export default function AdminDocumentsPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setSelectedDoc(doc)}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg bg-primary-light text-primary hover:bg-primary-light font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
                         >
                           <Eye className="size-3.5" />
                           <span>Preview</span>
@@ -295,18 +295,18 @@ export default function AdminDocumentsPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedDoc(doc)}
-                    className="size-12 shrink-0 overflow-hidden rounded-lg border border-indigo-100 bg-slate-950"
+                    className="size-12 shrink-0 overflow-hidden rounded-lg border border-primary-border bg-slate-950"
                   >
                     {isImageDocument(doc) ? (
                       <img src={doc.viewUrl} alt="" className="size-full object-cover" />
                     ) : (
-                      <FileText className="m-auto size-5 text-indigo-300" />
+                      <FileText className="m-auto size-5 text-primary" />
                     )}
                   </button>
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-sm text-slate-900 truncate">{doc.fileName}</p>
                     <p className="text-[11px] text-slate-500">{doc.docName}</p>
-                    <p className="text-[11px] font-semibold text-indigo-600 mt-1">{doc.serviceTitle}</p>
+                    <p className="text-[11px] font-semibold text-primary mt-1">{doc.serviceTitle}</p>
                   </div>
                   <Badge
                     variant={doc.status === "VERIFIED" ? "green" : doc.status === "REJECTED" ? "red" : "indigo"}
@@ -324,7 +324,7 @@ export default function AdminDocumentsPage() {
                 <div className="flex gap-2 pt-1">
                   <button
                     onClick={() => setSelectedDoc(doc)}
-                    className="flex-1 min-h-[44px] rounded-lg bg-indigo-50 text-indigo-700 font-bold text-xs"
+                    className="flex-1 min-h-[44px] rounded-lg bg-primary-light text-primary font-bold text-xs"
                   >
                     Preview
                   </button>
@@ -349,7 +349,7 @@ export default function AdminDocumentsPage() {
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg p-12 text-center space-y-4">
-          <div className="size-12 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+          <div className="size-12 rounded-lg bg-primary-light border border-primary-border text-primary flex items-center justify-center mx-auto">
             <FileText className="size-6" />
           </div>
           <h3 className="text-base font-bold text-slate-900">No Documents Found</h3>
@@ -368,7 +368,7 @@ export default function AdminDocumentsPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <div className="size-10 rounded-lg bg-primary-light text-primary flex items-center justify-center font-bold">
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
@@ -411,7 +411,7 @@ export default function AdminDocumentsPage() {
 
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Service</span>
-                  <span className="font-bold text-indigo-600">{selectedDoc.serviceTitle}</span>
+                  <span className="font-bold text-primary">{selectedDoc.serviceTitle}</span>
                 </div>
 
                 <div>
@@ -435,7 +435,7 @@ export default function AdminDocumentsPage() {
                   href={selectedDoc.viewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
                 >
                   <span>Open Full File</span>
                   <ExternalLink className="size-3" />

@@ -18,7 +18,7 @@ export default function WebsiteLayout({
     pathname.startsWith("/applications");
 
   if (isDashboardRoute) {
-    return <main className="min-h-screen bg-slate-50">{children}</main>;
+    return <main className="min-h-screen bg-background">{children}</main>;
   }
 
   return (

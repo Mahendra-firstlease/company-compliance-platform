@@ -38,14 +38,14 @@ export default function DashboardHeader({
         </button>
 
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="size-8 rounded-lg bg-linear-to-br from-indigo-600 to-indigo-700 text-white shadow-xs flex items-center justify-center shrink-0">
+          <div className="size-8 rounded-lg bg-linear-to-br from-primary to-primary-hover text-white shadow-xs flex items-center justify-center shrink-0">
             <Shield size={16} />
           </div>
           <div className="min-w-0">
             <h1 className="font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight leading-snug truncate">
               {title}
             </h1>
-            <p className="hidden sm:block text-[9px] font-bold text-indigo-600 tracking-wider uppercase mt-0.5">
+            <p className="hidden sm:block text-[9px] font-bold text-primary tracking-wider uppercase mt-0.5">
               FirstLease Enterprise Workspace
             </p>
           </div>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-12 bg-slate-50/60 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="grid min-h-svh lg:grid-cols-12 bg-slate-50/60 font-sans selection:bg-primary selection:text-white">
       {/* Left Column: Form Container */}
       <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-white relative z-10 border-r border-slate-200/80 shadow-2xl shadow-slate-200/50">
         {/* Header Bar */}
@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
           <CompanyLogo priority />
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-primary hover:bg-primary/10 hover:border-primary/20 transition-all cursor-pointer shadow-2xs"
           >
             <ArrowLeft className="size-3.5" />
             <span>Home</span>
@@ -42,13 +42,13 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Right Column: Corporate Feature Showcase Panel */}
-      <div className="lg:col-span-7 relative hidden lg:flex flex-col justify-between p-12 lg:p-16 bg-gradient-to-br from-indigo-50/80 via-slate-50 to-blue-50/60 text-slate-900 border-l border-slate-200/80 overflow-hidden">
-        <div className="absolute -top-32 -right-32 size-96 rounded-full bg-indigo-200/40 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-blue-200/40 blur-3xl pointer-events-none" />
+      <div className="lg:col-span-7 relative hidden lg:flex flex-col justify-between p-12 lg:p-16 bg-gradient-to-br from-primary/10 via-slate-50 to-primary/5 text-slate-900 border-l border-slate-200/80 overflow-hidden">
+        <div className="absolute -top-32 -right-32 size-96 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center gap-2">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/90 border border-indigo-200/80 text-indigo-800 text-xs font-bold shadow-2xs backdrop-blur-md">
-            <Award className="size-4 text-indigo-600" />
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold shadow-2xs backdrop-blur-md">
+            <Award className="size-4 text-primary" />
             <span>Secure Password Recovery Desk</span>
           </span>
         </div>
@@ -72,9 +72,9 @@ export default function ForgotPasswordPage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="p-4 rounded-lg bg-white/90 border border-slate-200/80 shadow-2xs backdrop-blur-md space-y-1 hover:border-indigo-200 hover:shadow-xs transition-all"
+                className="p-4 rounded-lg bg-white/90 border border-slate-200/80 shadow-2xs backdrop-blur-md space-y-1 hover:border-primary/20 hover:shadow-xs transition-all"
               >
-                <div className="flex items-center gap-1.5 text-indigo-700 font-black text-base">
+                <div className="flex items-center gap-1.5 text-primary font-black text-base">
                   <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                   <span>{item.title}</span>
                 </div>

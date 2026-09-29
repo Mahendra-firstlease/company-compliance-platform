@@ -136,7 +136,7 @@ export default function ResetPasswordForm() {
             variant="primary"
             fullWidth
             onClick={() => router.push("/login")}
-            className="rounded-lg font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
+            className="rounded-lg font-bold text-xs shadow-md shadow-primary/10 cursor-pointer"
           >
             Log In Now →
           </Button>
@@ -149,7 +149,7 @@ export default function ResetPasswordForm() {
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <div className="size-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
+          <div className="size-10 rounded-lg bg-primary-light border border-primary-border text-primary flex items-center justify-center">
             <ShieldCheck className="size-5" />
           </div>
           <div>
@@ -190,7 +190,7 @@ export default function ResetPasswordForm() {
           variant="primary"
           fullWidth
           disabled={isSubmitting}
-          className="h-11 rounded-lg font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer"
+          className="h-11 rounded-lg font-bold text-xs shadow-md shadow-primary/10 cursor-pointer"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2 justify-center">

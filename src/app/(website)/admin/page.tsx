@@ -288,21 +288,21 @@ export default function AdminDashboardPage() {
               type="text"
               defaultValue={certTitle}
               onChange={(e) => (certTitle = e.target.value)}
-              className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-primary0/20 focus:border-primary-border0"
             />
           </div>
 
           <div className="space-y-1">
             <label className="block text-xs font-bold text-slate-700">Select Official Certificate Document (PDF/PNG/JPG — images auto-convert to PDF)</label>
-            <div className="border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-lg p-6 text-center space-y-2 bg-slate-50 transition-colors">
-              <Upload className="size-8 text-indigo-500 mx-auto" />
+            <div className="border-2 border-dashed border-slate-200 hover:border-primary0 rounded-lg p-6 text-center space-y-2 bg-slate-50 transition-colors">
+              <Upload className="size-8 text-primary0 mx-auto" />
               <p className="text-xs font-bold text-slate-800">Click to browse or drop government certificate</p>
               <p className="text-[10px] text-slate-400">PDF, PNG or JPEG files (Max 5MB)</p>
               <input
                 type="file"
                 accept=".pdf,.png,.jpg,.jpeg"
                 onChange={handleFileChange}
-                className="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer pt-2"
+                className="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-light file:text-primary hover:file:bg-primary-light cursor-pointer pt-2"
               />
             </div>
           </div>
@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-2xs">
         <div>
-          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block">
+          <span className="text-xs font-bold text-primary uppercase tracking-wider block">
             Backoffice Legal Operations Console
           </span>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -402,14 +402,14 @@ export default function AdminDashboardPage() {
           <p className="text-2xl font-black text-slate-900">{cases.length}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-indigo-50/40 border border-indigo-100 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-gradient-to-br from-white to-primary-light/40 border border-primary/20 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Under Review</span>
-            <span className="p-1.5 rounded-md bg-indigo-100 text-indigo-600">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Under Review</span>
+            <span className="p-1.5 rounded-md bg-primary-light text-primary">
               <Clock size={14} />
             </span>
           </div>
-          <p className="text-2xl font-black text-indigo-600">
+          <p className="text-2xl font-black text-primary">
             {cases.filter((c) => c.status === "UNDER_REVIEW").length}
           </p>
         </div>
@@ -478,7 +478,7 @@ export default function AdminDashboardPage() {
               onClick={() => setStatusFilter(tab.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 statusFilter === tab.value
-                  ? "bg-white text-indigo-600 shadow-2xs"
+                  ? "bg-white text-primary shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -536,7 +536,7 @@ export default function AdminDashboardPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs font-bold cursor-pointer flex items-center gap-1.5 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300"
+                      className="text-xs font-bold cursor-pointer flex items-center gap-1.5 hover:bg-primary-light hover:text-primary hover:border-primary"
                     >
                       View Case Details <ArrowRight size={13} />
                     </Button>
@@ -585,7 +585,7 @@ export default function AdminDashboardPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs font-bold text-indigo-700 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 min-h-[38px] px-3.5 flex items-center gap-1"
+                  className="text-xs font-bold text-primary bg-primary-light border-primary-border hover:bg-primary-light min-h-[38px] px-3.5 flex items-center gap-1"
                 >
                   View Details <ArrowRight size={12} />
                 </Button>
@@ -622,7 +622,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500 font-semibold">{selectedCase.customerName} &middot; {selectedCase.customerPhone}</p>
                 <div className="pt-2">
                   <Link href={`/admin/applications/${selectedCase.id}`}>
-                    <Button variant="outline" size="sm" className="text-xs font-bold text-indigo-700 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 flex items-center gap-1.5 py-1.5 px-3">
+                    <Button variant="outline" size="sm" className="text-xs font-bold text-primary bg-primary-light border-primary-border hover:bg-primary-light flex items-center gap-1.5 py-1.5 px-3">
                       <span>Open Full Case Workspace</span>
                       <ArrowRight size={13} />
                     </Button>
@@ -662,16 +662,16 @@ export default function AdminDashboardPage() {
                     <div
                       key={docName}
                       onClick={() => handleInspectDocument(docName, file)}
-                      className="p-3 bg-slate-50 border border-slate-200 hover:border-indigo-400 rounded-lg flex items-center justify-between text-xs cursor-pointer transition-colors"
+                      className="p-3 bg-slate-50 border border-slate-200 hover:border-primary rounded-lg flex items-center justify-between text-xs cursor-pointer transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <FileText className="size-4 text-indigo-600 shrink-0" />
+                        <FileText className="size-4 text-primary shrink-0" />
                         <div>
                           <p className="font-bold text-slate-800">{docName}</p>
                           <p className="text-[10px] text-slate-400">{file.name}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-indigo-600 hover:underline">Inspect</span>
+                      <span className="text-[10px] font-bold text-primary hover:underline">Inspect</span>
                     </div>
                   ))}
                 </div>

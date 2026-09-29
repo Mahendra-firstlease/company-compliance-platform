@@ -132,7 +132,7 @@ export default function UserDashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Welcome Banner Gradient Hero */}
-      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary to-indigo-700 p-6 md:p-8 text-white shadow-md">
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary to-primary p-6 md:p-8 text-white shadow-md">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-white/10 to-transparent pointer-events-none" />
         <div className="relative z-10 space-y-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white/90 text-xs font-bold uppercase tracking-widest backdrop-blur-md">
@@ -162,7 +162,7 @@ export default function UserDashboardPage() {
               </CardDescription>
             </div>
             <Link href="/applications">
-              <Button variant="ghost" size="sm" className="text-xs font-semibold text-indigo-600">
+              <Button variant="ghost" size="sm" className="text-xs font-semibold text-primary">
                 View All ({cases.length})
               </Button>
             </Link>
@@ -170,7 +170,7 @@ export default function UserDashboardPage() {
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 text-center space-y-3">
-                <div className="size-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="size-6 border-2 border-primary-border border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-xs text-slate-400">Loading dynamic filings...</p>
               </div>
             ) : cases.length > 0 ? (
@@ -186,7 +186,7 @@ export default function UserDashboardPage() {
                           {c.serviceTitle}
                         </h4>
                         {c.assignedExecutive && (
-                          <span className="text-[10px] bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded">
+                          <span className="text-[10px] bg-primary-light text-primary font-semibold px-2 py-0.5 rounded">
                             Specialist: {c.assignedExecutive}
                           </span>
                         )}
@@ -279,14 +279,14 @@ export default function UserDashboardPage() {
               recommendedServices.map((rec) => (
                 <div
                   key={rec.slug}
-                  className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-lg space-y-2.5 hover:border-indigo-200 hover:bg-indigo-50/20 transition-all duration-200"
+                  className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-lg space-y-2.5 hover:border-primary hover:bg-primary-light/20 transition-all duration-200"
                 >
                   <div>
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-xs text-slate-800">
                         {rec.title}
                       </h4>
-                      <span className="text-xs font-bold text-indigo-700">
+                      <span className="text-xs font-bold text-primary">
                         {formatCurrency(rec.price)}
                       </span>
                     </div>
@@ -321,7 +321,7 @@ export default function UserDashboardPage() {
         <Card enableHover size="sm">
           <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Calendar size={16} className="text-indigo-600" />
+              <Calendar size={16} className="text-primary" />
               Compliance Calendar Deadlines
             </CardTitle>
             <Badge variant="indigo" size="sm" rounded="full">
@@ -370,7 +370,7 @@ export default function UserDashboardPage() {
           <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <Bell size={16} className="text-indigo-600" />
+                <Bell size={16} className="text-primary" />
                 Portal Notifications
               </CardTitle>
               {unreadCount > 0 && (
@@ -383,7 +383,7 @@ export default function UserDashboardPage() {
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-primary hover:text-primary flex items-center gap-1 cursor-pointer"
               >
                 <CheckCheck size={14} />
                 Mark all read
@@ -403,7 +403,7 @@ export default function UserDashboardPage() {
                       case "URGENT":
                         return { Icon: AlertCircle, color: "text-amber-500 bg-amber-50" };
                       default:
-                        return { Icon: ShieldCheck, color: "text-indigo-600 bg-indigo-50" };
+                        return { Icon: ShieldCheck, color: "text-primary bg-primary-light" };
                     }
                   };
 
@@ -415,7 +415,7 @@ export default function UserDashboardPage() {
                       className={`flex gap-3 text-xs items-start p-2.5 rounded-lg border transition-colors ${
                         notif.isRead
                           ? "bg-slate-50/50 border-slate-100 text-slate-500"
-                          : "bg-white border-indigo-100 shadow-2xs font-medium text-slate-800"
+                          : "bg-white border-primary-border shadow-2xs font-medium text-slate-800"
                       }`}
                     >
                       <div className={`p-1.5 rounded-lg ${color} shrink-0 mt-0.5`}>
@@ -434,7 +434,7 @@ export default function UserDashboardPage() {
                           {notif.message}
                         </p>
                         {notif.link && (
-                          <Link href={notif.link} className="inline-block pt-1 text-[11px] font-bold text-indigo-600 hover:underline">
+                          <Link href={notif.link} className="inline-block pt-1 text-[11px] font-bold text-primary hover:underline">
                             View details &rarr;
                           </Link>
                         )}
@@ -446,7 +446,7 @@ export default function UserDashboardPage() {
                 <div className="pt-2 text-center border-t border-slate-100">
                   <Link
                     href="/dashboard/notifications"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors py-1 px-3 rounded-md hover:bg-indigo-50"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary transition-colors py-1 px-3 rounded-md hover:bg-primary-light"
                   >
                     View All Notifications ({dbNotifications.length}) <ArrowRight size={13} />
                   </Link>

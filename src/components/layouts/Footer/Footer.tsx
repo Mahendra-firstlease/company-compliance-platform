@@ -35,18 +35,18 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-br from-indigo-50/80 via-slate-50 to-blue-50/60 border-t border-slate-200/80 relative overflow-hidden">
+    <footer className="bg-primary-light border-t border-primary-border/20 relative overflow-hidden">
       {/* Decorative Blobs */}
-      <div className="absolute -bottom-32 -left-32 size-80 rounded-full bg-indigo-200/30 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 size-80 rounded-full bg-blue-200/30 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 size-80 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 size-80 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8 lg:pt-20 relative z-10">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
           
           {/* Brand & Description Column */}
           <div className="space-y-4">
-            <div className="flex justify-center sm:justify-start">
-              <CompanyLogo priority variant="footer" />
+            <div className="flex justify-center sm:justify-start ">
+              <CompanyLogo priority variant="footer"  />
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed font-medium text-center sm:text-left max-w-sm">
@@ -63,7 +63,7 @@ const Footer: React.FC = () => {
                     href={social.url}
                     rel="noreferrer"
                     target="_blank"
-                    className="size-9 rounded-lg bg-white border border-slate-200/80 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:shadow-2xs flex items-center justify-center transition-all cursor-pointer"
+                    className="size-9 rounded-lg bg-white border border-slate-200/80 text-slate-600 hover:text-primary hover:border-primary/30 hover:shadow-2xs flex items-center justify-center transition-all cursor-pointer"
                   >
                     <span className="sr-only">{social.name}</span>
                     {IconComponent}
@@ -90,7 +90,7 @@ const Footer: React.FC = () => {
                       return ( 
                         <li key={link.title}>
                           <Link
-                            className="text-slate-600 hover:text-indigo-600 transition-colors inline-flex items-center gap-1.5"
+                            className="text-slate-600 hover:text-primary transition-colors inline-flex items-center gap-1.5"
                             href={link.url}
                           >
                             <span>{link.title}</span>
@@ -116,26 +116,26 @@ const Footer: React.FC = () => {
               <ul className="space-y-3 text-xs font-medium">
                 <li>
                   <a
-                    className="flex items-center justify-center sm:justify-start gap-2 text-slate-600 hover:text-indigo-600 transition-colors"
+                    className="flex items-center justify-center sm:justify-start gap-2 text-slate-600 hover:text-primary transition-colors"
                     href={`mailto:${APP_METADATA.supportEmail}`}
                   >
-                    <Mail className="size-4 text-indigo-600 shrink-0" />
+                    <Mail className="size-4 text-primary shrink-0" />
                     <span>{APP_METADATA.supportEmail}</span>
                   </a>
                 </li>
 
                 <li>
                   <a
-                    className="flex items-center justify-center sm:justify-start gap-2 text-slate-600 hover:text-indigo-600 transition-colors"
+                    className="flex items-center justify-center sm:justify-start gap-2 text-slate-600 hover:text-primary transition-colors"
                     href={`tel:${APP_METADATA.supportPhone}`}
                   >
-                    <Phone className="size-4 text-indigo-600 shrink-0" />
+                    <Phone className="size-4 text-primary shrink-0" />
                     <span>{APP_METADATA.supportPhone}</span>
                   </a>
                 </li>
 
                 <li className="flex items-start justify-center sm:justify-start gap-2 text-slate-600">
-                  <MapPin className="size-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <MapPin className="size-4 text-primary shrink-0 mt-0.5" />
                   <span className="leading-normal">
                     Compliance Towers, Connaught Place, New Delhi, India
                   </span>
@@ -152,11 +152,11 @@ const Footer: React.FC = () => {
           </p>
 
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
-            <Link href="/terms" className="hover:text-indigo-600 transition-colors">
+            <Link href="/terms" className="hover:text-primary transition-colors">
               Terms & Conditions
             </Link>
             <span>&middot;</span>
-            <Link href="/privacy" className="hover:text-indigo-600 transition-colors">
+            <Link href="/privacy" className="hover:text-primary transition-colors">
               Privacy Policy
             </Link>
             <span>&middot;</span>

@@ -78,7 +78,7 @@ export default function MultiServiceCheckoutModal({
               onCancel();
               router.push("/admin/applications");
             }}
-            className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto cursor-pointer"
+            className="text-xs font-bold bg-primary hover:bg-primary/90 text-white w-full sm:w-auto cursor-pointer"
           >
             Go to Admin Console
           </Button>
@@ -181,7 +181,7 @@ export default function MultiServiceCheckoutModal({
           contact: contactPhone,
         },
         theme: {
-          color: "#4f46e5",
+          color: "#207574",
         },
         handler: async (response: { razorpay_order_id?: string; razorpay_payment_id?: string; razorpay_signature?: string }) => {
           notify.loading({
@@ -301,7 +301,7 @@ export default function MultiServiceCheckoutModal({
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       <div className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200/80">
         <div className="flex items-start gap-3">
-          <div className="size-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
+          <div className="size-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
             <ShoppingBag className="size-5" />
           </div>
           <div>
@@ -335,7 +335,7 @@ export default function MultiServiceCheckoutModal({
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Package Summary ({servicesList.length} Services):
           </span>
-          <span className="text-xs font-bold text-indigo-700">Total: ₹{totalFee}</span>
+          <span className="text-xs font-bold text-primary">Total: ₹{totalFee}</span>
         </div>
 
         {servicesList.map((s) => (
@@ -363,14 +363,14 @@ export default function MultiServiceCheckoutModal({
       </div>
 
       {/* Pricing Summary Block */}
-      <div className="p-3 sm:p-4 bg-indigo-50/60 rounded-lg border border-indigo-100 space-y-1">
+      <div className="p-3 sm:p-4 bg-primary/10 rounded-lg border border-primary/20 space-y-1">
         <div className="flex justify-between items-center text-xs text-slate-600 gap-2">
           <span>Subtotal ({servicesList.length} services):</span>
           <span className="font-bold text-slate-900">₹{totalFee}</span>
         </div>
-        <div className="flex justify-between items-center text-sm font-black text-indigo-950 pt-1 border-t border-indigo-100">
+        <div className="flex justify-between items-center text-sm font-black text-primary pt-1 border-t border-primary/20">
           <span>Total Investment:</span>
-          <span className="text-lg font-bold text-indigo-700">₹{totalFee}</span>
+          <span className="text-lg font-bold text-primary">₹{totalFee}</span>
         </div>
       </div>
 

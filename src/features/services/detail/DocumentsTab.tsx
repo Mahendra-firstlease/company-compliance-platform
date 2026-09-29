@@ -18,7 +18,7 @@ export default function DocumentsTab({ service }: { service: Service }) {
                 key={idx}
                 className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm font-medium text-gray-700"
               >
-                <span className="size-5 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0">
+                <span className="size-5 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
                   {idx + 1}
                 </span>
                 <span>{doc}</span>

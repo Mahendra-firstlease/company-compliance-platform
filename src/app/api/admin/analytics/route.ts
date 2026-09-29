@@ -94,7 +94,7 @@ export async function GET(request: Request) {
     }
 
     const categoryColors: Record<string, string> = {
-      "Company & LLP Incorporations": "#4F46E5",
+      "Company & LLP Incorporations": "var(--primary)",
       "GST & Tax Registrations": "#10B981",
       "Trademark & IP Filings": "#F59E0B",
       "FSSAI & Statutory Licenses": "#3B82F6",
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
         name,
         value,
         percent,
-        color: categoryColors[name] || "#4F46E5",
+        color: categoryColors[name] || "var(--primary)",
       };
     });
 

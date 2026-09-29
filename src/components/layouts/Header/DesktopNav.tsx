@@ -31,7 +31,7 @@ export default function DesktopNav({ open, setOpen, items }: DesktopNavProps) {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <div className="flex shrink-0 items-center">
-              <CompanyLogo priority className="h-8 w-auto" />
+              <CompanyLogo priority />
             </div>
 
             {/* Desktop Navigation Links */}
@@ -43,7 +43,7 @@ export default function DesktopNav({ open, setOpen, items }: DesktopNavProps) {
                   <Link
                     key={item.label}
                     href={item.href ?? "#"}
-                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
                   >
                     {item.label}
                   </Link>

@@ -136,7 +136,7 @@ export default function AdminServicesPage() {
                 type="number"
                 defaultValue={govtFee}
                 onChange={(e) => (govtFee = parseFloat(e.target.value) || 0)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none focus:bg-white focus:border-indigo-500"
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none focus:bg-white focus:border-primary-border0"
               />
             </div>
 
@@ -146,14 +146,14 @@ export default function AdminServicesPage() {
                 type="number"
                 defaultValue={profFee}
                 onChange={(e) => (profFee = parseFloat(e.target.value) || 0)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none focus:bg-white focus:border-indigo-500"
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none focus:bg-white focus:border-primary-border0"
               />
             </div>
           </div>
 
-          <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-lg flex items-center justify-between text-xs">
+          <div className="p-3 bg-primary-light/70 border border-primary-border rounded-lg flex items-center justify-between text-xs">
             <span className="font-bold text-slate-700">Calculated Total Package Fee:</span>
-            <span className="font-black text-indigo-700 text-sm">₹{Number(govtFee) + Number(profFee)}</span>
+            <span className="font-black text-primary text-sm">₹{Number(govtFee) + Number(profFee)}</span>
           </div>
 
           <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -164,7 +164,7 @@ export default function AdminServicesPage() {
                   type="checkbox"
                   defaultChecked={isPopular}
                   onChange={(e) => (isPopular = e.target.checked)}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 size-4"
+                  className="rounded text-primary focus:ring-primary0 size-4"
                 />
                 <span>Popular Tag</span>
               </label>
@@ -174,7 +174,7 @@ export default function AdminServicesPage() {
                   type="checkbox"
                   defaultChecked={isFeatured}
                   onChange={(e) => (isFeatured = e.target.checked)}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 size-4"
+                  className="rounded text-primary focus:ring-primary0 size-4"
                 />
                 <span>Featured Homepage Tag</span>
               </label>
@@ -185,7 +185,7 @@ export default function AdminServicesPage() {
             <Button variant="outline" size="sm" onClick={() => modal.closeAll()} className="text-xs font-bold">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={saveChanges} className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700">
+            <Button variant="primary" size="sm" onClick={saveChanges} className="text-xs font-bold bg-primary hover:bg-primary">
               Save Pricing
             </Button>
           </div>
@@ -231,7 +231,7 @@ export default function AdminServicesPage() {
         <Card enableHover>
           <CardContent className="p-4 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Featured Products</span>
-            <p className="text-2xl font-black text-indigo-600">{services.filter((s) => s.featured).length}</p>
+            <p className="text-2xl font-black text-primary">{services.filter((s) => s.featured).length}</p>
           </CardContent>
         </Card>
 
@@ -255,7 +255,7 @@ export default function AdminServicesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search service title or slug..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-indigo-500 text-slate-700"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-primary-border0 text-slate-700"
             />
           </div>
 
@@ -275,7 +275,7 @@ export default function AdminServicesPage() {
             type="button"
             onClick={() => setCategoryFilter("ALL")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-              categoryFilter === "ALL" ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+              categoryFilter === "ALL" ? "bg-white text-primary shadow-2xs" : "text-slate-600"
             }`}
           >
             All Products ({services.length})
@@ -284,7 +284,7 @@ export default function AdminServicesPage() {
             type="button"
             onClick={() => setCategoryFilter("POPULAR")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-              categoryFilter === "POPULAR" ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+              categoryFilter === "POPULAR" ? "bg-white text-primary shadow-2xs" : "text-slate-600"
             }`}
           >
             Popular ({services.filter((s) => s.popular).length})
@@ -293,7 +293,7 @@ export default function AdminServicesPage() {
             type="button"
             onClick={() => setCategoryFilter("FEATURED")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-              categoryFilter === "FEATURED" ? "bg-white text-indigo-700 shadow-2xs" : "text-slate-600"
+              categoryFilter === "FEATURED" ? "bg-white text-primary shadow-2xs" : "text-slate-600"
             }`}
           >
             Featured ({services.filter((s) => s.featured).length})
@@ -344,7 +344,7 @@ export default function AdminServicesPage() {
                           ₹{service.professionalFee}
                         </td>
 
-                        <td className="py-3.5 px-4 font-black text-indigo-700 text-sm">
+                        <td className="py-3.5 px-4 font-black text-primary text-sm">
                           ₹{service.price}
                         </td>
 
@@ -364,7 +364,7 @@ export default function AdminServicesPage() {
                             <Link href={`/services/${service.slug}`} target="_blank">
                               <button
                                 type="button"
-                                className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                                className="p-1.5 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                                 title="View Public Catalog Page"
                               >
                                 <SquareArrowOutUpRight size={15} />
@@ -374,7 +374,7 @@ export default function AdminServicesPage() {
                             <button
                               type="button"
                               onClick={() => handleEditPricing(service)}
-                              className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                              className="p-1.5 text-slate-500 hover:text-primary hover:bg-primary-light border border-slate-200 hover:border-primary rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                               title="Edit Service Pricing"
                             >
                               <Edit3 size={15} />
@@ -423,7 +423,7 @@ export default function AdminServicesPage() {
                       </div>
                       <div>
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Total</span>
-                        <p className="font-black text-indigo-700">₹{service.price}</p>
+                        <p className="font-black text-primary">₹{service.price}</p>
                       </div>
                     </div>
 
@@ -432,7 +432,7 @@ export default function AdminServicesPage() {
                         <Link href={`/services/${service.slug}`} target="_blank">
                           <button
                             type="button"
-                            className="p-2 text-slate-400 hover:text-indigo-600 bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center min-h-11 min-w-11"
+                            className="p-2 text-slate-400 hover:text-primary bg-slate-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center min-h-11 min-w-11"
                             title="View Public Catalog Page"
                           >
                             <SquareArrowOutUpRight size={15} />
@@ -445,7 +445,7 @@ export default function AdminServicesPage() {
                       <button
                         type="button"
                         onClick={() => handleEditPricing(service)}
-                        className="p-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center font-bold text-xs min-h-[36px] min-w-[36px]"
+                        className="p-2 text-primary bg-primary-light hover:bg-primary-light rounded-lg transition-colors cursor-pointer flex items-center justify-center font-bold text-xs min-h-[36px] min-w-[36px]"
                         title="Edit Service Pricing"
                       >
                         <Edit3 size={15} />

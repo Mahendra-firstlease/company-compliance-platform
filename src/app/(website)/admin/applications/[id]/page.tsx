@@ -423,7 +423,7 @@ export default function AdminApplicationDetailPage() {
   if (isLoading) {
     return (
       <div className="p-12 text-center space-y-3">
-        <Loader2 className="size-8 text-indigo-600 animate-spin mx-auto" />
+        <Loader2 className="size-8 text-primary animate-spin mx-auto" />
         <p className="text-xs text-slate-500 font-semibold">
           Loading case workspace...
         </p>
@@ -510,7 +510,7 @@ export default function AdminApplicationDetailPage() {
               <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">
                 {application.serviceTitle}
               </h1>
-              <span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200 shrink-0">
+              <span className="font-mono text-xs font-bold text-primary bg-primary-light px-2.5 py-0.5 rounded-full border border-primary-border shrink-0">
                 #{application.id}
               </span>
             </div>
@@ -559,7 +559,7 @@ export default function AdminApplicationDetailPage() {
                     isCompleted
                       ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
                       : isCurrent
-                        ? "bg-indigo-50/90 border-indigo-300 ring-2 ring-indigo-500/20 text-indigo-950 shadow-xs"
+                        ? "bg-[color-mix(in_srgb,var(--primary)_8%,white)] border-[color-mix(in_srgb,var(--primary)_25%,transparent)] ring-1 ring-[color-mix(in_srgb,var(--primary)_10%,transparent)] text-[var(--primary)] shadow-xs"
                         : "bg-slate-50/60 border-slate-200 text-slate-400"
                   }`}
                 >
@@ -569,7 +569,7 @@ export default function AdminApplicationDetailPage() {
                         isCompleted
                           ? "bg-emerald-600 text-white"
                           : isCurrent
-                            ? "bg-indigo-600 text-white shadow-xs animate-pulse"
+                            ? "bg-[var(--primary)] text-white shadow-xs animate-pulse"
                             : "bg-slate-200 text-slate-500"
                       }`}
                     >
@@ -608,7 +608,7 @@ export default function AdminApplicationDetailPage() {
                   <div
                     className={`p-4 sm:p-5 rounded-lg border shadow-xs space-y-3.5 ${
                       application.queryStatus === "CLIENT_RESPONDED"
-                        ? "bg-teal-50/90 border-teal-200 text-teal-950"
+                        ? "bg-primary-light/90 border-primary-border text-primary"
                         : "bg-amber-50/90 border-amber-200 text-amber-950"
                     }`}
                   >
@@ -617,7 +617,7 @@ export default function AdminApplicationDetailPage() {
                         <div
                           className={`size-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                             application.queryStatus === "CLIENT_RESPONDED"
-                              ? "bg-teal-100 text-teal-700"
+                              ? "bg-primary-light text-primary"
                               : "bg-amber-100 text-amber-700 animate-pulse"
                           }`}
                         >
@@ -972,7 +972,7 @@ export default function AdminApplicationDetailPage() {
             <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="size-4 text-indigo-600" />
+                  <FileText className="size-4 text-primary" />
                   Submitted Form Data & Information
                 </CardTitle>
                 <CardDescription>
@@ -1103,7 +1103,7 @@ export default function AdminApplicationDetailPage() {
                   Preview each file, then verify it or raise a clear correction request.
                 </CardDescription>
               </div>
-              <span className="shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">
+              <span className="shrink-0 rounded-full border border-primary-border bg-primary-light px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-primary">
                 {filesApproved
                   ? "All files verified"
                   : `${docSummary.verified}/${docSummary.total || 0} verified`}
@@ -1166,7 +1166,7 @@ export default function AdminApplicationDetailPage() {
                           <button
                             type="button"
                             onClick={() => setPreviewDocument({ docKey, file: docFile })}
-                            className="group relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-950 text-left transition hover:border-indigo-400"
+                            className="group relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-950 text-left transition hover:border-primary"
                             title={`Preview ${docFile.name}`}
                           >
                             {docFile.url && /\.(png|jpe?g|webp)$/i.test(docFile.name || "") ? (
@@ -1177,7 +1177,7 @@ export default function AdminApplicationDetailPage() {
                               />
                             ) : (
                               <div className="flex items-center gap-2 text-slate-200">
-                                <FileText className="size-7 text-indigo-300" />
+                                <FileText className="size-7 text-primary" />
                                 <span className="text-[11px] font-bold">PDF / document preview</span>
                               </div>
                             )}
@@ -1197,7 +1197,7 @@ export default function AdminApplicationDetailPage() {
                               <button
                                 type="button"
                                 onClick={() => setPreviewDocument({ docKey, file: docFile })}
-                                className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline shrink-0"
+                                className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline shrink-0"
                               >
                                 <Eye size={13} /> Preview
                               </button>
@@ -1303,7 +1303,7 @@ export default function AdminApplicationDetailPage() {
             </CardHeader>
             <CardContent className="p-5 space-y-3 text-xs">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="size-10 rounded-full bg-indigo-100 text-indigo-700 font-extrabold flex items-center justify-center text-sm shrink-0">
+                <div className="size-10 rounded-full bg-primary-light text-primary font-extrabold flex items-center justify-center text-sm shrink-0">
                   {application.customerName.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -1334,7 +1334,7 @@ export default function AdminApplicationDetailPage() {
 
                 {submittedFormEntries.length > 0 && (
                     <div className="pt-3 border-t border-slate-150 space-y-2">
-                      <span className="font-extrabold text-[10px] text-indigo-700 uppercase tracking-wider block">
+                      <span className="font-extrabold text-[10px] text-primary uppercase tracking-wider block">
                         Submitted Service Form Fields
                       </span>
                       <div className="space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200/80 font-mono text-[11px]">
@@ -1389,7 +1389,7 @@ export default function AdminApplicationDetailPage() {
                 </div>
                 <div className="flex justify-between border-t border-slate-100 pt-2 font-black text-sm text-slate-900">
                   <span>Total Amount Paid:</span>
-                  <span className="text-indigo-700">
+                  <span className="text-primary">
                     ₹{application.totalFee || 0}
                   </span>
                 </div>
@@ -1409,7 +1409,7 @@ export default function AdminApplicationDetailPage() {
           <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-slate-700 bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600">{previewDocument.docKey}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary">{previewDocument.docKey}</p>
                 <h3 className="truncate text-sm font-extrabold text-slate-900">{previewDocument.file.name}</h3>
               </div>
               <button
@@ -1438,7 +1438,7 @@ export default function AdminApplicationDetailPage() {
             <div className="flex items-center justify-between border-t border-slate-200 px-5 py-3">
               <span className="text-[11px] text-slate-500">Preview files carefully before approving.</span>
               {previewDocument.file.url && (
-                <a href={previewDocument.file.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline">
+                <a href={previewDocument.file.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline">
                   <ExternalLink size={14} /> Open full file
                 </a>
               )}

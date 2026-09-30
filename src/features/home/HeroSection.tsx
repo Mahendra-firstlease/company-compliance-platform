@@ -148,7 +148,7 @@ function HeroSection({}: Props) {
           <div className="w-full max-w-md md:max-w-lg aspect-square">
             <Image
               className="w-full h-auto object-contain"
-              src={"/images/home/hero-section/hero-rightsocial-image.png"}
+              src={"/images/home/hero-section/heroImage.png"}
               width={500}
               height={500}
               priority={true}

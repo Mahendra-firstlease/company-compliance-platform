@@ -164,7 +164,7 @@ export default function AdminServicesPage() {
                   type="checkbox"
                   defaultChecked={isPopular}
                   onChange={(e) => (isPopular = e.target.checked)}
-                  className="rounded text-primary focus:ring-primary0 size-4"
+                  className="size-4 rounded accent-primary focus:ring-primary"
                 />
                 <span>Popular Tag</span>
               </label>
@@ -174,7 +174,7 @@ export default function AdminServicesPage() {
                   type="checkbox"
                   defaultChecked={isFeatured}
                   onChange={(e) => (isFeatured = e.target.checked)}
-                  className="rounded text-primary focus:ring-primary0 size-4"
+                  className="size-4 rounded accent-primary focus:ring-primary"
                 />
                 <span>Featured Homepage Tag</span>
               </label>

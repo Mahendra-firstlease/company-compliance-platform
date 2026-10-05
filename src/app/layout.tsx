@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   },
   description: "Seamless statutory filing, GST, PAN, Trademark, MCA, and corporate compliance services.",
   keywords: ["GST Registration", "PAN Card", "Trademark Registration", "FSSAI Food License", "MCA Incorporation", "Corporate Compliance"],
+  icons: {
+    icon: "/company-logo/favicon.png",
+    shortcut: "/company-logo/favicon.png",
+  },
   openGraph: {
     title: "FirstLease — Enterprise Business Compliance Platform",
     description: "Seamless statutory filing, GST, PAN, Trademark, MCA, and corporate compliance services.",

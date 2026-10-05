@@ -153,7 +153,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer py-1 px-1.5 rounded hover:bg-indigo-50"
+                  className="text-[11px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 cursor-pointer py-1 px-1.5 rounded hover:bg-primary/5"
                 >
                   <CheckCheck size={13} /> Mark read
                 </button>
@@ -172,7 +172,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
           <div className="overflow-y-auto divide-y divide-slate-100 flex-1">
             {isLoading ? (
               <div className="p-8 text-center space-y-2">
-                <div className="size-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-[11px] text-slate-400">Loading live updates...</p>
               </div>
             ) : notifications.length > 0 ? (
@@ -186,7 +186,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
                     case "URGENT":
                       return { Icon: AlertCircle, color: "text-amber-500 bg-amber-50" };
                     default:
-                      return { Icon: ShieldCheck, color: "text-indigo-600 bg-indigo-50" };
+                      return { Icon: ShieldCheck, color: "text-primary bg-primary/5" };
                   }
                 };
 
@@ -196,7 +196,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
                   <div
                     key={notif.id}
                     className={`p-3.5 sm:p-3 flex gap-3 text-xs items-start transition-colors ${
-                      notif.isRead ? "bg-white hover:bg-slate-50/50" : "bg-indigo-50/20 font-medium"
+                      notif.isRead ? "bg-white hover:bg-slate-50/50" : "bg-primary/5 font-medium"
                     }`}
                   >
                     <div className={`p-1.5 rounded-lg ${color} shrink-0 mt-0.5`}>
@@ -225,7 +225,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
                               handleMarkSingleRead(notif.id);
                               setIsOpen(false);
                             }}
-                            className="text-[11px] font-bold text-indigo-600 hover:underline flex items-center gap-1 py-0.5"
+                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 py-0.5"
                           >
                             View details &rarr;
                           </Link>
@@ -259,7 +259,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
             <Link
               href={targetAllPageLink}
               onClick={() => setIsOpen(false)}
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 py-1"
+              className="text-xs font-bold text-primary hover:text-primary/80 flex items-center justify-center gap-1 py-1"
             >
               View All Notifications ({notifications.length}) <ArrowRight size={12} />
             </Link>

@@ -76,9 +76,11 @@ const Footer: React.FC = () => {
           {/* Links Columns Grid */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2">
             {footerData.links.map((column) => {
-              const linksToRender = column.title.toLowerCase().includes('helpful')
-                ? [...column.links, { title: 'Live Chat Support', url: '#' }]
-                : column.links;
+              // Live chat support is intentionally disabled for now.
+              // const linksToRender = column.title.toLowerCase().includes('helpful')
+              //   ? [...column.links, { title: 'Live Chat Support', url: '#' }]
+              //   : column.links;
+              const linksToRender = column.links;
 
               return (
                 <div key={column.title} className="text-center sm:text-left">
@@ -86,20 +88,20 @@ const Footer: React.FC = () => {
 
                   <ul className="mt-4 space-y-2.5 text-xs font-medium">
                     {linksToRender.map((link) => {
-                      const isLiveChat = link.title.toLowerCase().includes('live chat');
-                      return ( 
+                      // const isLiveChat = link.title.toLowerCase().includes('live chat');
+                      return (
                         <li key={link.title}>
                           <Link
                             className="text-slate-600 hover:text-primary transition-colors inline-flex items-center gap-1.5"
                             href={link.url}
                           >
                             <span>{link.title}</span>
-                            {isLiveChat && (
+                            {/* {isLiveChat && (
                               <span className="relative flex h-2 w-2">
                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                               </span>
-                            )}
+                            )} */}
                           </Link>
                         </li>
                       );
@@ -110,17 +112,17 @@ const Footer: React.FC = () => {
             })}
 
             {/* Contact Details Column */}
-            <div className="text-center sm:text-left space-y-3">
+            <div className="min-w-0 text-center sm:text-left space-y-3">
               <p className="text-xs font-black text-slate-900 uppercase tracking-wider">Corporate Helpdesk</p>
 
               <ul className="space-y-3 text-xs font-medium">
                 <li>
                   <a
-                    className="flex items-center justify-center sm:justify-start gap-2 text-slate-600 hover:text-primary transition-colors"
+                    className="flex min-w-0 items-center justify-center sm:justify-start gap-2 text-slate-600 hover:text-primary transition-colors"
                     href={`mailto:${APP_METADATA.supportEmail}`}
                   >
                     <Mail className="size-4 text-primary shrink-0" />
-                    <span>{APP_METADATA.supportEmail}</span>
+                    <span className="min-w-0 break-words">{APP_METADATA.supportEmail}</span>
                   </a>
                 </li>
 
@@ -137,7 +139,7 @@ const Footer: React.FC = () => {
                 <li className="flex items-start justify-center sm:justify-start gap-2 text-slate-600">
                   <MapPin className="size-4 text-primary shrink-0 mt-0.5" />
                   <span className="leading-normal">
-                    Compliance Towers, Connaught Place, New Delhi, India
+                    Sauch Tower 72, Phase IV, Udyog Vihar, Sector 18, Gurugram, Haryana 122015
                   </span>
                 </li>
               </ul>
@@ -152,14 +154,7 @@ const Footer: React.FC = () => {
           </p>
 
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
-            <Link href="/terms" className="hover:text-primary transition-colors">
-              Terms & Conditions
-            </Link>
-            <span>&middot;</span>
-            <Link href="/privacy" className="hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <span>&middot;</span>
+      
             <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
               <ShieldCheck className="size-3.5" />
               <span>256-Bit SSL Encrypted</span>

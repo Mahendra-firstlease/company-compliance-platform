@@ -2,7 +2,7 @@ import React from "react";
 import Section from "@/components/common/Section";
 import Container from "@/components/common/Container";
 import Link from "next/link";
-import { HelpCircle, MessageSquare, PhoneCall, Mail } from "lucide-react";
+import { HelpCircle, MapPin, PhoneCall, Mail } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 export default function FAQPage() {
@@ -86,14 +86,14 @@ export default function FAQPage() {
             {/* Live Chat */}
             <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 text-center flex flex-col items-center gap-2">
               <div className="size-9 bg-primary-light text-primary rounded-full flex items-center justify-center">
-                <MessageSquare size={18} />
+                <MapPin size={18} />
               </div>
-              <h4 className="font-semibold text-sm text-slate-800">Live Web Chat</h4>
+              <h4 className="font-semibold text-sm text-slate-800">Address</h4>
               <p className="text-xs text-slate-400 leading-normal">
-                Chat with a legal associate online.
+                Sauch Tower,Udyog Vihar phase-IV Gurugram India
               </p>
               <Link href="/contact" className="mt-1">
-                <span className="text-xs font-semibold text-primary hover:underline">Start Chat &rarr;</span>
+                <span className="text-xs font-semibold text-primary hover:underline">Visit &rarr;</span>
               </Link>
             </div>
 
@@ -107,7 +107,7 @@ export default function FAQPage() {
                 Call our direct support line.
               </p>
               <a href="tel:+919876543210" className="mt-1">
-                <span className="text-xs font-semibold text-primary hover:underline">+91 98765 43210</span>
+                <span className="text-xs font-semibold text-primary hover:underline">+91 9773880555</span>
               </a>
             </div>
 
@@ -120,7 +120,7 @@ export default function FAQPage() {
               <p className="text-xs text-slate-400 leading-normal">
                 Write to our compliance email.
               </p>
-              <a href="mailto:support@complianceportal.com" className="mt-1">
+              <a href="mailto:info@cpi.com" className="mt-1">
                 <span className="text-xs font-semibold text-primary hover:underline">Send Email &rarr;</span>
               </a>
             </div>

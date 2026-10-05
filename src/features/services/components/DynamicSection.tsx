@@ -18,7 +18,7 @@ export default function DynamicSection({ section, control, errors, disabled = fa
       <div>
         <h3 className="text-sm font-bold text-slate-900 tracking-tight">{section.title}</h3>
         {section.description && (
-          <p className="text-xs text-slate-400 leading-normal mt-0.5">{section.description}</p>
+          <p className="text-xs text-slate-500 leading-normal mt-0.5">{section.description}</p>
         )}
       </div>
 

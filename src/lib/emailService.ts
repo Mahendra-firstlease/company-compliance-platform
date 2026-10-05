@@ -57,7 +57,7 @@ export async function sendWelcomeEmail({
   const html = await render(WelcomeEmail({ userName, userEmail: to }));
   return sendMail({
     to,
-    subject: `Welcome to FirstLease Compliance Portal, ${userName}!`,
+    subject: `Welcome to Compliance Portal India, ${userName}!`,
     html,
   });
 }
@@ -127,7 +127,7 @@ export async function sendContactInquiryEmail({
   );
   await sendMail({
     to: email,
-    subject: `Inquiry Received: FirstLease Statutory Compliance Desk`,
+    subject: `Inquiry Received: Compliance Portal India`,
     html: customerHtml,
   });
 

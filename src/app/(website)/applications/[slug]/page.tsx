@@ -190,7 +190,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               <div style="max-width:600px;margin:0 auto;border:1px solid #e2e8f0;padding:40px;border-radius:12px;background:#fff;">
                 <div style="display:flex;justify-content:space-between;border-bottom:2px solid #f1f5f9;padding-bottom:20px;">
                   <div>
-                    <h2 style="color:${primaryColor};margin:0;font-size:1.4em;">FIRSTLEASE COMPLIANCE PORTAL</h2>
+                    <h2 style="color:${primaryColor};margin:0;font-size:1.4em;">Compliance Platform India</h2>
                     <p style="font-size:0.8em;color:#64748b;margin:4px 0 0 0;">Secured Corporate Filings</p>
                   </div>
                   <div style="text-align:right;">

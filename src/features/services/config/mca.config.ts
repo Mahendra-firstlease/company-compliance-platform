@@ -14,14 +14,14 @@ export const mcaConfig: ServiceFormConfig = {
           id: "companyNameOption1",
           type: "text",
           label: "Proposed Name Option 1",
-          placeholder: "e.g. FirstLease Compliance Technologies Pvt Ltd",
+          placeholder: "e.g. Compliance Portal Technologies Pvt Ltd",
           required: true,
         },
         {
           id: "companyNameOption2",
           type: "text",
           label: "Proposed Name Option 2",
-          placeholder: "e.g. FirstLease Solutions Pvt Ltd",
+          placeholder: "e.g. Compliance Portal Solutions Pvt Ltd",
           required: false,
         },
         {

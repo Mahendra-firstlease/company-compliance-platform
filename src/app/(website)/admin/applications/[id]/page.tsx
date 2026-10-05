@@ -1192,12 +1192,12 @@ export default function AdminApplicationDetailPage() {
                             </p>
                           )}
 
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-1">
+                          <div className="flex flex-col gap-2.5 pt-1">
                             {docFile.url ? (
                               <button
                                 type="button"
                                 onClick={() => setPreviewDocument({ docKey, file: docFile })}
-                                className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline shrink-0"
+                                className="inline-flex w-fit items-center gap-1 text-xs font-bold text-primary hover:underline"
                               >
                                 <Eye size={13} /> Preview
                               </button>
@@ -1207,20 +1207,20 @@ export default function AdminApplicationDetailPage() {
                               </span>
                             )}
 
-                            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <div className="grid w-full grid-cols-2 gap-2">
                               <Button
                                 variant={isVerified ? "outline" : "primary"}
                                 size="sm"
                                 onClick={() => handleVerifyDoc(docKey)}
                                 disabled={isVerified}
-                                className={`text-xs font-black px-3 py-1.5 rounded-lg shadow-xs transition-all flex-1 sm:flex-none justify-center flex items-center gap-1 ${
+                                className={`w-full min-w-0 whitespace-normal text-[11px] leading-tight font-black px-2 py-1.5 rounded-lg shadow-xs transition-all justify-center flex items-center gap-1 ${
                                   isVerified
                                     ? "bg-emerald-100 text-emerald-900 border-emerald-300 opacity-80 cursor-default"
                                     : "bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer active:scale-95 shadow-sm"
                                 }`}
                               >
-                                <CheckCircle2 size={13} />{" "}
-                                {isVerified ? "Verified" : "Verify Doc"}
+                                <CheckCircle2 size={13} className="shrink-0" />
+                                <span>{isVerified ? "Verified" : "Verify Doc"}</span>
                               </Button>
 
                               <Button
@@ -1234,16 +1234,18 @@ export default function AdminApplicationDetailPage() {
                                   setCustomReason("");
                                 }}
                                 disabled={isDefective}
-                                className={`text-xs font-black px-3 py-1.5 rounded-lg shadow-xs transition-all flex-1 sm:flex-none justify-center flex items-center gap-1 ${
+                                className={`w-full min-w-0 whitespace-normal text-[11px] leading-tight font-black px-2 py-1.5 rounded-lg shadow-xs transition-all justify-center flex items-center gap-1 ${
                                   isDefective
                                     ? "bg-rose-100 text-rose-900 border-rose-300 opacity-80 cursor-default"
                                     : "bg-rose-600 hover:bg-rose-700 text-white border-0 cursor-pointer active:scale-95 shadow-sm"
                                 }`}
                               >
-                                <AlertTriangle size={13} />{" "}
-                                {isDefective
-                                  ? "Flagged Defective"
-                                  : "Flag Defective"}
+                                <AlertTriangle size={13} className="shrink-0" />
+                                <span>
+                                  {isDefective
+                                    ? "Flagged Defective"
+                                    : "Flag Defective"}
+                                </span>
                               </Button>
                             </div>
                           </div>
@@ -1491,7 +1493,7 @@ export default function AdminApplicationDetailPage() {
                     name="defectReason"
                     checked={selectedReason === reason}
                     onChange={() => setSelectedReason(reason)}
-                    className="text-rose-600 focus:ring-rose-500"
+                    className="accent-primary focus:ring-primary"
                   />
                   <span>{reason}</span>
                 </label>

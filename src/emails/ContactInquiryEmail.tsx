@@ -78,7 +78,7 @@ export const ContactInquiryEmail = ({
           Inquiry Received
         </Text>
         <Heading className="text-[22px] font-extrabold text-slate-900 leading-[30px] mt-[6px] mb-[16px]">
-          Thank you for contacting FirstLease Compliance
+          Thank you for contacting Compliance Portal India
         </Heading>
         <Text className="text-[14px] text-slate-600 leading-[24px]">
           Hello <strong className="text-slate-800">{name}</strong>,

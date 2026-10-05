@@ -51,17 +51,17 @@ const statusMap: Record<string, StatusConfig> = {
   },
   IN_REVIEW: {
     label: "In Review",
-    badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    badgeClass: "bg-primary-light text-primary border-primary-border",
     icon: FileCheck2,
   },
   UNDER_REVIEW: {
     label: "In Review",
-    badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    badgeClass: "bg-primary-light text-primary border-primary-border",
     icon: FileCheck2,
   },
   SUBMITTED: {
     label: "Submitted",
-    badgeClass: "bg-blue-50 text-blue-700 border-blue-200",
+    badgeClass: "bg-primary-light text-primary border-primary-border",
     icon: FileCheck2,
   },
   QUERY_RAISED: {
@@ -71,7 +71,7 @@ const statusMap: Record<string, StatusConfig> = {
   },
   CLIENT_RESPONDED: {
     label: "Client Responded",
-    badgeClass: "bg-teal-50 text-teal-800 border-teal-300",
+    badgeClass: "bg-primary-light text-primary border-primary-border",
     icon: CheckCircle2,
   },
   PAYMENT_PENDING: {

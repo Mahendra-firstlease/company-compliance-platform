@@ -12,15 +12,15 @@ export default function UploadProgress({
 }: UploadProgressProps) {
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2">
-      <div className="flex items-center justify-between text-xs font-bold text-indigo-700">
+      <div className="flex items-center justify-between text-xs font-bold text-primary">
         <span className="flex items-center gap-2">
-          <Loader2 className="animate-spin text-indigo-600 size-4" />
+          <Loader2 className="animate-spin text-primary size-4" />
           {progressMessage}
         </span>
-        <ShieldCheck className="size-4 text-indigo-500" />
+        <ShieldCheck className="size-4 text-primary" />
       </div>
-      <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden">
-        <div className="bg-indigo-600 h-1.5 rounded-full animate-pulse w-3/4"></div>
+      <div className="w-full bg-primary/10 rounded-full h-1.5 overflow-hidden">
+        <div className="bg-primary h-1.5 rounded-full animate-pulse w-3/4"></div>
       </div>
     </div>
   );

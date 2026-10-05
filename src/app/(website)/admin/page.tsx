@@ -494,11 +494,11 @@ export default function AdminDashboardPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Ref ID</TableHead>
-              <TableHead>Service Title</TableHead>
+              <TableHead className="hidden xl:table-cell">Service Title</TableHead>
               <TableHead>Customer Details</TableHead>
-              <TableHead>Assigned Executive</TableHead>
+              <TableHead className="hidden xl:table-cell">Assigned Executive</TableHead>
               <TableHead>Filing Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead className="w-40 whitespace-nowrap text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -511,7 +511,7 @@ export default function AdminDashboardPage() {
                 <TableCell className="font-mono text-xs font-bold text-slate-700 bg-slate-50">
                   {row.id}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden xl:table-cell">
                   <div>
                     <p className="font-bold text-slate-900">{row.serviceTitle}</p>
                     <span className="text-[11px] text-slate-400">/{row.serviceSlug}</span>
@@ -523,7 +523,7 @@ export default function AdminDashboardPage() {
                     <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden xl:table-cell">
                   <span className="text-xs font-medium text-slate-600">
                     {row.assignedExecutive || "Unassigned"}
                   </span>
@@ -531,14 +531,14 @@ export default function AdminDashboardPage() {
                 <TableCell>
                   <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="w-40 whitespace-nowrap text-right">
                   <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs font-bold cursor-pointer flex items-center gap-1.5 hover:bg-primary-light hover:text-primary hover:border-primary"
+                      className="h-9 min-w-[144px] whitespace-nowrap px-2 text-xs font-bold cursor-pointer flex items-center gap-1 border border-primary text-primary bg-white hover:bg-primary-light"
                     >
-                      View Case Details <ArrowRight size={13} />
+                      <span>View Case Details</span><ArrowRight size={13} className="shrink-0" />
                     </Button>
                   </Link>
                 </TableCell>
@@ -577,17 +577,18 @@ export default function AdminDashboardPage() {
               <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-slate-100 space-y-2 text-xs">
               <span className="text-[11px] text-slate-500 font-medium">
                 Officer: <strong className="text-slate-800">{row.assignedExecutive || "Unassigned"}</strong>
               </span>
-              <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
+              <Link className="block w-full" href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs font-bold text-primary bg-primary-light border-primary-border hover:bg-primary-light min-h-[38px] px-3.5 flex items-center gap-1"
+                  fullWidth
+                  className="h-9 whitespace-nowrap px-2 text-xs font-bold cursor-pointer flex items-center gap-1 border border-primary text-primary bg-white hover:bg-primary-light"
                 >
-                  View Details <ArrowRight size={12} />
+                  <span>View Case Details</span><ArrowRight size={13} className="shrink-0" />
                 </Button>
               </Link>
             </div>

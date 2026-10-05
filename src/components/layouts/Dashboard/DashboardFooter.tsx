@@ -12,32 +12,32 @@ export default function DashboardFooter() {
     <footer className="w-full bg-white border-t border-slate-200 py-4 px-6 mt-12">
       <div className="mx-auto flex flex-col md:flex-row justify-between items-center gap-3 text-[10px] text-slate-400 font-semibold tracking-normal">
         {/* Left: Copyright */}
-        <div>
+        {/* <div>
           <span>&copy; {currentYear} Corporate Compliance Portal &middot; MCA Filing backoffice network.</span>
-        </div>
+        </div> */}
 
         {/* Right: Policy Links */}
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-          <button
+          {/* <button
             onClick={() => handleLinkClick("Filing Support Guide")}
             className="hover:text-slate-600 transition-colors"
           >
             Filing Support
-          </button>
+          </button> */}
           <span>&middot;</span>
-          <button
-            onClick={() => handleLinkClick("Privacy Policy")}
+          {/* <button
+            onClick={() => handleLinkClick("/privacy-policy")}
             className="hover:text-slate-600 transition-colors"
           >
             Privacy Policy
-          </button>
+          </button> */}
           <span>&middot;</span>
-          <button
+          {/* <button
             onClick={() => handleLinkClick("Terms of Service")}
             className="hover:text-slate-600 transition-colors"
           >
             Terms of Service
-          </button>
+          </button> */}
         </div>
       </div>
     </footer>

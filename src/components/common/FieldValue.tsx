@@ -51,9 +51,9 @@ export default function FieldValue({ value, compact = false, className = "" }: F
             <button
               type="button"
               onClick={() => downloadFile(frontHref, "Front_Scan.pdf")}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-light hover:bg-primary-light text-primary font-bold border border-primary-border text-xs transition-colors cursor-pointer"
             >
-              <FileText size={13} className="text-indigo-600 shrink-0" />
+              <FileText size={13} className="text-primary shrink-0" />
               <span>Front Scan</span>
               <Download size={10} className="opacity-70 shrink-0" />
             </button>
@@ -62,9 +62,9 @@ export default function FieldValue({ value, compact = false, className = "" }: F
             <button
               type="button"
               onClick={() => downloadFile(backHref, "Back_Scan.pdf")}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-light hover:bg-primary-light text-primary font-bold border border-primary-border text-xs transition-colors cursor-pointer"
             >
-              <FileText size={13} className="text-indigo-600 shrink-0" />
+              <FileText size={13} className="text-primary shrink-0" />
               <span>Back Scan</span>
               <Download size={10} className="opacity-70 shrink-0" />
             </button>
@@ -83,9 +83,9 @@ export default function FieldValue({ value, compact = false, className = "" }: F
           <button
             type="button"
             onClick={() => downloadFile(fileUrl, fileName)}
-            className="inline-flex items-center gap-1 text-indigo-700 hover:underline font-bold text-xs cursor-pointer"
+            className="inline-flex items-center gap-1 text-primary hover:underline font-bold text-xs cursor-pointer"
           >
-            <FileText size={12} className="shrink-0 text-indigo-600" />
+            <FileText size={12} className="shrink-0 text-primary" />
             <span className="truncate max-w-32">{fileName}</span>
             <Download size={10} className="shrink-0 opacity-70" />
           </button>
@@ -96,12 +96,12 @@ export default function FieldValue({ value, compact = false, className = "" }: F
         <button
           type="button"
           onClick={() => downloadFile(fileUrl, fileName)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-all max-w-full group cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-light hover:bg-primary-light text-primary font-bold border border-primary-border text-xs transition-all max-w-full group cursor-pointer"
           title={fileName}
         >
-          <FileText size={14} className="shrink-0 text-indigo-600 group-hover:scale-110 transition-transform" />
+          <FileText size={14} className="shrink-0 text-primary group-hover:scale-110 transition-transform" />
           <span className="truncate">{fileName}</span>
-          {value.size && <span className="text-[10px] text-indigo-500 font-normal shrink-0">({value.size})</span>}
+          {value.size && <span className="text-[10px] text-primary font-normal shrink-0">({value.size})</span>}
           <Download size={11} className="shrink-0 opacity-70 group-hover:opacity-100" />
         </button>
       );
@@ -139,9 +139,9 @@ export default function FieldValue({ value, compact = false, className = "" }: F
         href={strVal}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200/80 text-xs transition-colors"
+        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-light hover:bg-primary-light text-primary font-bold border border-primary-border text-xs transition-colors"
       >
-        <FileText size={13} className="text-indigo-600 shrink-0" />
+        <FileText size={13} className="text-primary shrink-0" />
         <span>View Attachment</span>
         <ExternalLink size={10} className="opacity-70 shrink-0" />
       </a>

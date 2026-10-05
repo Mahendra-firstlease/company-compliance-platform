@@ -157,7 +157,7 @@ export default function BusinessProfileForm({
       <div className="space-y-3 pb-4 border-b border-slate-100">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-8 sm:size-9 rounded-full bg-indigo-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="size-8 sm:size-9 rounded-full bg-primary text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 shadow-2xs">
               {step}
             </div>
             <div className="min-w-0 flex-1">
@@ -175,7 +175,7 @@ export default function BusinessProfileForm({
           </div>
 
           <div className="flex items-center justify-between sm:justify-end shrink-0">
-            <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100/80 shadow-2xs">
+            <span className="text-[10px] sm:text-xs font-bold text-primary bg-primary-light px-2.5 py-1 rounded-full border border-primary/10 shadow-2xs">
               Step {step} of 2
             </span>
           </div>
@@ -185,12 +185,12 @@ export default function BusinessProfileForm({
         <div className="flex items-center gap-1.5 pt-1">
           <div
             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-              step >= 1 ? "bg-indigo-600" : "bg-slate-100"
+              step >= 1 ? "bg-primary" : "bg-slate-100"
             }`}
           />
           <div
             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-              step >= 2 ? "bg-indigo-600" : "bg-slate-100"
+              step >= 2 ? "bg-primary" : "bg-slate-100"
             }`}
           />
         </div>

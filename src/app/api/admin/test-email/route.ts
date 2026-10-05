@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
           <h2 style="color: #0066cc;">Microsoft Graph API Connectivity Test</h2>
-          <p>This is a test email sent from <strong>FirstLease Compliance Platform</strong> to verify Microsoft Graph email delivery.</p>
+          <p>This is a test email sent from <strong>Compliance Portal India</strong> to verify Microsoft Graph email delivery.</p>
           <p><strong>Recipient:</strong> ${targetEmail}</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
           <hr />

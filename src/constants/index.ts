@@ -14,7 +14,7 @@ export * from "./seo";
 export const APP_METADATA = {
   name: "FirstLease Compliance Platform",
   description: "Enterprise B2B compliance management and statutory filing portal.",
-  supportEmail: "support@firstlease.com",
-  supportPhone: "+91 98765 43210",
-  address: "Compliance Towers, Connaught Place, New Delhi, India",
+  supportEmail: "info@complianceportalindia.com",
+  supportPhone: "+91 9773880555",
+  address: "Sauch Tower 72, Phase IV, Udyog Vihar, Sector 18, Gurugram, Haryana 122015",
 } as const;

@@ -68,11 +68,11 @@ export default function UploadDropzone({
           "flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-lg text-center transition-all cursor-pointer select-none",
           isDragAccept ? "border-emerald-500 bg-emerald-50/60 scale-[1.01]" : "",
           isDragReject ? "border-red-500 bg-red-50/60" : "",
-          isDragActive && !isDragAccept && !isDragReject ? "border-indigo-500 bg-indigo-50/60 scale-[1.01]" : "",
+          isDragActive && !isDragAccept && !isDragReject ? "border-primary bg-primary/5 scale-[1.01]" : "",
           error
             ? "border-red-300 hover:border-red-400 bg-red-50/10"
             : !isDragActive
-            ? "border-slate-300 hover:border-indigo-500 hover:bg-slate-50/50"
+            ? "border-slate-300 hover:border-primary hover:bg-primary/5"
             : "",
           disabled && "cursor-not-allowed opacity-50 bg-slate-50 border-slate-200 hover:border-slate-200"
         )}
@@ -88,12 +88,12 @@ export default function UploadDropzone({
             size={24}
             className={cn(
               "mb-1.5 transition-colors",
-              error ? "text-red-400" : isDragActive ? "text-indigo-600" : "text-slate-400"
+              error ? "text-red-400" : isDragActive ? "text-primary" : "text-slate-500"
             )}
           />
         )}
 
-        <span className="text-xs font-extrabold text-indigo-700">
+        <span className="text-xs font-extrabold text-primary">
           {isDragAccept
             ? "Drop files here to attach..."
             : isDragReject
@@ -102,7 +102,7 @@ export default function UploadDropzone({
               (multiple ? "Click or drag multiple files here to upload" : "Click or drag file here to upload")}
         </span>
 
-        <span className="text-[11px] text-slate-400 font-semibold mt-1 uppercase tracking-wider">
+        <span className="text-[11px] text-slate-500 font-semibold mt-1 uppercase tracking-wider">
           {allowedTypes.join(", ").toUpperCase()} max {maxSizeMb}MB
         </span>
       </div>

@@ -180,9 +180,9 @@ export default function AdminApplicationsPage() {
             <Button
               variant="outline"
               size="sm"
-              className=" text-xs font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap hover:bg-primary-light hover:text-primary hover:border-primary"
+              className="h-9 whitespace-nowrap px-2 text-xs font-bold cursor-pointer flex items-center gap-1 border border-primary text-primary bg-white hover:bg-primary-light"
             >
-              View Case Details <ArrowRight size={13} />
+              <span>View Case Details</span><ArrowRight size={13} className="shrink-0" />
             </Button>
           </Link>
         ),
@@ -221,13 +221,13 @@ export default function AdminApplicationsPage() {
               <p className="text-xs font-semibold text-slate-700 mt-0.5">{row.customerName}</p>
               <p className="text-[10px] text-slate-400">{row.customerPhone}</p>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-slate-100 space-y-2 text-xs">
               <span className="text-[11px] text-slate-500">
                 Officer: <strong className="text-slate-800">{row.assignedExecutive || "Unassigned"}</strong>
               </span>
-              <Link href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button variant="outline" size="sm" className="text-xs font-bold py-1.5 px-3 flex items-center gap-1 min-h-[36px]">
-                  View Details <ArrowRight size={12} />
+              <Link className="block w-full" href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" size="sm" fullWidth className="h-9 whitespace-nowrap px-2 text-xs font-bold cursor-pointer flex items-center gap-1 border border-primary text-primary bg-white hover:bg-primary-light">
+                  <span>View Case Details</span><ArrowRight size={13} className="shrink-0" />
                 </Button>
               </Link>
             </div>

@@ -20,20 +20,20 @@ export const footerData: FooterData = {
     {
       title: "Our Services",
       links: [
-        { title: "Service 1", url: "/services/service-1" },
-        { title: "Service 2", url: "/services/service-2" },
-        { title: "Service 3", url: "/services/service-3" },
-        { title: "Service 4", url: "/services/service-4" },
+        { title: "EPFO PF Registration", url: "/services/epfo-pf-registration" },
+        { title: "ESIC Registration", url: "/services/esic-registration" },
+        { title: "Income Tax E-Filing (ITR)", url: "/services/income-tax-e-filing" },
+        { title: "GST Registration", url: "/services/gst-registration" },
       ],
     },
     {
       title: "About Us",
       links: [
         { title: "About Us", url: "/about" },
-        { title: "Careers", url: "/careers" },
+        // { title: "Careers", url: "/careers" },
         { title: "Contact", url: "/contact" },
         { title: "Privacy Policy", url: "/privacy-policy" },
-        { title: "Terms of Service", url: "/terms-of-service" },
+    
       ],
     },
     {
@@ -41,8 +41,8 @@ export const footerData: FooterData = {
       links: [
         
         { title: "FAQ", url: "/faq" },
-        { title: "Support", url: "/support" },
-        { title: "Blog", url: "/blog" },
+        // { title: "Support", url: "/support" },
+        // { title: "Blog", url: "/blog" },
       ],
     },
   ],

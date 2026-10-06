@@ -33,9 +33,9 @@ export default function LoginPage() {
         <div className="pt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
           <div className="flex items-center gap-1.5 text-emerald-600">
             <Lock className="size-3.5" />
-            <span>256-Bit SSL Encrypted</span>
+            {/* <span>256-Bit SSL Encrypted</span> */}
           </div>
-          <span>Official MCA & GST Portal</span>
+          {/* <span>Official MCA & GST Portal</span> */}
         </div>
       </div>
 
@@ -58,17 +58,17 @@ export default function LoginPage() {
         <div className="relative z-10 space-y-8 max-w-xl my-auto">
           <div className="space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight text-slate-900">
-              Fast-Track Statutory Filings for Growing Businesses
+              Your Compliance Journey, All in One Place
             </h2>
             <p className="text-slate-600 text-sm leading-relaxed font-medium">
-              Automate company incorporation, GST registrations, trademark applications, and annual compliance with dedicated CA & CS executive management.
+             Access your Compliance Portal India account to manage registrations, filings, licences, certifications, documents, and ongoing compliance requirements-all from one secure platform.
             </p>
           </div>
 
           {/* Key Value Prop List */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             {[
-              { title: "10,000+ Filings", desc: "Verified Corporate Cases" },
+              { title: "3000+ Filings", desc: "Verified Corporate Cases" },
               { title: "99.8% Accuracy", desc: "Zero Ministry Rejections" },
               { title: "Instant Vault", desc: "Cloud Document Storage" },
               { title: "Dedicated CA/CS", desc: "Assigned Executive Officer" },
@@ -89,7 +89,7 @@ export default function LoginPage() {
           {/* Floating Customer Proof Quote */}
           <div className="p-5 rounded-lg bg-white/95 border border-slate-200/90 shadow-sm backdrop-blur-md space-y-3">
             <p className="text-xs text-slate-700 font-medium italic leading-relaxed">
-              &quot;FirstLease handled our Private Limited Incorporation and GST registration seamlessly in just 4 days. The real-time status tracker was exceptional.&quot;
+              &quot;Compliance Portal India made the entire registration process simple and transparent. I could easily track my application and access all my documents from one place.&quot;
             </p>
             <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
               <div className="size-8 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-2xs">
@@ -97,7 +97,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">Ananya Kapoor</h4>
-                <p className="text-[10px] text-slate-500 font-medium">Founder & CEO, TechMatrix Pvt Ltd</p>
+                <p className="text-[10px] text-slate-500 font-medium">Founder TechMatrix Pvt Ltd</p>
               </div>
             </div>
           </div>
@@ -105,10 +105,10 @@ export default function LoginPage() {
 
         {/* Bottom Partner Trust Strip */}
         <div className="relative z-10 pt-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-600 font-bold">
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <Building2 className="size-4 text-primary" />
             <span>Ministry of Corporate Affairs & GST Compliant</span>
-          </div>
+          </div> */}
           <div className="flex items-center gap-1 text-slate-500 text-[11px]">
             <ShieldCheck className="size-4 text-emerald-600" />
             <span>Encrypted Vault Storage</span>

@@ -29,10 +29,10 @@ export default function RegisterPage() {
         {/* Footer Security Badges */}
         <div className="pt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
           <div className="flex items-center gap-1.5 text-emerald-600">
-            <Lock className="size-3.5" />
-            <span>256-Bit Encrypted Data</span>
+            {/* <Lock className="size-3.5" /> */}
+            {/* <span>256-Bit Encrypted Data</span> */}
           </div>
-          <span>Official MCA & GST Partner</span>
+          {/* <span>Official MCA & GST Partner</span> */}
         </div>
       </div>
 
@@ -55,19 +55,19 @@ export default function RegisterPage() {
         <div className="relative z-10 space-y-8 max-w-xl my-auto">
           <div className="space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight text-slate-900">
-              Join 10,000+ Verified Businesses On FirstLease
+              Join Businesses Simplifying Compliance with CPI 
             </h2>
             <p className="text-slate-600 text-sm leading-relaxed font-medium">
-              Create your free compliance account to access dynamic statutory filing engines, automated document vaults, and dedicated CA/CS executive support.
+              Create your free Compliance Portal India account and manage registrations, filings, documents, licences, and compliance services through one streamlined platform. 
             </p>
           </div>
 
           {/* Registration Perks Grid */}
           <div className="space-y-3 pt-2">
             {[
-              { title: "256-Bit Encrypted Vault", desc: "Store all government licenses & tax certificates securely." },
-              { title: "Live Real-Time Status Tracking", desc: "5-stage progress tracking from verification to government issuance." },
-              { title: "Dedicated Backoffice CA/CS Specialist", desc: "Expert executive assigned to every case filing." },
+              { title: "Secure Document Vault", desc: "Store important business, tax, registration, and compliance documents securely in one place." },
+              { title: "Real-Time Status Updates", desc: "Track your compliance filings and registrations with instant notifications and progress updates." },
+              { title: "Dedicated Compliance Support", desc: "Get professional assistance from our compliance team for your registrations, filings, and documentation." },
             ].map((perk, i) => (
               <div
                 key={i}
@@ -85,7 +85,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Dynamic Stepper Visual Box */}
-          <div className="p-5 rounded-lg bg-white/95 border border-slate-200/90 shadow-sm backdrop-blur-md space-y-2">
+          {/* <div className="p-5 rounded-lg bg-white/95 border border-slate-200/90 shadow-sm backdrop-blur-md space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-slate-800">
               <span>Setup Timeline</span>
               <span className="text-primary">Step 1 of 2</span>
@@ -96,14 +96,14 @@ export default function RegisterPage() {
             <p className="text-[11px] text-slate-500 font-semibold pt-1">
               Account Registration $\rightarrow$ Business Profile Tailoring $\rightarrow$ Immediate Portal Access
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Partner Trust Strip */}
         <div className="relative z-10 pt-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-600 font-bold">
           <div className="flex items-center gap-2">
-            <Building2 className="size-4 text-primary" />
-            <span>Ministry of Corporate Affairs Compliant</span>
+            {/* <Building2 className="size-4 text-primary" /> */}
+            {/* <span>Ministry of Corporate Affairs Compliant</span> */}
           </div>
           <div className="flex items-center gap-1 text-slate-500 text-[11px]">
             <ShieldCheck className="size-4 text-emerald-600" />

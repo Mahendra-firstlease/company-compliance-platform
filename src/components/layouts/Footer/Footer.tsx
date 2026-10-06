@@ -29,6 +29,21 @@ const Footer: React.FC = () => {
             <path fillRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clipRule="evenodd" />
           </svg>
         );
+      case 'instagram':
+        return (
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+          </svg>
+        );
+      case 'whatsapp':
+        return (
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5Z" />
+            <path d="M8.5 8.2c.2-.4.4-.4.7-.4h.4c.2 0 .3.1.4.4l.7 1.6c.1.2.1.4-.1.6l-.5.6c-.2.2-.1.4 0 .6.5.8 1.2 1.4 2 1.9.2.1.4.2.6 0l.7-.8c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.3.6-.1.5-.4 1-.8 1.2-.5.3-1.1.4-1.7.2-1-.3-2-.8-2.9-1.5-.9-.7-1.7-1.6-2.2-2.6-.4-.8-.5-1.5-.2-2.2.1-.3.3-.6.5-.8Z" />
+          </svg>
+        );
       default:
         return null;
     }
@@ -149,15 +164,15 @@ const Footer: React.FC = () => {
 
         {/* Bottom Legal & Copyright Bar */}
         <div className="mt-12 border-t border-slate-200/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
-          <p>
+          {/* <p>
             &copy; {new Date().getFullYear()} {footerData.companyInfo.name || "FirstLease Platforms Pvt Ltd"}. All rights reserved.
-          </p>
+          </p> */}
 
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
       
             <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
               <ShieldCheck className="size-3.5" />
-              <span>256-Bit SSL Encrypted</span>
+              {/* <span>256-Bit SSL Encrypted</span> */}
             </span>
           </div>
         </div>

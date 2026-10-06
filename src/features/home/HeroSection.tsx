@@ -71,7 +71,7 @@ function HeroSection({}: Props) {
                 Subscribe now
               </Button>
             </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-center lg:text-left text-sm text-neutral-600 mt-4 mx-auto md:mx-0">
+            {/* <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-center lg:text-left text-sm text-neutral-600 mt-4 mx-auto md:mx-0">
               <span className="font-semibold text-xs text-neutral-500 uppercase tracking-wide">Popular:</span>
               <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
                 GST
@@ -85,7 +85,7 @@ function HeroSection({}: Props) {
               <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
                 IEC
               </span>
-            </div>
+            </div> */}
 
             {/* Avatars + Stars */}
             <div className="flex items-center mt-10 mx-auto lg:mx-0">
@@ -149,8 +149,8 @@ function HeroSection({}: Props) {
             <Image
               className="w-full h-auto object-contain"
               src={"/images/home/hero-section/heroImage.png"}
-              width={500}
-              height={500}
+              width={700}
+              height={700}
               priority={true}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
               alt="FirstLease Dashboard and Compliance Platform Preview"

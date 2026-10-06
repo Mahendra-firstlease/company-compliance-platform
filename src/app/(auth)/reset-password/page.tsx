@@ -45,9 +45,9 @@ export default function ResetPasswordPage() {
         <div className="pt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
           <div className="flex items-center gap-1.5 text-emerald-600">
             <Lock className="size-3.5" />
-            <span>256-Bit SSL Encrypted</span>
+            {/* <span>256-Bit SSL Encrypted</span> */}
           </div>
-          <span>Official MCA & GST Portal</span>
+          {/* <span>Official MCA & GST Portal</span> */}
         </div>
       </div>
 

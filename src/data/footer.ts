@@ -47,8 +47,9 @@ export const footerData: FooterData = {
     },
   ],
   socialMedia: [
-    { name: "Twitter", url: "https://twitter.com/yourcompany" },
-    { name: "LinkedIn", url: "https://linkedin.com/company/yourcompany" },
-    { name: "Facebook", url: "https://facebook.com/yourcompany" },
+    // { name: "Twitter", url: "https://twitter.com/yourcompany" },
+    { name: "LinkedIn", url: "https://www.linkedin.com/company/compliance-portal-india" },
+    { name: "Instagram", url: "https://www.instagram.com/compliance_portal" },
+    { name: "WhatsApp", url: "https://wa.me/919773880555" },
   ],
 };

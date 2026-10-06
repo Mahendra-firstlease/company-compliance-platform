@@ -1,14 +1,47 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Section from "@/components/common/Section";
 import Container from "@/components/common/Container";
 import Button from "@/components/common/Button";
 import Image from "next/image";
+import { toast } from "sonner";
 
 type Props = {
   children?: React.ReactNode;
 };
 
 function HeroSection({}: Props) {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error ?? "Something went wrong.");
+      } else {
+        toast.success(data.message ?? "Successfully subscribed!");
+        setEmail("");
+      }
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <>
       <Section
@@ -56,21 +89,28 @@ function HeroSection({}: Props) {
               under one platform.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-lg sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0">
+            <form
+              onSubmit={handleSubscribe}
+              className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-lg sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0"
+            >
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-11 pl-4 sm:pl-5 outline-none text-sm bg-transparent text-neutral-600"
                 required
+                disabled={loading}
               />
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full sm:w-auto px-6 h-10 rounded-lg sm:rounded-full text-xs font-bold text-slate-50 cursor-pointer shrink-0"
+                disabled={loading}
+                className="w-full sm:w-auto px-6 h-10 rounded-lg sm:rounded-full text-xs font-bold text-slate-50 cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Subscribe now
+                {loading ? "Subscribing..." : "Subscribe now"}
               </Button>
-            </div>
+            </form>
             {/* <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-center lg:text-left text-sm text-neutral-600 mt-4 mx-auto md:mx-0">
               <span className="font-semibold text-xs text-neutral-500 uppercase tracking-wide">Popular:</span>
               <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
@@ -145,14 +185,12 @@ function HeroSection({}: Props) {
           </div>
 
           {/* Right — LCP Element with Priority Preload & Aspect Ratio Placeholder */}
-          <div className="w-full max-w-md md:max-w-lg aspect-square">
+          <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl aspect-square">
             <Image
               className="w-full h-auto object-contain"
               src={"/images/home/hero-section/heroImage.png"}
-              width={700}
-              height={700}
               priority={true}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 42rem, 48rem"
               alt="FirstLease Dashboard and Compliance Platform Preview"
             />
           </div>

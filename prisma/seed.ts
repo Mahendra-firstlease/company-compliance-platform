@@ -2,11 +2,11 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 dotenv.config(); // Fallback to .env
 
-import { prisma } from "../src/lib/prisma";
 import { services } from "../src/data/services";
 import bcrypt from "bcryptjs";
 
 async function main() {
+  const { prisma } = await import("../src/lib/prisma");
   console.log("Starting database seed with updated services catalog...");
 
   // 1. Seed Master Admin User Account
@@ -133,5 +133,8 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    try {
+      const { prisma } = await import("../src/lib/prisma");
+      await prisma.$disconnect();
+    } catch {}
   });

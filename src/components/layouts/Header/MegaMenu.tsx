@@ -25,8 +25,10 @@ export default function MegaMenu({ item }: MegaMenuProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<(() => void) | null>(null);
   const isOpenRef = useRef(false);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch dynamic services from MySQL backend API
   useEffect(() => {
@@ -59,6 +61,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
     };
   }, []);
 
+  // Close on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -74,16 +77,46 @@ export default function MegaMenu({ item }: MegaMenuProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // — Hover helpers —
+  const handleMouseEnter = () => {
+    // Cancel any pending close
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    // Open if not already open
+    if (!isOpenRef.current) {
+      buttonRef.current?.click();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Small delay so diagonal mouse movement into the panel doesn't close it
+    leaveTimer.current = setTimeout(() => {
+      if (isOpenRef.current && closeRef.current) {
+        closeRef.current();
+      }
+    }, 100);
+  };
+
   return (
-    <Popover className="static" ref={containerRef}>
+    <Popover
+      className="static"
+      ref={containerRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {({ open, close }) => {
         closeRef.current = close;
         isOpenRef.current = open;
         return (
           <>
-            <PopoverButton className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary cursor-pointer">
+            <PopoverButton
+              ref={buttonRef}
+              className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary cursor-pointer"
+            >
               <span>{item.label}</span>
-              <ChevronDownIcon aria-hidden="true" className="h-4 w-4" />
+              <ChevronDownIcon
+                aria-hidden="true"
+                className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+              />
             </PopoverButton>
 
             <PopoverPanel
@@ -131,7 +164,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
                   <div className="flex items-center gap-2">
                     <SparklesIcon className="size-4 text-primary shrink-0" />
                     <span className="text-xs text-slate-500 font-medium">
-                      Explore all government registration & compliance services.
+                      Explore all government registration &amp; compliance services.
                     </span>
                   </div>
 

@@ -190,6 +190,8 @@ function HeroSection({}: Props) {
               className="w-full h-auto object-contain"
               src={"/images/home/hero-section/heroImage.png"}
               priority={true}
+              width={1000}
+              height={1000}
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 42rem, 48rem"
               alt="FirstLease Dashboard and Compliance Platform Preview"
             />

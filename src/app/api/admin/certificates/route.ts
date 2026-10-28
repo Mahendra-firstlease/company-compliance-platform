@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     const userRole = (session.user as any)?.role || "CLIENT";
-    if (userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+    if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin privilege required." }, { status: 403 });
     }
 
@@ -65,19 +65,6 @@ export async function POST(request: Request) {
         userId: application.userId,
         certificateName: certificateName || `Approved Certificate - ${application.serviceTitle}`,
         certificateUrl: fileUrl,
-      },
-    });
-
-    await prisma.document.create({
-      data: {
-        applicationId: application.id,
-        userId: application.userId,
-        docName: certificateName || `Official Issued Certificate`,
-        fileName: normalizedFileName,
-        fileUrl: fileUrl,
-        fileSize: fileSize || "1.2 MB",
-        fileType: "application/pdf",
-        status: "VERIFIED",
       },
     });
 

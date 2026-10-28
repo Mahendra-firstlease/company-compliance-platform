@@ -10,7 +10,6 @@ import {
   FolderOpen,
   Users,
   PhoneCall,
-  UserCheck,
   BarChart3,
 } from "lucide-react";
 import DashboardLayout, {
@@ -34,7 +33,6 @@ export default function AdminRoutesLayout({
     { id: "pricing", label: "Pricing", icon: DollarSign },
     { id: "documents", label: "Documents", icon: FolderOpen },
     { id: "crm", label: "CRM / Leads", icon: PhoneCall },
-    { id: "team", label: "Team", icon: UserCheck },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
   ], []);
 
@@ -63,7 +61,6 @@ export default function AdminRoutesLayout({
     if (activeTab === "pricing") return "Setup government filing fees and professional margins.";
     if (activeTab === "documents") return "Inspect customer whitelisted PDF files queue.";
     if (activeTab === "crm") return "Manage leads, enquiries, and legal desk status logs.";
-    if (activeTab === "team") return "Manage compliance specialist allocation rules.";
     return "Filing statistics charts and executive capacity indices.";
   }, [activeTab]);
 

@@ -28,9 +28,9 @@ export default function ServiceDetailTabsContainer({
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 shadow-xs">
+    <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-2xs">
       {/* Clean Simple Underline Tabs Navigation */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-slate-200 mb-6">
         <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto scrollbar-none pb-1" aria-label="Tabs">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -43,7 +43,7 @@ export default function ServiceDetailTabsContainer({
                   "whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors cursor-pointer",
                   isActive
                     ? "border-primary text-primary font-semibold"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
                 )}
               >
                 {tab.label}

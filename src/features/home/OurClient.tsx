@@ -6,15 +6,13 @@ import { clientLogos } from "@/data/clientLogos";
 
 export default function ClientLogosSection({}) {
   return (
-    <Section className="bg-gray-50">
+    <Section className="bg-slate-50/60 border-b border-slate-200/80">
       <Container>
         <SectionHeading
-          badge="Our Clients"
           title="Trusted by"
           highlight="Businesses Across India"
           align="center"
-          description="From emerging startups to established enterprises, businesses trust Compliance Portal India to
-            simplify their compliance journey."
+          description="From emerging startups to established enterprises, businesses trust Compliance Portal India to simplify their compliance journey."
         />
         <ClientLogoCarousel clientLogos={clientLogos} />
       </Container>

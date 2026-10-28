@@ -4,28 +4,28 @@ import { Service } from "@/types/services";
 
 export default function ServiceDetailQuickFeatures({ service }: { service: Service }) {
   return (
-    <div className="pt-4 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+    <div className="pt-4 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200/80 shadow-2xs">
         <Zap className="size-4 text-primary shrink-0" />
         <div className="flex flex-col">
-          <span className="text-[11px] text-gray-400 font-medium">Processing Time</span>
-          <span className="text-xs font-semibold text-gray-800">{service.duration}</span>
+          <span className="text-xs text-slate-500 font-medium">Processing Time</span>
+          <span className="text-xs font-semibold text-slate-900">{service.duration}</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200/80 shadow-2xs">
         <UserCheck className="size-4 text-primary shrink-0" />
         <div className="flex flex-col">
-          <span className="text-[11px] text-gray-400 font-medium">Assistance</span>
-          <span className="text-xs font-semibold text-gray-800">CA / CS Lead</span>
+          <span className="text-xs text-slate-500 font-medium">Assistance</span>
+          <span className="text-xs font-semibold text-slate-900">CA / CS Lead</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200/80 shadow-2xs">
         <ShieldCheck className="size-4 text-primary shrink-0" />
         <div className="flex flex-col">
-          <span className="text-[11px] text-gray-400 font-medium">Verification</span>
-          <span className="text-xs font-semibold text-gray-800">100% Portal Guarantee</span>
+          <span className="text-xs text-slate-500 font-medium">Verification</span>
+          <span className="text-xs font-semibold text-slate-900">100% Portal Guarantee</span>
         </div>
       </div>
     </div>

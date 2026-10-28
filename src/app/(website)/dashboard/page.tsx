@@ -14,10 +14,15 @@ import {
   Bell,
   ShieldCheck,
   CheckCheck,
+  FileText,
+  Download,
+  Paperclip,
+  Building2,
+  ChevronDown,
+  Eye,
 } from "lucide-react";
 import Button from "@/components/common/Button";
 import Badge from "@/components/ui/Badge/Badge";
-import FieldValue from "@/components/common/FieldValue";
 import QueryResponseModal from "@/components/forms/QueryResponseModal";
 import {
   Card,
@@ -27,8 +32,10 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { getApplications, ApplicationCase } from "@/lib/applications";
+import { getSubmittedFormEntries } from "@/lib/application-workflow";
+import { downloadFile, getInlineViewUrl } from "@/utils/download";
 import apiFetch from "@/lib/apiClient";
-import { Service } from "@/types";
+import { Service, UploadedFile } from "@/types";
 import { notify } from "@/lib/notify";
 import KPISummary from "@/features/dashboard/KPISummary";
 import { useSession } from "next-auth/react";
@@ -52,6 +59,80 @@ interface DbNotificationItem {
   createdAt: string;
 }
 
+function formatDocName(name: string): string {
+  const words = name
+    .replace(/([A-Z])/g, " $1")
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : name;
+}
+
+function ServiceIcon({ slug }: { slug: string }) {
+  if (slug.includes("mca") || slug.includes("company") || slug.includes("llp") || slug.includes("incorporation")) {
+    return <Building2 size={18} />;
+  }
+  if (slug.includes("trademark") || slug.includes("iso") || slug.includes("patent") || slug.includes("license")) {
+    return <ShieldCheck size={18} />;
+  }
+  return <FileText size={18} />;
+}
+
+function getApplicationHighlight(formData?: Record<string, any>) {
+  if (!formData) return null;
+
+  const primaryName =
+    formData.companyNameOption1 ||
+    formData.companyName ||
+    formData.tradeName ||
+    formData.businessName ||
+    formData.brandName ||
+    formData.trademarkName ||
+    formData.storeName ||
+    formData.entityName;
+
+  const rawType =
+    formData.entityType ||
+    formData.structure ||
+    formData.constitution ||
+    formData.businessType;
+
+  const formatType = (val?: string) => {
+    if (!val) return null;
+    const map: Record<string, string> = {
+      PVT_LTD: "Private Limited",
+      PUBLIC_LTD: "Public Limited",
+      LLP: "LLP",
+      OPC: "One Person Company",
+      PROPRIETORSHIP: "Proprietorship",
+      PARTNERSHIP: "Partnership Firm",
+      SECTION_8: "Section 8 Company",
+    };
+    return map[val] || val.replace(/_/g, " ");
+  };
+
+  const subtitle = formatType(typeof rawType === "string" ? rawType : undefined);
+
+  if (primaryName) {
+    return {
+      title: String(primaryName),
+      subtitle,
+    };
+  }
+
+  const entries = getSubmittedFormEntries(formData);
+  if (entries.length > 0) {
+    const [k, v] = entries[0];
+    const formatted = formatDocName(k);
+    return {
+      title: `${formatted}: ${String(v)}`,
+      subtitle,
+    };
+  }
+
+  return null;
+}
+
 export default function UserDashboardPage() {
   const { data: session } = useSession();
   const [cases, setCases] = useState<ApplicationCase[]>([]);
@@ -60,6 +141,7 @@ export default function UserDashboardPage() {
   const [dbNotifications, setDbNotifications] = useState<DbNotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeQueryCase, setActiveQueryCase] = useState<ApplicationCase | null>(null);
+  const [expandedDocsCaseId, setExpandedDocsCaseId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -175,79 +257,206 @@ export default function UserDashboardPage() {
               </div>
             ) : cases.length > 0 ? (
               <div className="divide-y divide-slate-100">
-                {cases.slice(0, 5).map((c) => (
-                  <div
-                    key={c.id}
-                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-xs text-slate-800">
-                          {c.serviceTitle}
-                        </h4>
-                        {c.assignedExecutive && (
-                          <span className="text-[10px] bg-primary-light text-primary font-semibold px-2 py-0.5 rounded">
-                            Specialist: {c.assignedExecutive}
-                          </span>
-                        )}
+                {cases.slice(0, 5).map((c) => {
+                  const highlight = getApplicationHighlight(c.formData);
+                  const uploadedDocsMap =
+                    c.uploadedDocs && Object.keys(c.uploadedDocs).length > 0
+                      ? c.uploadedDocs
+                      : ((c.formData?._uploadedDocs as Record<string, UploadedFile> | undefined) || {});
+                  const uploadedDocEntries = Object.entries(uploadedDocsMap);
+                  const isDocsOpen = expandedDocsCaseId === c.id;
+
+                  return (
+                    <div
+                      key={c.id}
+                      className="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        {/* Left: Icon + Title + Metadata */}
+                        <div className="flex items-start gap-3.5 min-w-0">
+                          <div className="size-10 rounded-lg bg-primary-light text-primary border border-primary-border/60 flex items-center justify-center shrink-0 mt-0.5">
+                            <ServiceIcon slug={c.serviceSlug} />
+                          </div>
+
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-bold text-sm text-slate-900 leading-snug">
+                                {c.serviceTitle}
+                              </h4>
+                            </div>
+
+                            {/* Business Key Highlight (e.g. Entity Name / Type) */}
+                            {highlight && (
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="font-bold text-slate-800">
+                                  {highlight.title}
+                                </span>
+                                {highlight.subtitle && (
+                                  <span className="text-[11px] font-semibold text-primary bg-primary-light px-2 py-0.5 rounded">
+                                    {highlight.subtitle}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Meta details: Ref ID, Date, Documents toggle */}
+                            <div className="flex items-center gap-2.5 text-xs text-slate-500 pt-0.5 flex-wrap">
+                              <span>
+                                Ref ID: <span className="font-mono font-medium text-slate-600">{c.id}</span>
+                              </span>
+                              <span className="text-slate-300">&middot;</span>
+                              <span>Filed {formatDate(c.createdAt)}</span>
+
+                              {uploadedDocEntries.length > 0 && (
+                                <>
+                                  <span className="text-slate-300">&middot;</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedDocsCaseId(isDocsOpen ? null : c.id)}
+                                    className="inline-flex items-center gap-1 font-semibold text-primary hover:text-primary-dark transition-colors cursor-pointer group"
+                                    title="Click to view attached documents"
+                                  >
+                                    <Paperclip size={12} className="text-primary group-hover:scale-110 transition-transform" />
+                                    <span>{uploadedDocEntries.length} {uploadedDocEntries.length === 1 ? "File" : "Files"}</span>
+                                    <ChevronDown size={12} className={`transition-transform duration-200 ${isDocsOpen ? "rotate-180" : ""}`} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Status badge & Action buttons */}
+                        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-end shrink-0 sm:self-center">
+                          <Badge
+                            variant={
+                              c.status === "APPROVED"
+                                ? "green"
+                                : c.queryStatus === "CLIENT_RESPONDED"
+                                  ? "indigo"
+                                  : c.queryNote || c.query
+                                    ? "red"
+                                    : "indigo"
+                            }
+                            rounded="full"
+                            size="sm"
+                          >
+                            {c.queryStatus === "CLIENT_RESPONDED"
+                              ? "CLIENT RESPONDED"
+                              : c.queryNote || c.query
+                                ? "ACTION REQUIRED"
+                                : c.status.replace(/_/g, " ")}
+                          </Badge>
+
+                          {(c.query || c.queryNote) && c.queryStatus !== "CLIENT_RESPONDED" && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => setActiveQueryCase(c)}
+                              className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1.5 shadow-2xs"
+                            >
+                              <AlertTriangle size={12} /> Respond
+                            </Button>
+                          )}
+
+                          <Link href={`/applications/${c.serviceSlug}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs font-bold flex items-center gap-1"
+                            >
+                              Workspace <ArrowRight size={11} />
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-400">
-                        Ref ID: <span className="font-mono text-slate-600">{c.id}</span> &middot; Filed {formatDate(c.createdAt)}
-                      </p>
-                      {c.formData && Object.keys(c.formData).length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1 items-center">
-                          {Object.entries(c.formData).slice(0, 3).map(([k, v]) => (
-                            <span key={k} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono inline-flex items-center gap-1">
-                              {k}: <span className="font-bold text-slate-800"><FieldValue value={v} compact /></span>
+
+                      {/* Expandable Documents Tray */}
+                      {isDocsOpen && uploadedDocEntries.length > 0 && (
+                        <div className="mt-3.5 pt-3.5 border-t border-slate-100 animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                              Attached Verification Files ({uploadedDocEntries.length})
                             </span>
-                          ))}
+                            <Link
+                              href={`/applications/${c.serviceSlug}`}
+                              className="text-[11px] font-semibold text-primary hover:underline"
+                            >
+                              Open in Workspace &rarr;
+                            </Link>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            {uploadedDocEntries.map(([docKey, doc]) => {
+                              const formattedDocName = formatDocName(docKey);
+                              const fileName = doc?.name || formattedDocName;
+                              const fileUrl = doc?.url;
+                              const isPdf = Boolean(
+                                fileName.toLowerCase().endsWith(".pdf") ||
+                                doc?.type?.toUpperCase().includes("PDF") ||
+                                fileUrl?.toLowerCase().includes(".pdf")
+                              );
+                              const viewHref = fileUrl ? getInlineViewUrl(fileUrl, fileName) : "#";
+
+                              return (
+                                <div
+                                  key={docKey}
+                                  className="flex items-center justify-between p-2 rounded-md bg-slate-50 hover:bg-slate-100/80 border border-slate-200/70 transition-colors"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0 mr-2">
+                                    <div className={`size-7 rounded flex items-center justify-center shrink-0 ${isPdf ? "bg-rose-50 text-rose-600 border border-rose-200" : "bg-primary-light text-primary"}`}>
+                                      <FileText size={14} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-semibold text-slate-800 truncate" title={formattedDocName}>
+                                        {formattedDocName}
+                                      </p>
+                                      {fileUrl ? (
+                                        <a
+                                          href={viewHref}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[10px] text-primary hover:underline font-mono truncate block"
+                                          title={`View ${fileName}`}
+                                        >
+                                          {fileName} {doc?.size ? `(${doc.size})` : ""}
+                                        </a>
+                                      ) : (
+                                        <p className="text-[10px] text-slate-400 truncate" title={fileName}>
+                                          {fileName} {doc?.size ? `(${doc.size})` : ""}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {fileUrl && (
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <a
+                                        href={viewHref}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-1 rounded text-slate-400 hover:text-primary hover:bg-white transition-colors cursor-pointer"
+                                        title={`View ${fileName}`}
+                                      >
+                                        <Eye size={13} />
+                                      </a>
+                                      <button
+                                        type="button"
+                                        onClick={() => downloadFile(fileUrl, fileName)}
+                                        className="p-1 rounded text-slate-400 hover:text-primary hover:bg-white transition-colors cursor-pointer"
+                                        title={`Download ${fileName}`}
+                                      >
+                                        <Download size={13} />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end">
-                      <Badge
-                        variant={
-                          c.status === "APPROVED"
-                            ? "green"
-                            : c.queryStatus === "CLIENT_RESPONDED"
-                              ? "indigo"
-                              : c.queryNote || c.query
-                                ? "red"
-                                : "indigo"
-                        }
-                        rounded="full"
-                        size="sm"
-                      >
-                        {c.queryStatus === "CLIENT_RESPONDED"
-                          ? "CLIENT RESPONDED"
-                          : c.queryNote || c.query
-                            ? "ACTION REQUIRED"
-                            : c.status.replace(/_/g, " ")}
-                      </Badge>
-
-                      {(c.query || c.queryNote) && c.queryStatus !== "CLIENT_RESPONDED" && (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => setActiveQueryCase(c)}
-                          className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1.5 shadow-2xs"
-                        >
-                          <AlertTriangle size={12} /> Respond to Query
-                        </Button>
-                      )}
-
-                      <Link href={`/applications/${c.serviceSlug}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs font-semibold flex items-center gap-1"
-                        >
-                          Workspace <ArrowRight size={10} />
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="p-8 text-center space-y-3">

@@ -6,8 +6,8 @@ import { ArrowLeft, ShieldCheck, CheckCircle2, Award, Lock, Loader2 } from "luci
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reset Password | FirstLease Statutory Compliance",
-  description: "Set a new password for your FirstLease corporate compliance account.",
+  title: "Reset Password | Compliance Portal India",
+  description: "Set a new password for your Compliance Portal India corporate compliance account.",
 };
 
 export default function ResetPasswordPage() {
@@ -95,8 +95,8 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="relative z-10 flex items-center justify-between pt-6 border-t border-slate-200/80 text-xs text-slate-500 font-semibold">
-          <span>FirstLease Statutory Security Protocols</span>
-          <span>Help: support@firstlease.in</span>
+          <span>Compliance Portal India Security Protocols</span>
+          <span>Help: support@complianceportalindia.com</span>
         </div>
       </div>
     </div>

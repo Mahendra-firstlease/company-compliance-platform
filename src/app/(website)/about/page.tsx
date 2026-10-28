@@ -1,19 +1,20 @@
 import { Metadata } from "next";
 import AboutClient from "./AboutClient";
+import siteConfig from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "About Us | FirstLease Enterprise Statutory Compliance",
+  title: "About Us | Compliance Portal India",
   description:
-    "Learn about FirstLease — India's leading technology-driven business compliance and statutory licensing platform trusted by 12,500+ companies.",
+    "Learn about Compliance Portal India — India's leading technology-driven business compliance and statutory licensing platform trusted by 12,500+ companies.",
   openGraph: {
-    title: "About Us | FirstLease Statutory Compliance Platform",
+    title: "About Us | Compliance Portal India",
     description:
       "Automating statutory licensing, GST, PAN, Trademark, and corporate filings with dedicated CA/CS expert oversight.",
-    url: "https://firstlease.com/about",
+    url: siteConfig.getAbsoluteUrl("/about"),
     type: "website",
   },
   alternates: {
-    canonical: "https://firstlease.com/about",
+    canonical: siteConfig.getAbsoluteUrl("/about"),
   },
 };
 

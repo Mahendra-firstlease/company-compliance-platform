@@ -49,18 +49,23 @@ export async function uploadToS3Storage(
     }
   }
 
+
+  const finalSizeBytes = uploadBuffer.length;
+  const finalSizeStr = `${(uploadBuffer.length / (1024 * 1024)).toFixed(2)} MB`;
   const checksum = calculateChecksum(uploadBuffer);
   const client = getS3Client();
 
   console.log("☁️ [STORAGE UPLOAD INITIATED]:", {
     fileName: sanitized,
-    fileSize: fileSizeStr,
+    fileSize: finalSizeStr,
     optimizedSize: `${(uploadBuffer.length / (1024 * 1024)).toFixed(2)} MB`,
     bucket: config.bucketName || "none",
     region: config.region || "none",
     hasAwsCredentials: config.hasCredentials,
     checksum,
   });
+
+
 
   if (client && config.hasCredentials) {
     try {
@@ -90,9 +95,9 @@ export async function uploadToS3Storage(
         success: true,
         fileUrl: s3Url,
         fileName: sanitized,
-        fileSizeBytes,
-        fileSize: fileSizeStr,
-        fileType: fileType.split("/")[1]?.toUpperCase() || fileExtension.toUpperCase(),
+        fileSizeBytes: finalSizeBytes,
+        fileSize: finalSizeStr,
+        fileType: finalFileType.split("/")[1]?.toUpperCase() || fileExtension.toUpperCase(),
         key: uniqueKey,
         checksum,
         isMock: false,
@@ -118,9 +123,9 @@ export async function uploadToS3Storage(
     success: true,
     fileUrl: fallbackUrl,
     fileName: sanitized,
-    fileSizeBytes,
-    fileSize: fileSizeStr,
-    fileType: fileType.split("/")[1]?.toUpperCase() || fileExtension.toUpperCase(),
+    fileSizeBytes: finalSizeBytes,
+    fileSize: finalSizeStr,
+    fileType: finalFileType.split("/")[1]?.toUpperCase() || fileExtension.toUpperCase(),
     key: uniqueKey,
     checksum,
     isMock: true,

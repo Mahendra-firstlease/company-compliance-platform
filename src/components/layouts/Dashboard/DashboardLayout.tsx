@@ -110,7 +110,7 @@ export default function DashboardLayout({
                   <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
                     {activeTab} Workspace
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+                  <p className="text-xs text-slate-600 mt-0.5">{description}</p>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-2">
                   <NavigationButtons />

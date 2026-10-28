@@ -24,8 +24,9 @@ export const gstConfig: ServiceFormConfig = {
           type: "text",
           label: "Permanent Account Number (PAN)",
           placeholder: "ABCDE1234F",
+          description: "10-character PAN as printed on your card (e.g. ABCDE1234F).",
           required: true,
-          pattern: "^[A-Z]{5}[0-9]{4}[A-Z]{1}$",
+          validation: { preset: "pan" },
         },
         {
           id: "mobileNumber",
@@ -33,6 +34,7 @@ export const gstConfig: ServiceFormConfig = {
           label: "Mobile Number",
           placeholder: "+91 9876543210",
           required: true,
+          validation: { preset: "mobile-in" },
         },
         {
           id: "emailAddress",
@@ -71,6 +73,19 @@ export const gstConfig: ServiceFormConfig = {
           },
         },
         {
+          id: "cinOrLlpin",
+          type: "text",
+          label: "CIN / LLPIN Number",
+          placeholder: "U12345XX2020PTC123456",
+          description: "Required for Private Limited companies (CIN) or LLP entities (LLPIN).",
+          required: true,
+          dependsOn: { field: "constitutionType", oneOf: ["PVT_LTD", "LLP"] },
+          validation: {
+            pattern: "^([UL]\\d{5}[A-Z]{2}\\d{4}[A-Z]{3}\\d{6}|[A-Z]{3}-\\d{4})$",
+            patternMessage: "Enter a valid CIN or LLPIN",
+          },
+        },
+        {
           id: "registeredAddress",
           type: "textarea",
           label: "Registered Business Premises Address",
@@ -91,7 +106,7 @@ export const gstConfig: ServiceFormConfig = {
           label: "PAN Card Copy",
           required: true,
           uploadRule: {
-            allowedExtensions: ["jpg", "png", "pdf"],
+            allowedExtensions: ["jpg", "jpeg", "png", "pdf"],
             allowedMimeTypes: ["image/jpeg", "image/png", "application/pdf"],
             maxSizeBytes: 2 * 1024 * 1024,
           },
@@ -102,12 +117,12 @@ export const gstConfig: ServiceFormConfig = {
           label: "Aadhaar Card Scans (Front & Back)",
           required: true,
           frontRule: {
-            allowedExtensions: ["jpg", "png", "pdf"],
+            allowedExtensions: ["jpg", "jpeg", "png", "pdf"],
             allowedMimeTypes: ["image/jpeg", "image/png", "application/pdf"],
             maxSizeBytes: 1 * 1024 * 1024,
           },
           backRule: {
-            allowedExtensions: ["jpg", "png", "pdf"],
+            allowedExtensions: ["jpg", "jpeg", "png", "pdf"],
             allowedMimeTypes: ["image/jpeg", "image/png", "application/pdf"],
             maxSizeBytes: 1 * 1024 * 1024,
           },
@@ -118,7 +133,7 @@ export const gstConfig: ServiceFormConfig = {
           label: "Premises Address Proof (Utility Bill / Lease Agreement)",
           required: true,
           uploadRule: {
-            allowedExtensions: ["jpg", "png", "pdf"],
+            allowedExtensions: ["jpg", "jpeg", "png", "pdf"],
             allowedMimeTypes: ["image/jpeg", "image/png", "application/pdf"],
             maxSizeBytes: 5 * 1024 * 1024,
           },

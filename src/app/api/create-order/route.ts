@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     if (!keyId || !keySecret) {
       return NextResponse.json(
-        { error: "Server Configuration Error: Razorpay credentials missing." },
+        { error: "Payment service is temporarily unavailable. Please try again later." },
         { status: 500 }
       );
     }

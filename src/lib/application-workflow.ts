@@ -20,12 +20,51 @@ const STATUS_RANK: Record<string, number> = {
   REJECTED: -1,
 };
 
+const METADATA_FIELDS = new Set([
+  "id",
+  "userId",
+  "serviceId",
+  "serviceSlug",
+  "serviceTitle",
+  "customerName",
+  "customerPhone",
+  "customerEmail",
+  "address",
+  "status",
+  "query",
+  "queryText",
+  "queryResponse",
+  "queryStatus",
+  "queryNote",
+  "uploadedDocs",
+  "documents",
+  "files",
+  "totalFee",
+  "governmentFee",
+  "professionalFee",
+  "createdAt",
+  "updatedAt",
+]);
+
 export function getSubmittedFormEntries(
   formData: Record<string, unknown> = {},
 ): [string, unknown][] {
-  return Object.entries(formData).filter(
-    ([fieldName]) => !fieldName.startsWith("_"),
-  );
+  return Object.entries(formData).filter(([fieldName, val]) => {
+    if (fieldName.startsWith("_") || METADATA_FIELDS.has(fieldName)) {
+      return false;
+    }
+    if (val === undefined || val === null || val === "") {
+      return false;
+    }
+    if (
+      typeof val === "object" &&
+      !Array.isArray(val) &&
+      Object.keys(val as object).length === 0
+    ) {
+      return false;
+    }
+    return true;
+  });
 }
 
 export function isFormDataApproved(formData: Record<string, unknown> = {}): boolean {
@@ -121,10 +160,10 @@ export function getWorkflowBlockers({
     );
   }
 
-  const requiresClientReview =
-    targetRank >= getStatusRank("UNDER_REVIEW");
+  const requiresAdminApproval =
+    targetRank > getStatusRank("UNDER_REVIEW");
 
-  if (requiresClientReview) {
+  if (requiresAdminApproval) {
     if (!isFormDataApproved(formData)) {
       blockers.push(
         'Approve "Submitted Form Data & Information" before advancing.',

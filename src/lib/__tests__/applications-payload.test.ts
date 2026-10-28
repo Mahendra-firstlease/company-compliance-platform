@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildApplicationFormDataPayload } from "../applications";
+import {
+  buildApplicationFormDataPayload,
+  mergeUploadedDocuments,
+  formatApplicationDocuments,
+} from "../applications";
 
 describe("buildApplicationFormDataPayload", () => {
   it("merges submitted form values with uploaded document metadata", () => {
@@ -62,5 +66,87 @@ describe("buildApplicationFormDataPayload", () => {
     });
 
     expect(payload._uploadedDocs.supportingProof.name).toBe("lease.pdf");
+  });
+});
+
+describe("mergeUploadedDocuments deduplication", () => {
+  it("deduplicates documents when db document labels differ from raw form field names", () => {
+    const dbDocs = formatApplicationDocuments([
+      {
+        id: "doc-1",
+        docName: "PAN Card Copy",
+        fileName: "pan-card.jpg",
+        fileSize: 1024,
+        fileType: "image/jpeg",
+        fileUrl: "/storage/documents/1793183003843_pan-card.jpg",
+      },
+      {
+        id: "doc-2",
+        docName: "Front Side Copy",
+        fileName: "adhar-front.jpg",
+        fileSize: 1024,
+        fileType: "image/jpeg",
+        fileUrl: "/storage/documents/1793183264397_adhar-front.jpg",
+      },
+      {
+        id: "doc-3",
+        docName: "Back Side Copy",
+        fileName: "adhar-back.jpg",
+        fileSize: 1024,
+        fileType: "image/jpeg",
+        fileUrl: "/storage/documents/1793183270380_adhar-back.jpg",
+      },
+      {
+        id: "doc-4",
+        docName: "Premises Address Proof (Utility Bill / Lease Agreement)",
+        fileName: "address-profe.pdf",
+        fileSize: 2048,
+        fileType: "application/pdf",
+        fileUrl: "/storage/documents/1793183357456_address-profe.pdf",
+      },
+    ]);
+
+    const formDataUploads = {
+      panDocument: {
+        name: "pan-card.jpg",
+        size: "0.12 MB",
+        type: "JPEG",
+        url: "/storage/documents/1793183003843_pan-card.jpg",
+      },
+      "aadhaarDocument (Front)": {
+        name: "adhar-front.jpg",
+        size: "0.07 MB",
+        type: "WEBP",
+        url: "/storage/documents/1793183264397_adhar-front.jpg",
+      },
+      "aadhaarDocument (Back)": {
+        name: "adhar-back.jpg",
+        size: "0.08 MB",
+        type: "JPEG",
+        url: "/storage/documents/1793183270380_adhar-back.jpg",
+      },
+      addressProofDocument: {
+        name: "address-profe.pdf",
+        size: "0.04 MB",
+        type: "PDF",
+        url: "/storage/documents/1793183357456_address-profe.pdf",
+      },
+    };
+
+    const merged = mergeUploadedDocuments(formDataUploads, dbDocs);
+    const keys = Object.keys(merged);
+
+    // Exactly 4 documents, zero duplicates
+    expect(keys.length).toBe(4);
+    expect(keys).toContain("PAN Card Copy");
+    expect(keys).toContain("Front Side Copy");
+    expect(keys).toContain("Back Side Copy");
+    expect(keys).toContain("Premises Address Proof (Utility Bill / Lease Agreement)");
+
+    // Raw technical form keys should not appear
+    expect(keys).not.toContain("panDocument");
+    expect(keys).not.toContain("aadhaarDocument (Front)");
+    expect(keys).not.toContain("aadhaarDocument (Back)");
+    expect(keys).not.toContain("addressProofDocument");
   });
 });

@@ -34,6 +34,7 @@ export default function MultiFileUpload({
   convertToPdf = false,
 }: MultiFileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const isUploadingRef = React.useRef(false);
   const [uploadProgressText, setUploadProgressText] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -41,6 +42,9 @@ export default function MultiFileUpload({
   const displayError = error || localError;
 
   const handleFilesSelected = async (files: File[]) => {
+    if (isUploadingRef.current) return;
+    if (!files || files.length === 0) return;
+    isUploadingRef.current = true;
     setLocalError(null);
 
     // Limit check
@@ -93,6 +97,7 @@ export default function MultiFileUpload({
       setLocalError(err.message || "Failed to process multi-file upload.");
     } finally {
       setIsUploading(false);
+      isUploadingRef.current = false;
       setUploadProgressText("");
     }
   };
@@ -109,10 +114,10 @@ export default function MultiFileUpload({
     <div className="space-y-2 w-full">
       {label && (
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+          <label className="block text-xs font-semibold text-slate-700">
             {label}
           </label>
-          <span className="text-[11px] font-bold text-slate-500">
+          <span className="text-xs font-medium text-slate-500">
             {currentFiles.length} / {maxFiles} Files
           </span>
         </div>

@@ -7,17 +7,17 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        gray: "bg-gray-450/10 text-gray-500 ring-1 ring-inset ring-gray-450/20",
-        red: "bg-red-400/10 text-red-400 ring-1 ring-inset ring-red-400/20",
-        yellow: "bg-yellow-400/10 text-yellow-500 ring-1 ring-inset ring-yellow-400/20",
-        green: "bg-green-400/10 text-green-400 ring-1 ring-inset ring-green-500/20",
-        blue: "bg-blue-400/10 text-blue-400 ring-1 ring-inset ring-blue-400/30",
+        gray: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
+        red: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
+        yellow: "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-200",
+        green: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
+        blue: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200",
         indigo: "bg-primary-light text-primary ring-1 ring-inset ring-primary/20",
-        purple: "bg-purple-400/10 text-purple-400 ring-1 ring-inset ring-purple-400/30",
-        pink: "bg-pink-400/10 text-pink-400 ring-1 ring-inset ring-pink-400/20",
+        purple: "bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-200",
+        pink: "bg-pink-50 text-pink-700 ring-1 ring-inset ring-pink-200",
       },
       size: {
-        sm: "px-2 py-0.5 text-[10px]",
+        sm: "px-2 py-0.5 text-xs",
         md: "px-2.5 py-1 text-xs",
         lg: "px-3 py-1.5 text-sm",
       },

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
@@ -9,6 +11,14 @@ interface RouteParams {
 
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || (session.user as any).role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Access denied. Admin privileges required." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -72,6 +82,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || (session.user as any).role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Access denied. Admin privileges required." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
 
     if (!id) {

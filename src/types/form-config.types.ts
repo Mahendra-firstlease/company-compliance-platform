@@ -23,6 +23,34 @@ export type DynamicOptionsSource =
   | { type: "api"; endpoint: string; labelKey: string; valueKey: string }
   | { type: "dependent"; parentField: string; mapping: Record<string, SelectOption[]> };
 
+export type ValidationPreset =
+  | "pan"
+  | "gstin"
+  | "cin"
+  | "llpin"
+  | "aadhaar"
+  | "mobile-in"
+  | "pincode-in"
+  | "ifsc";
+
+/** Per-field validation — works on every field type. Legacy props (pattern, minLength) still supported. */
+export interface FieldValidationConfig {
+  /** Built-in Indian compliance presets (PAN, GSTIN, mobile, etc.) */
+  preset?: ValidationPreset;
+  /** Custom regex (used when preset is not set, or overrides preset pattern) */
+  pattern?: string;
+  patternMessage?: string;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  minDate?: string;
+  maxDate?: string;
+  /** Restrict select/radio to these values (auto-filled from static options if omitted) */
+  allowedValues?: string[];
+  requiredMessage?: string;
+}
+
 export interface BaseFieldConfig {
   id: string; // JSON path key in Application payload
   label: string;
@@ -32,9 +60,12 @@ export interface BaseFieldConfig {
   disabled?: boolean;
   readOnly?: boolean;
   defaultValue?: any;
+  /** Validation rules for this field — use presets or custom pattern/min/max */
+  validation?: FieldValidationConfig;
   dependsOn?: {
     field: string;
-    equals: any;
+    equals?: unknown;
+    oneOf?: unknown[];
   };
 }
 

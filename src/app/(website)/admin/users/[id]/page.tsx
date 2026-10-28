@@ -102,7 +102,7 @@ interface User360Detail {
   name: string;
   email: string;
   phone: string;
-  role: "CLIENT" | "EXECUTIVE" | "ADMIN";
+  role: "CLIENT" | "ADMIN";
   image?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -149,7 +149,7 @@ export default function AdminUserDetailPage() {
   }, [userId]);
 
   // Handle role change
-  const handleRoleChange = async (newRole: "CLIENT" | "EXECUTIVE" | "ADMIN") => {
+  const handleRoleChange = async (newRole: "CLIENT" | "ADMIN") => {
     try {
       setIsUpdatingRole(true);
       const updated = await apiFetch<any>(`/admin/users/${userId}`, {
@@ -209,13 +209,7 @@ export default function AdminUserDetailPage() {
                 {user.name}
               </h1>
               <Badge
-                variant={
-                  user.role === "ADMIN"
-                    ? "indigo"
-                    : user.role === "EXECUTIVE"
-                      ? "yellow"
-                      : "gray"
-                }
+                variant={user.role === "ADMIN" ? "indigo" : "gray"}
                 rounded="full"
                 size="sm"
               >
@@ -237,7 +231,6 @@ export default function AdminUserDetailPage() {
             onChange={(val) => handleRoleChange(val as any)}
             options={[
               { label: "CLIENT", value: "CLIENT" },
-              { label: "EXECUTIVE", value: "EXECUTIVE" },
               { label: "ADMIN", value: "ADMIN" },
             ]}
           />
@@ -373,7 +366,6 @@ export default function AdminUserDetailPage() {
                     <th className="py-3 px-4">Case ID</th>
                     <th className="py-3 px-4">Service Title</th>
                     <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Assigned Executive</th>
                     <th className="py-3 px-4">Total Fee</th>
                     <th className="py-3 px-4">Date</th>
                     <th className="py-3 px-4 text-right">Workspace</th>
@@ -402,9 +394,6 @@ export default function AdminUserDetailPage() {
                         >
                           {app.queryText ? "ACTION REQUIRED" : app.status.replace(/_/g, " ")}
                         </Badge>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-700">
-                        {app.assignedExecutive}
                       </td>
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         {formatCurrency(app.totalFee)}
@@ -451,15 +440,9 @@ export default function AdminUserDetailPage() {
                       {app.queryText ? "ACTION REQUIRED" : app.status.replace(/_/g, " ")}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-slate-400">Executive</p>
-                      <p className="font-semibold">{app.assignedExecutive}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-slate-400">Fee</p>
-                      <p className="font-bold text-slate-900">{formatCurrency(app.totalFee)}</p>
-                    </div>
+                  <div className="flex items-center justify-between text-xs text-slate-600">
+                    <span className="text-[11px] uppercase font-bold text-slate-400">Total Fee</span>
+                    <span className="font-bold text-slate-900">{formatCurrency(app.totalFee)}</span>
                   </div>
                   <Link href={`/applications/${app.serviceSlug}`}>
                     <Button variant="outline" size="sm" fullWidth className="min-h-[44px] text-xs font-semibold">

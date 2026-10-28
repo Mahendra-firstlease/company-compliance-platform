@@ -21,8 +21,14 @@ interface MegaMenuProps {
 }
 
 export default function MegaMenu({ item }: MegaMenuProps) {
-  const [dynamicLinks, setDynamicLinks] = useState<DynamicServiceLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const fallbackLinks: DynamicServiceLink[] = (item.links || []).map((l) => ({
+    label: l.label,
+    href: l.href,
+    description: l.description || l.label,
+  }));
+
+  const [dynamicLinks, setDynamicLinks] = useState<DynamicServiceLink[]>(fallbackLinks);
+  const [isLoading, setIsLoading] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -44,11 +50,14 @@ export default function MegaMenu({ item }: MegaMenuProps) {
             description: s.shortDescription || s.title,
           }));
           setDynamicLinks(mapped);
-        } else if (active) {
-          setDynamicLinks([]);
+        } else if (active && fallbackLinks.length > 0) {
+          setDynamicLinks(fallbackLinks);
         }
       } catch (err) {
-        console.error("Header dynamic services fetch error:", err);
+        console.warn("Header dynamic services fetch notice (using catalog fallback):", err);
+        if (active && fallbackLinks.length > 0) {
+          setDynamicLinks(fallbackLinks);
+        }
       } finally {
         if (active) setIsLoading(false);
       }
@@ -125,7 +134,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
             >
               <div className="w-screen max-w-5xl flex-auto overflow-hidden rounded-lg bg-white text-sm/6 border border-slate-200/80 shadow-2xl ring-1 ring-slate-900/5">
                 {/* Dynamic Services Grid */}
-                {isLoading ? (
+                {isLoading && dynamicLinks.length === 0 ? (
                   <MegaMenuSkeleton />
                 ) : dynamicLinks.length > 0 ? (
                   <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-3">

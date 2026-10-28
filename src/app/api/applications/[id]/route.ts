@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ApplicationStatus } from "@prisma/client";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
@@ -8,18 +10,30 @@ import {
   extractUploadedDocuments,
   formatApplicationDocuments,
   formatStoredUploadMetadata,
+  mergeUploadedDocuments,
 } from "@/lib/applications";
 import { sendApplicationNotification } from "@/lib/notifications-dispatcher";
 import {
   DocVerificationMap,
   getWorkflowBlockers,
 } from "@/lib/application-workflow";
+import { deleteFromS3Storage, extractS3Key } from "@/lib/s3";
+import { cleanupUploadedFile } from "@/lib/upload";
+import path from "path";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized: Authentication required." },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
     let application = await prisma.application.findUnique({
@@ -51,6 +65,19 @@ export async function GET(
       );
     }
 
+    // Ownership & authorization guard: user must be owner or staff
+    const currentUserId = (session.user as any)?.id;
+    const currentUserRole = (session.user as any)?.role;
+    const isStaff = currentUserRole === "ADMIN";
+    const isOwner = application.userId === currentUserId;
+
+    if (!isStaff && !isOwner) {
+      return NextResponse.json(
+        { error: "Forbidden: You do not have permission to view this application." },
+        { status: 403 }
+      );
+    }
+
     const formDataObj = (application.formData as Record<string, any>) || {};
     const formatted = {
       ...application,
@@ -75,10 +102,14 @@ export async function GET(
           issuedDate: certificate.issuedDate.toISOString(),
         }),
       ),
-      uploadedDocs: {
-        ...formatStoredUploadMetadata(extractUploadedDocuments(formDataObj)),
-        ...formatApplicationDocuments(application.documents),
-      },
+uploadedDocs: mergeUploadedDocuments(
+        formatStoredUploadMetadata(extractUploadedDocuments(formDataObj)),
+        formatApplicationDocuments(
+          application.documents,
+          new Set((application.certificates || []).map((c) => c.certificateUrl).filter(Boolean)),
+        ),
+        new Set((application.certificates || []).map((c) => c.certificateUrl).filter(Boolean)),
+      ),
     };
 
     return NextResponse.json(formatted, { status: 200 });
@@ -92,6 +123,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized: Authentication required." },
+        { status: 401 }
+      );
+    }
+
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
     const rateLimit = checkRateLimit(
@@ -121,6 +160,7 @@ export async function PATCH(
       where: { id },
       include: {
         documents: true,
+        certificates: true,
       },
     });
 
@@ -131,25 +171,60 @@ export async function PATCH(
       );
     }
 
+    // Ownership & authorization guard: user must be owner or staff
+    const currentUserId = (session.user as any)?.id;
+    const currentUserRole = (session.user as any)?.role;
+    const isStaff = currentUserRole === "ADMIN";
+    const isOwner = existingApplication.userId === currentUserId;
+
+    if (!isStaff && !isOwner) {
+      return NextResponse.json(
+        { error: "Forbidden: You do not have permission to modify this application." },
+        { status: 403 }
+      );
+    }
+
     if (payload.status) {
+      const isStatusUnchanged = payload.status === existingApplication.status;
+
+      const isClientAllowedTransition =
+        !isStaff &&
+        isOwner &&
+        (isStatusUnchanged ||
+          (payload.status === "UNDER_REVIEW" &&
+            (existingApplication.status === "PAYMENT_CONFIRMED" ||
+              existingApplication.status === "DOCUMENTS_PENDING" ||
+              existingApplication.status === "UNDER_REVIEW" ||
+              Boolean(existingApplication.queryText) ||
+              payload.queryStatus === "CLIENT_RESPONDED")));
+
+      if (!isStaff && !isClientAllowedTransition) {
+        return NextResponse.json(
+          { error: "Forbidden: Only compliance staff can update application filing status." },
+          { status: 403 }
+        );
+      }
+
       const existingFormData =
         (existingApplication.formData as Record<string, unknown>) || {};
       const mergedFormData = {
         ...existingFormData,
         ...((payload.formData || {}) as Record<string, unknown>),
       };
-      const uploadedDocs = {
-        ...formatStoredUploadMetadata(
-          extractUploadedDocuments(mergedFormData),
-        ),
-        ...formatApplicationDocuments(existingApplication.documents),
-      };
+      const existingCertUrls = new Set(
+        (existingApplication.certificates || []).map((c: any) => c.certificateUrl).filter(Boolean),
+      );
+      const uploadedDocs = mergeUploadedDocuments(
+        formatStoredUploadMetadata(extractUploadedDocuments(mergedFormData)),
+        formatApplicationDocuments(existingApplication.documents, existingCertUrls),
+        existingCertUrls,
+      );
       const docVerifications =
         (mergedFormData._docVerification as DocVerificationMap) || {};
 
       const blockers = getWorkflowBlockers({
         currentStatus: existingApplication.status,
-        targetStatus: payload.status,
+        targetStatus: payload.status as ApplicationStatus,
         formData: mergedFormData,
         uploadedDocs,
         docVerifications,
@@ -161,14 +236,61 @@ export async function PATCH(
       });
 
       if (blockers.length > 0) {
-        return NextResponse.json({ error: blockers[0] }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: "Status advancement blocked by statutory requirements.",
+            blockers,
+          },
+          { status: 400 },
+        );
       }
+
+      updateData.status = payload.status as ApplicationStatus;
     }
 
-    if (payload.status) updateData.status = payload.status as ApplicationStatus;
     if (payload.customerName) updateData.customerName = payload.customerName;
     if (payload.customerPhone) updateData.customerPhone = payload.customerPhone;
     if (payload.address) updateData.address = payload.address;
+
+    if (payload.query !== undefined) {
+      updateData.queryText = payload.query;
+    }
+
+    if (payload.assignedExecutive !== undefined) {
+      // Only staff can reassign executives
+      if (!isStaff) {
+        return NextResponse.json(
+          { error: "Forbidden: Only staff can reassign executives." },
+          { status: 403 }
+        );
+      }
+
+      if (
+        !payload.assignedExecutive ||
+        payload.assignedExecutive === "Unassigned"
+      ) {
+        updateData.assignedExecutiveId = null;
+      } else {
+        const cleanName = payload.assignedExecutive.split(",")[0].trim();
+        const slugName = cleanName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const execEmail = `${slugName}@complianceportalindia.com`;
+
+        // Atomically upsert executive user to prevent concurrency duplicate key exceptions
+        const execUser = await prisma.user.upsert({
+          where: { email: execEmail },
+          update: { name: cleanName },
+          create: {
+            id: `exec_${slugName}_${Date.now()}`,
+            name: cleanName,
+            email: execEmail,
+            role: "ADMIN",
+          },
+        });
+
+        updateData.assignedExecutiveId = execUser.id;
+      }
+    }
+
     if (payload.formData) {
       const existingFormData =
         (existingApplication.formData as Record<string, any>) || {};
@@ -181,64 +303,6 @@ export async function PATCH(
           : {}),
       };
     }
-    if (payload.query !== undefined) updateData.queryText = payload.query;
-
-    // Merge query workflow metadata into formData object
-    if (
-      payload.queryResponse !== undefined ||
-      payload.queryStatus !== undefined ||
-      payload.clientResponseFiles !== undefined ||
-      payload.queryHistory !== undefined
-    ) {
-      const existingApp = await prisma.application.findUnique({
-        where: { id },
-      });
-      const currentForm = (payload.formData ||
-        existingApp?.formData ||
-        {}) as Record<string, any>;
-      updateData.formData = {
-        ...currentForm,
-        ...(payload.queryResponse !== undefined && {
-          _queryResponse: payload.queryResponse,
-        }),
-        ...(payload.queryStatus !== undefined && {
-          _queryStatus: payload.queryStatus,
-        }),
-        ...(payload.clientResponseFiles !== undefined && {
-          _clientResponseFiles: payload.clientResponseFiles,
-        }),
-        ...(payload.queryHistory !== undefined && {
-          _queryHistory: payload.queryHistory,
-        }),
-      };
-    }
-
-    if (payload.assignedExecutive !== undefined) {
-      if (
-        !payload.assignedExecutive ||
-        payload.assignedExecutive === "Unassigned"
-      ) {
-        updateData.assignedExecutiveId = null;
-      } else {
-        const cleanName = payload.assignedExecutive.split(",")[0].trim();
-        const slugName = cleanName.toLowerCase().replace(/[^a-z0-9]/g, "");
-        const execEmail = `${slugName}@firstlease.com`;
-
-        // Atomically upsert executive user to prevent concurrency duplicate key exceptions
-        const execUser = await prisma.user.upsert({
-          where: { email: execEmail },
-          update: { name: cleanName },
-          create: {
-            id: `exec_${slugName}_${Date.now()}`,
-            name: cleanName,
-            email: execEmail,
-            role: "EXECUTIVE",
-          },
-        });
-
-        updateData.assignedExecutiveId = execUser.id;
-      }
-    }
 
     const uploadedDocs = (payload.formData?._uploadedDocs || {}) as Record<
       string,
@@ -249,6 +313,7 @@ export async function PATCH(
         url?: unknown;
       }
     >;
+
     const existingDocuments = await prisma.document.findMany({
       where: { applicationId: id },
       select: {
@@ -259,6 +324,7 @@ export async function PATCH(
     const existingUrls = new Set(
       existingDocuments.map((document) => document.fileUrl),
     );
+
     const documentsToCreate = Object.entries(uploadedDocs).flatMap(
       ([docName, file]) => {
         if (
@@ -275,7 +341,6 @@ export async function PATCH(
         return [
           {
             userId: existingApplication.userId,
-
             docName,
             fileName: file.name,
             fileUrl: file.url,
@@ -287,33 +352,34 @@ export async function PATCH(
       },
     );
 
-    // Persist issued certificates to IssuedCertificate database table
     if (
       payload.issuedCertificates &&
       Array.isArray(payload.issuedCertificates) &&
       payload.issuedCertificates.length > 0
     ) {
-      const existingCerts = await prisma.issuedCertificate.findMany({
-        where: { applicationId: id },
-        select: { certificateUrl: true },
-      });
-      const existingCertUrls = new Set(
-        existingCerts.map((c) => c.certificateUrl),
-      );
+      if (isStaff) {
+        const existingCerts = await prisma.issuedCertificate.findMany({
+          where: { applicationId: id },
+          select: { certificateUrl: true },
+        });
+        const existingCertUrls = new Set(
+          existingCerts.map((c) => c.certificateUrl),
+        );
 
-      for (const cert of payload.issuedCertificates) {
-        const certName = cert.certificateName || cert.name;
-        const certUrl = cert.certificateUrl || cert.url;
-        if (certName && certUrl && !existingCertUrls.has(certUrl)) {
-          await prisma.issuedCertificate.create({
-            data: {
-              applicationId: id,
-              userId: existingApplication.userId,
-              certificateName: certName,
-              certificateUrl: certUrl,
-            },
-          });
-          existingCertUrls.add(certUrl);
+        for (const cert of payload.issuedCertificates) {
+          const certName = cert.certificateName || cert.name;
+          const certUrl = cert.certificateUrl || cert.url;
+          if (certName && certUrl && !existingCertUrls.has(certUrl)) {
+            await prisma.issuedCertificate.create({
+              data: {
+                applicationId: id,
+                userId: existingApplication.userId,
+                certificateName: certName,
+                certificateUrl: certUrl,
+              },
+            });
+            existingCertUrls.add(certUrl);
+          }
         }
       }
     }
@@ -333,16 +399,6 @@ export async function PATCH(
         certificates: true,
       },
     });
-
-    console.log(
-  JSON.stringify(
-    {
-      documentsToCreate,
-    },
-    null,
-    2
-  )
-);
 
     // Invoke Notification Dispatcher for status changes or query alerts
     if (payload.query) {
@@ -437,12 +493,14 @@ export async function PATCH(
         updatedApp.assignedExecutiveId ||
         undefined,
       issuedCertificates,
-      uploadedDocs: {
-        ...formatStoredUploadMetadata(
-          extractUploadedDocuments(updatedFormDataObj),
+      uploadedDocs: mergeUploadedDocuments(
+        formatStoredUploadMetadata(extractUploadedDocuments(updatedFormDataObj)),
+        formatApplicationDocuments(
+          updatedApp.documents,
+          new Set(issuedCertificates.map((c: any) => c.certificateUrl || c.url).filter(Boolean)),
         ),
-        ...formatApplicationDocuments(updatedApp.documents),
-      },
+        new Set(issuedCertificates.map((c: any) => c.certificateUrl || c.url).filter(Boolean)),
+      ),
     };
 
     return NextResponse.json(formatted, { status: 200 });
@@ -456,14 +514,96 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || (session.user as any)?.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden: Admin privileges required to delete applications." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
 
+    // 1. Fetch application with all associated documents and certificates before deletion
+    const application = await prisma.application.findUnique({
+      where: { id },
+      include: {
+        documents: true,
+        certificates: true,
+      },
+    });
+
+    if (!application) {
+      return NextResponse.json(
+        { error: "Application not found." },
+        { status: 404 }
+      );
+    }
+
+    // 2. Collect all S3 keys and local file paths to clean up
+    const s3KeysToDelete = new Set<string>();
+    const localFilesToDelete = new Set<string>();
+
+    const recordFileUrl = (url?: string | null) => {
+      if (!url) return;
+      const s3Key = extractS3Key(url);
+      if (s3Key) {
+        s3KeysToDelete.add(s3Key);
+      }
+      if (url.startsWith("/storage/") || url.startsWith("storage/")) {
+        const cleanSub = url.replace(/^\/?storage\//, "");
+        const safeSub = path.normalize(cleanSub).replace(/^(\.\.[\/\\])+/, "");
+        localFilesToDelete.add(path.resolve(process.cwd(), "storage", safeSub));
+      }
+    };
+
+    // Documents
+    application.documents.forEach((doc) => recordFileUrl(doc.fileUrl));
+
+    // Certificates
+    application.certificates.forEach((cert) => recordFileUrl(cert.certificateUrl));
+
+    // Stored formData uploads
+    const storedUploads = extractUploadedDocuments((application.formData as Record<string, unknown>) || {});
+    Object.values(storedUploads).forEach((file: any) => {
+      if (file?.url) recordFileUrl(file.url);
+      if (file?.key) s3KeysToDelete.add(file.key);
+      if (file?.front?.url) recordFileUrl(file.front.url);
+      if (file?.back?.url) recordFileUrl(file.back.url);
+    });
+
+    // 3. Delete application in database (cascades Document relations in MySQL)
     await prisma.application.delete({
       where: { id },
     });
 
+    // 4. Clean up S3 objects and local storage files with error tracking
+    const s3Results: { key: string; success: boolean }[] = [];
+    for (const key of s3KeysToDelete) {
+      try {
+        const ok = await deleteFromS3Storage(key);
+        s3Results.push({ key, success: ok });
+      } catch (s3Err) {
+        console.error(`[APPLICATION S3 CLEANUP ERROR] Failed to delete S3 key ${key}:`, s3Err);
+        s3Results.push({ key, success: false });
+      }
+    }
+
+    for (const localPath of localFilesToDelete) {
+      await cleanupUploadedFile(localPath);
+    }
+
+    const cleanedCount = s3Results.filter((r) => r.success).length;
+    const failedCount = s3Results.filter((r) => !r.success).length;
+
+    console.log(`[APPLICATION DELETION COMPLETE]: App ${id} deleted. Cleaned ${cleanedCount} S3 files, ${failedCount} failed.`);
+
     return NextResponse.json(
-      { message: "Application deleted successfully" },
+      {
+        message: "Application deleted successfully",
+        cleanedS3Files: cleanedCount,
+        failedS3Files: failedCount,
+      },
       { status: 200 },
     );
   } catch (error) {

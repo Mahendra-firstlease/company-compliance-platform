@@ -51,7 +51,7 @@ export default function Drawer({
         {/* Main Content Drawer Panel */}
         <DrawerRoot.Content
           className={cn(
-            "fixed z-50 bg-white flex flex-col border border-slate-100 shadow-2xl transition-all duration-300 ease-out focus:outline-hidden",
+            "fixed z-50 bg-white flex flex-col border border-slate-100 shadow-2xl focus:outline-hidden",
             direction === "bottom" &&
               "inset-x-0 bottom-0 max-h-[92%] rounded-t-2xl",
             direction === "right" &&

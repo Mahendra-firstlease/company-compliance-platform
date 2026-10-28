@@ -112,7 +112,7 @@ export default function UserDocumentsVaultPage() {
           <div className="space-y-2">
             <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary-light0/20 border border-primary-border/30 text-primary text-xs font-bold uppercase tracking-wider">
               <Lock className="size-3.5 text-primary" />
-              <span>256-Bit Encrypted AWS S3 Vault</span>
+              <span>256-Bit Encrypted Secure Document Vault</span>
             </span>
 
             <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
@@ -325,7 +325,7 @@ export default function UserDocumentsVaultPage() {
                     <button
                       onClick={() =>
                         downloadFile(
-                          doc.fileUrl!,
+                          doc.rawUrl || doc.fileUrl!,
                           doc.source === "ADMIN"
                             ? certificateDownloadName(doc.serviceTitle, doc.docName)
                             : doc.fileName?.toLowerCase().endsWith(".pdf")
@@ -340,13 +340,12 @@ export default function UserDocumentsVaultPage() {
                     </button>
                   )}
 
-                  <Link href={`/applications/${doc.serviceSlug}`}>
-                    <button
-                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Open application workspace"
-                    >
-                      <ExternalLink className="size-4" />
-                    </button>
+                  <Link
+                    href={`/applications/${doc.serviceSlug}`}
+                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center justify-center"
+                    title="Open application workspace"
+                  >
+                    <ExternalLink className="size-4" />
                   </Link>
                 </div>
               </div>
@@ -422,11 +421,32 @@ export default function UserDocumentsVaultPage() {
                     className="size-full object-contain"
                   />
                 ) : (
-                  <iframe
-                    src={viewUrl(selectedDoc.fileUrl)}
-                    title={`Preview of ${selectedDoc.fileName}`}
-                    className="size-full border-0 bg-white"
-                  />
+                  <object
+                    data={viewUrl(selectedDoc.fileUrl)}
+                    type="application/pdf"
+                    className="size-full rounded"
+                  >
+                    <iframe
+                      src={viewUrl(selectedDoc.fileUrl)}
+                      title={`Preview of ${selectedDoc.fileName}`}
+                      className="size-full border-0 bg-white"
+                    >
+                      <div className="flex size-full flex-col items-center justify-center gap-2 p-6 text-center text-slate-300">
+                        <FileText className="size-8 text-primary" />
+                        <p className="text-xs font-semibold">
+                          Inline preview not supported by your browser.
+                        </p>
+                        <a
+                          href={viewUrl(selectedDoc.fileUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-primary underline"
+                        >
+                          Open document in new tab
+                        </a>
+                      </div>
+                    </iframe>
+                  </object>
                 )
               ) : (
                 <div className="flex size-full flex-col items-center justify-center gap-2 text-center text-slate-300">
@@ -479,23 +499,24 @@ export default function UserDocumentsVaultPage() {
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <Link href={`/applications/${selectedDoc.serviceSlug}`}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs font-bold"
-                >
-                  Open Workspace
-                </Button>
+              <Link
+                href={`/applications/${selectedDoc.serviceSlug}`}
+                className="inline-flex items-center justify-center h-9 px-4 py-2 text-xs font-bold text-primary bg-white border border-primary rounded-md hover:bg-primary-light transition-colors"
+              >
+                Open Workspace
               </Link>
               <div className="flex items-center gap-2">
                 {selectedDoc.fileUrl && (
                   <>
-                    <button
+                    <Button
                       type="button"
+                      variant="primary"
+                      size="sm"
+                      className="text-xs font-bold"
+                      leftIcon={<Download className="size-3.5" />}
                       onClick={() =>
                         downloadFile(
-                          selectedDoc.fileUrl!,
+                          selectedDoc.rawUrl || selectedDoc.fileUrl!,
                           selectedDoc.source === "ADMIN"
                             ? certificateDownloadName(
                                 selectedDoc.serviceTitle,
@@ -507,27 +528,15 @@ export default function UserDocumentsVaultPage() {
                         )
                       }
                     >
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="text-xs font-bold"
-                        leftIcon={<Download className="size-3.5" />}
-                      >
-                        Download
-                      </Button>
-                    </button>
+                      Download
+                    </Button>
                     <a
                       href={viewUrl(selectedDoc.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center h-9 px-4 py-2 text-xs font-bold text-primary bg-white border border-primary rounded-md hover:bg-primary-light transition-colors"
                     >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs font-bold"
-                      >
-                        Open full file
-                      </Button>
+                      Open full file
                     </a>
                   </>
                 )}

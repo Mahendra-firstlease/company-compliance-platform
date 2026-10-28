@@ -133,7 +133,7 @@ export async function sendContactInquiryEmail({
 
   // 2. Optional Admin / Sales Alert Email
   if (adminNotificationEmail || process.env.ADMIN_ALERT_EMAIL) {
-    const targetAdmin = adminNotificationEmail || process.env.ADMIN_ALERT_EMAIL || "leads@firstlease.in";
+    const targetAdmin = adminNotificationEmail || process.env.ADMIN_ALERT_EMAIL || "leads@complianceportalindia.com";
     const adminHtml = await render(
       ContactInquiryEmail({
         name,
@@ -247,7 +247,7 @@ export async function sendPasswordResetEmail({
   );
   return sendMail({
     to,
-    subject: `Reset Your FirstLease Password`,
+    subject: `Reset Your Compliance Portal India Password`,
     html,
   });
 }

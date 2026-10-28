@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -25,12 +26,24 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please provide both email and password.");
         }
 
+        const cleanEmail = credentials.email.toLowerCase().trim();
+
+        // 1. Brute-force throttling per login identifier (A04 & A07)
+        const rateLimitKey = `auth_login:${cleanEmail}`;
+        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.auth);
+
+        if (!rateLimit.success) {
+          console.warn(`[Security Alert] Rate limit exceeded on login for: ${cleanEmail}`);
+          throw new Error("Too many failed login attempts. Please wait 15 minutes before trying again.");
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
+          where: { email: cleanEmail },
         });
 
         if (!user || !user.passwordHash) {
-          throw new Error("No user found with this email address.");
+          console.warn(`[Security Audit] Failed login attempt for non-existent or passwordless account: ${cleanEmail}`);
+          throw new Error("Invalid email or password. Please try again.");
         }
 
         const isValidPassword = await bcrypt.compare(
@@ -39,8 +52,11 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isValidPassword) {
-          throw new Error("Invalid password. Please try again.");
+          console.warn(`[Security Audit] Failed password attempt for account: ${cleanEmail}`);
+          throw new Error("Invalid email or password. Please try again.");
         }
+
+        console.log(`[Security Audit] Successful authentication for user: ${user.email} (${user.role})`);
 
         return {
           id: user.id,

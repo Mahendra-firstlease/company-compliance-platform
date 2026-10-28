@@ -39,8 +39,16 @@ interface MobileNavProps {
 export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [dynamicServices, setDynamicServices] = useState<DynamicMobileServiceLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const servicesItem = items.find((i) => i.label === "Services" || i.mega);
+  const fallbackLinks: DynamicMobileServiceLink[] = (servicesItem?.links || []).map((l) => ({
+    label: l.label,
+    href: l.href,
+    description: l.description || l.label,
+  }));
+
+  const [dynamicServices, setDynamicServices] = useState<DynamicMobileServiceLink[]>(fallbackLinks);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch dynamic services from MySQL backend API for mobile menu (matching Desktop MegaMenu)
   useEffect(() => {
@@ -55,11 +63,16 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
               description: s.shortDescription || s.title,
             }))
           );
-        } else if (active) {
-          setDynamicServices([]);
+        } else if (active && fallbackLinks.length > 0) {
+          setDynamicServices(fallbackLinks);
         }
       })
-      .catch((err) => console.error("Mobile nav services error:", err))
+      .catch((err) => {
+        console.warn("Mobile nav services notice (using catalog fallback):", err);
+        if (active && fallbackLinks.length > 0) {
+          setDynamicServices(fallbackLinks);
+        }
+      })
       .finally(() => {
         if (active) setIsLoading(false);
       });
@@ -195,10 +208,10 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                               {/* Accordion Smooth Animated Transition Panel */}
                               <DisclosurePanel
                                 transition
-                                className="pl-2 pb-2 transition-all duration-300 ease-in-out data-closed:-translate-y-2 data-closed:opacity-0 overflow-hidden"
+                                className="pl-2 pb-2 transition-[opacity,transform] duration-300 ease-in-out data-closed:-translate-y-2 data-closed:opacity-0 overflow-hidden"
                               >
                                 <div className="space-y-1.5 my-2 pl-2 border-l-2 border-slate-100">
-                                  {isLoading ? (
+                                  {isLoading && dynamicServices.length === 0 ? (
                                     <MobileMenuSkeleton />
                                   ) : dynamicServices.length > 0 ? (
                                     dynamicServices.map((link: DynamicMobileServiceLink) => (
@@ -258,6 +271,8 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                     <div className="space-y-2">
                       <Link
                         href="/dashboard"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={() => setOpen(false)}
                         className="block w-full text-center font-bold text-xs py-2.5 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs"
                       >

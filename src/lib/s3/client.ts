@@ -7,7 +7,16 @@ export function getS3Config() {
   const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
   const isProduction = process.env.NODE_ENV === "production";
 
-  const hasCredentials = Boolean(bucketName && accessKeyId && secretAccessKey);
+  const isPlaceholderKey =
+    accessKeyId?.includes("your_aws_access_key") ||
+    secretAccessKey?.includes("your_aws_secret");
+
+  const hasCredentials = Boolean(
+    bucketName &&
+    accessKeyId &&
+    secretAccessKey &&
+    !isPlaceholderKey
+  );
 
   if (isProduction && !hasCredentials) {
     throw new Error(

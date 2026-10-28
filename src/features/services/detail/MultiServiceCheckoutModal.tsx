@@ -5,7 +5,7 @@ import Button from "@/components/common/Button";
 import FormGroup from "@/components/forms/FormGroup";
 import Input from "@/components/forms/Input";
 import { Service } from "@/types/services";
-import { ShieldCheck, ShoppingBag, Trash2, Lock, AlertCircle, Loader2 } from "lucide-react";
+import { ShieldCheck, Trash2, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { saveApplication } from "@/lib/applications";
 import { useRouter } from "next/navigation";
@@ -50,26 +50,26 @@ export default function MultiServiceCheckoutModal({
 
   if (isAdmin) {
     return (
-      <div className="p-4 sm:p-6 text-center space-y-4 bg-amber-50/70 rounded-lg border border-amber-200">
-        <div className="size-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center">
-          <AlertCircle size={24} />
+      <div className="py-2 text-center space-y-4">
+        <div className="size-11 rounded-full bg-amber-50 text-amber-700 mx-auto flex items-center justify-center border border-amber-200">
+          <AlertCircle size={20} />
         </div>
-        <div className="space-y-1">
-          <h3 className="font-extrabold text-slate-900 text-base">
+        <div className="space-y-1.5 max-w-sm mx-auto">
+          <h3 className="font-semibold text-slate-900 text-sm">
             Admin Account Restriction
           </h3>
-          <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
-            Admin accounts cannot purchase client service packages. Please log in with a customer account to purchase services, or access the Admin Console to manage filings.
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Admin accounts cannot purchase statutory client services. Please sign in with a customer account or proceed to the Admin Console.
           </p>
         </div>
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2 w-full">
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onCancel}
-            className="text-xs font-bold w-full sm:w-auto cursor-pointer"
+            className="w-full sm:w-auto text-xs"
           >
-            Close Modal
+            Close
           </Button>
           <Button
             variant="primary"
@@ -78,7 +78,7 @@ export default function MultiServiceCheckoutModal({
               onCancel();
               router.push("/admin/applications");
             }}
-            className="text-xs font-bold bg-primary hover:bg-primary/90 text-white w-full sm:w-auto cursor-pointer"
+            className="w-full sm:w-auto text-xs bg-primary text-white"
           >
             Go to Admin Console
           </Button>
@@ -123,8 +123,11 @@ export default function MultiServiceCheckoutModal({
     setLastError(null);
 
     notify.loading({
-      title: "Initiating Batch Payment...",
-      description: "Preparing order for " + servicesList.length + " compliance services.",
+      title: servicesList.length === 1 ? "Connecting to Razorpay..." : "Initiating Batch Payment...",
+      description:
+        servicesList.length === 1
+          ? `Preparing checkout for ${servicesList[0].title}.`
+          : `Preparing order for ${servicesList.length} compliance services.`,
     });
 
     try {
@@ -173,7 +176,10 @@ export default function MultiServiceCheckoutModal({
         amount,
         currency: currency || "INR",
         name: "Compliance Platform India",
-        description: `Bundled Package Payment (${servicesList.length} Services)`,
+        description:
+          servicesList.length === 1
+            ? `Statutory Filing: ${servicesList[0].title}`
+            : `Bundled Package Payment (${servicesList.length} Services)`,
         order_id,
         prefill: {
           name: contactName,
@@ -185,8 +191,8 @@ export default function MultiServiceCheckoutModal({
         },
         handler: async (response: { razorpay_order_id?: string; razorpay_payment_id?: string; razorpay_signature?: string }) => {
           notify.loading({
-            title: "Verifying Batch Signature...",
-            description: "Updating statutory application statuses.",
+            title: "Verifying Payment...",
+            description: "Updating statutory application status.",
           });
 
           try {
@@ -227,14 +233,20 @@ export default function MultiServiceCheckoutModal({
             });
 
             notify.success({
-              title: "Package Payment Confirmed! 🎉",
-              description: `Initiated filings for ${servicesList.length} services. Payment ID: ${response.razorpay_payment_id}`,
+              title: "Payment Confirmed! 🎉",
+              description:
+                servicesList.length === 1
+                  ? `Initiated filing for ${servicesList[0].title}. Payment ID: ${response.razorpay_payment_id}`
+                  : `Initiated filings for ${servicesList.length} services. Payment ID: ${response.razorpay_payment_id}`,
             });
           } catch (err: unknown) {
             console.error("Batch payment handler warning:", err);
             notify.success({
-              title: "Package Payment Confirmed! 🎉",
-              description: `Initiated filings for ${servicesList.length} services. Navigating to dashboard...`,
+              title: "Payment Confirmed! 🎉",
+              description:
+                servicesList.length === 1
+                  ? `Initiated filing for ${servicesList[0].title}. Navigating to dashboard...`
+                  : `Initiated filings for ${servicesList.length} services. Navigating to dashboard...`,
             });
           } finally {
             setIsSubmitting(false);
@@ -298,137 +310,144 @@ export default function MultiServiceCheckoutModal({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-      <div className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200/80">
-        <div className="flex items-start gap-3">
-          <div className="size-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-            <ShoppingBag className="size-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-800">
-              Combined Statutory Checkout ({servicesList.length} Services)
-            </h3>
-            <p className="text-xs text-slate-500">
-              Single invoice and bundled filing initiation for selected compliance services.
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* Error Alert Banner (Shown after payment error/cancellation) */}
       {lastError && (
-        <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2.5 animate-in fade-in duration-200">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800 flex items-start gap-2.5">
           <AlertCircle className="size-4 text-red-600 shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <p className="font-bold text-red-900">Batch Payment Attempt Unsuccessful</p>
-            <p className="text-[11px] leading-relaxed text-red-700">{lastError}</p>
-            <p className="text-[10px] font-semibold text-red-600 mt-1">
-              💡 Tip: Use a domestic Indian UPI (success@razorpay) or RuPay Card (4585 0000 0000 0001) for instant test checkout.
+          <div className="space-y-1">
+            <p className="font-semibold text-red-950">
+              {servicesList.length === 1 ? "Payment Incomplete" : "Batch Payment Incomplete"}
+            </p>
+            <p className="text-xs leading-relaxed text-red-800">{lastError}</p>
+            <p className="text-xs text-red-700">
+              💡 For test checkouts, you can use domestic UPI (success@razorpay) or RuPay Card (4585 0000 0000 0001).
             </p>
           </div>
         </div>
       )}
 
-      {/* Selected Items List */}
-      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Package Summary ({servicesList.length} Services):
+      {/* Order Summary Strip */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+        <div className="flex items-center justify-between text-xs text-slate-500 pb-2 border-b border-slate-200/80">
+          <span className="font-medium text-slate-700">
+            {servicesList.length > 1 ? `Selected Services (${servicesList.length})` : "Order Summary"}
           </span>
-          <span className="text-xs font-bold text-primary">Total: ₹{totalFee}</span>
+          <span>Statutory & portal fees included</span>
         </div>
 
-        {servicesList.map((s) => (
-          <div
-            key={s.id || s.slug}
-            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 bg-white border border-slate-200 rounded-lg text-xs"
-          >
-            <div className="min-w-0">
-              <p className="font-bold text-slate-800 break-all">{s.title}</p>
-              <p className="text-[11px] text-slate-400">Target Time: {s.duration}</p>
+        <div className="space-y-2.5 max-h-48 overflow-y-auto pr-0.5">
+          {servicesList.map((s) => (
+            <div
+              key={s.id || s.slug}
+              className="flex items-center justify-between gap-3 text-xs"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-slate-900 truncate">{s.title}</p>
+                {s.duration && (
+                  <p className="text-xs text-slate-500 mt-0.5">Turnaround: {s.duration}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="font-semibold text-slate-900">₹{s.price.toLocaleString("en-IN")}</span>
+                {servicesList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(s.slug || s.id)}
+                    className="text-slate-500 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-slate-200/60 cursor-pointer"
+                    title="Remove from package"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex items-center justify-between sm:justify-end gap-3">
-              <span className="font-bold text-slate-900">₹{s.price}</span>
-              <button
-                type="button"
-                onClick={() => handleRemoveItem(s.slug || s.id)}
-                className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors p-1.5 cursor-pointer"
-                title="Remove from package"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Pricing Summary Block */}
-      <div className="p-3 sm:p-4 bg-primary/10 rounded-lg border border-primary/20 space-y-1">
-        <div className="flex justify-between items-center text-xs text-slate-600 gap-2">
-          <span>Subtotal ({servicesList.length} services):</span>
-          <span className="font-bold text-slate-900">₹{totalFee}</span>
+          ))}
         </div>
-        <div className="flex justify-between items-center text-sm font-black text-primary pt-1 border-t border-primary/20">
-          <span>Total Investment:</span>
-          <span className="text-lg font-bold text-primary">₹{totalFee}</span>
+
+        <div className="pt-2.5 border-t border-slate-200/80 flex items-baseline justify-between">
+          <span className="text-xs font-semibold text-slate-700">Total Payable</span>
+          <span className="text-base font-bold text-slate-900">
+            ₹{totalFee.toLocaleString("en-IN")}
+          </span>
         </div>
       </div>
 
       {/* Customer Contact Details */}
-      <div className="space-y-3 sm:space-y-4 pt-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          Filing Contact Details:
-        </span>
+      <div className="space-y-3">
+        <h4 className="text-xs font-semibold text-slate-700">
+          APPLICANT & CONTACT DETAILS
+        </h4>
 
-        <FormGroup label="Authorized Contact Person" required>
-          <Input
-            value={contactName}
-            onChange={(e) => setContactName(e.target.value)}
-            placeholder="Full Name"
-            required
-          />
-        </FormGroup>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormGroup label="Contact Person" required>
+            <Input
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              placeholder="Enter full name"
+              required
+            />
+          </FormGroup>
 
-        <FormGroup label="Contact Phone Number" required>
-          <Input
-            value={contactPhone}
-            onChange={(e) => setContactPhone(e.target.value)}
-            placeholder="+91 9876543210"
-            required
-          />
-        </FormGroup>
+          <FormGroup label="Contact Number" required>
+            <Input
+              type="tel"
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder=" Enter mobile"
+              required
+            />
+          </FormGroup>
+        </div>
 
-        <FormGroup label="Registered Business Address (Optional)">
+        <FormGroup label="Principal Place of Business">
           <Input
             value={businessAddress}
             onChange={(e) => setBusinessAddress(e.target.value)}
-            placeholder="Street address, City, Pincode"
+            placeholder="Street, city, state, PIN code"
           />
         </FormGroup>
+      </div>
 
-        {/* Security badge */}
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <Lock className="size-3.5 text-emerald-600 shrink-0" />
-          <span>256-Bit SSL Encrypted Statutory Razorpay Gateway</span>
-        </div>
+      {/* Security footnote */}
+      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 pt-1">
+        <Lock className="size-3.5 text-emerald-600 shrink-0" />
+        <span>Secure payment powered by Razorpay </span>
       </div>
 
       {/* Action Footer */}
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
-        <Button type="button" size={'sm'} variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-slate-100">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="w-full sm:w-auto"
+        >
           Cancel
         </Button>
 
-        <Button size={'sm'} type="submit" variant="primary" disabled={isSubmitting || servicesList.length === 0} className="flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto">
+        <Button
+          size="sm"
+          type="submit"
+          variant="primary"
+          disabled={isSubmitting || servicesList.length === 0}
+          className="flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto min-w-[130px]"
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              <span>Launching Razorpay...</span>
+              <span>Connecting...</span>
             </>
           ) : (
             <>
               <ShieldCheck className="size-4" />
-              <span>{lastError ? `Retry Payment (₹${totalFee})` : `Pay (₹${totalFee})`}</span>
+              <span>
+                {lastError
+                  ? `Retry Payment (₹${totalFee.toLocaleString("en-IN")})`
+                  : `Pay ₹${totalFee.toLocaleString("en-IN")}`}
+              </span>
             </>
           )}
         </Button>

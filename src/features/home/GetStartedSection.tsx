@@ -4,11 +4,14 @@ import Container from "@/components/common/Container";
 
 export default function GetStartedSection() {
   return (
-    <Section className=" overflow-x-hidden border-t border-slate-100 bg-primary-light py-12 md:py-20">
+    <Section className="overflow-x-hidden border-t border-slate-100 bg-primary-light py-12 md:py-20">
       <Container className="flex w-full flex-col items-center gap-10">
 
         {/* Banner bracket */}
-        <div className="relative flex w-[calc(100%+2rem)] -mx-4 sm:w-[calc(100%+3rem)] sm:-mx-6 flex-col items-center justify-center text-center rounded-2xl py-20 md:py-24 px-4 bg-[url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/banners/image-1.png')] bg-cover bg-center bg-no-repeat overflow-hidden">
+        <div
+          className="relative flex w-[calc(100%+2rem)] -mx-4 sm:w-[calc(100%+3rem)] sm:-mx-6 flex-col items-center justify-center text-center rounded-2xl py-20 md:py-24 px-4 bg-cover bg-center bg-no-repeat overflow-hidden"
+          style={{ backgroundImage: "url('/images/home/get-started-banner.png')" }}
+        >
 
           {/* Primary-color transparent overlay */}
           <div className="absolute inset-0 rounded-2xl bg-[#207574]/40" />
@@ -32,8 +35,8 @@ export default function GetStartedSection() {
           </div>
         </div>
 
-
       </Container>
     </Section>
   );
 }
+

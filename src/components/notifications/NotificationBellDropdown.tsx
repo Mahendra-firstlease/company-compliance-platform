@@ -117,7 +117,7 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
       >
         <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 sm:top-1 sm:right-1 size-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse shadow-2xs">
+          <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-emerald-700 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-xs">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

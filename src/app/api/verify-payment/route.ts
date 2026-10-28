@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { verifyPaymentSchema } from "@/schemas/api-schemas";
 import { handleApiError, handleValidationError } from "@/lib/api-response";
@@ -8,6 +10,19 @@ import { sendPaymentReceiptEmail } from "@/lib/emailService";
 
 export async function POST(req: Request) {
   try {
+    // 0. Authentication Guard (A01 Broken Access Control Fix)
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized: Authentication required." },
+        { status: 401 }
+      );
+    }
+
+    const sessionUserId = (session.user as any)?.id;
+    const sessionUserRole = (session.user as any)?.role;
+    const isAdmin = sessionUserRole === "ADMIN";
+
     // 1. Rate Limiting Check
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
     const rateLimit = checkRateLimit(
@@ -30,7 +45,7 @@ export async function POST(req: Request) {
 
     if (!keySecret) {
       return NextResponse.json(
-        { error: "Server Configuration Error: Razorpay credentials missing." },
+        { error: "Payment verification service is temporarily unavailable." },
         { status: 500 },
       );
     }
@@ -74,8 +89,30 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5. Update Database Records Atomically
-    if (applicationIds.length > 0 && userId) {
+    // 5. Update Database Records Atomically (with strict ownership verification)
+    const effectiveUserId = isAdmin && userId ? userId : sessionUserId;
+
+    if (applicationIds.length > 0 && effectiveUserId) {
+      // Non-admins can only verify payments for applications they own
+      if (!isAdmin) {
+        const ownedCount = await prisma.application.count({
+          where: {
+            id: { in: applicationIds },
+            userId: sessionUserId,
+          },
+        });
+
+        if (ownedCount !== applicationIds.length) {
+          return NextResponse.json(
+            {
+              error:
+                "Forbidden: You do not have permission to verify payments for one or more specified applications.",
+            },
+            { status: 403 }
+          );
+        }
+      }
+
       const perAppAmount = amount > 0 ? amount / applicationIds.length : amount;
 
       await prisma.$transaction(async (tx) => {
@@ -88,7 +125,7 @@ export async function POST(req: Request) {
           await tx.payment.create({
             data: {
               applicationId: appId,
-              userId,
+              userId: effectiveUserId,
               amount: perAppAmount,
               currency: "INR",
               paymentMethod: "RAZORPAY",
@@ -102,7 +139,7 @@ export async function POST(req: Request) {
       // Send automated React Email tax payment receipt asynchronously
       (async () => {
         try {
-          const user = await prisma.user.findUnique({ where: { id: userId } });
+          const user = await prisma.user.findUnique({ where: { id: effectiveUserId } });
           const firstApp = await prisma.application.findUnique({ where: { id: applicationIds[0] } });
           if (user?.email) {
             await sendPaymentReceiptEmail({

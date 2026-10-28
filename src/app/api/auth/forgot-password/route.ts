@@ -2,9 +2,21 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/lib/emailService";
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import siteConfig from "@/config/site";
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(`forgot_pw:${ip}`, RATE_LIMIT_CONFIGS.auth);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too many password reset requests. Please wait a few minutes." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { email } = body;
 
@@ -39,12 +51,26 @@ export async function POST(request: Request) {
         },
       });
 
-      // 4. Construct reset link URL
-      const origin =
-        request.headers.get("origin") ||
+      // 4. Construct reset link URL using trusted application domain to prevent host poisoning
+      const configuredBase =
         process.env.NEXT_AUTH_URL ||
+        process.env.NEXTAUTH_URL ||
+        siteConfig.url ||
         "http://localhost:3000";
-      const resetUrl = `${origin}/reset-password?token=${token}`;
+
+      let baseDomain = configuredBase.replace(/\/+$/, "");
+      const originHeader = request.headers.get("origin");
+      if (process.env.NODE_ENV === "development" && originHeader) {
+        try {
+          const originUrl = new URL(originHeader);
+          if (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1") {
+            baseDomain = originHeader.replace(/\/+$/, "");
+          }
+        } catch {
+          // keep configuredBase
+        }
+      }
+      const resetUrl = `${baseDomain}/reset-password?token=${token}`;
 
       // 5. Send automated React Email asynchronously
       sendPasswordResetEmail({

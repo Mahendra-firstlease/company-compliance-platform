@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { sendEmailViaGraph, verifyGraphMailbox, debugGraphToken, checkGraphConfig } from "@/lib/graph/email";
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || (session.user as any).role !== "ADMIN") {
+    return NextResponse.json(
+      { error: "Access denied. Admin privileges required." },
+      { status: 403 }
+    );
+  }
+
   const config = checkGraphConfig();
   const tokenDebug = await debugGraphToken();
   const mailboxCheck = await verifyGraphMailbox();
@@ -16,6 +26,14 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || (session.user as any).role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Access denied. Admin privileges required." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const targetEmail = body.to || "mahendrasinghddnuk@gmail.com";
     const subject = body.subject || "Microsoft Graph Test Email";

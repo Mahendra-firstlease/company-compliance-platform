@@ -1,9 +1,8 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import siteConfig from "@/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://firstlease.com";
-
   const staticRoutes = [
     "",
     "/about",
@@ -13,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/login",
     "/register",
   ].map((route) => ({
-    url: `${baseUrl}${route}`,
+    url: siteConfig.getAbsoluteUrl(route),
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
     priority: route === "" ? 1.0 : 0.8,
@@ -27,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     serviceRoutes = services.map((service) => ({
-      url: `${baseUrl}/services/${service.slug}`,
+      url: siteConfig.getAbsoluteUrl(`/services/${service.slug}`),
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
       priority: 0.9,

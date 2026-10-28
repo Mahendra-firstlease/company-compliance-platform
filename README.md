@@ -1,4 +1,4 @@
-# 🛡️ FirstLease - Corporate Compliance Platform
+# 🛡️ Compliance Portal India - Corporate Compliance Platform
 
 A corporate compliance and statutory filing web application built for Indian businesses.
 
@@ -6,7 +6,7 @@ A corporate compliance and statutory filing web application built for Indian bus
 
 ## ⚡ Quick Project Summary
 
-FirstLease Compliance Platform simplifies corporate registrations, GST filings, trademark applications, and statutory annual compliances. It provides a seamless user onboarding experience, Razorpay payments, real-time filing progress tracking, and a dedicated Backoffice Admin Management Console.
+Compliance Portal India simplifies corporate registrations, GST filings, trademark applications, and statutory annual compliances. It provides a seamless user onboarding experience, Razorpay payments, real-time filing progress tracking, and a dedicated Backoffice Admin Management Console.
 
 ---
 
@@ -42,6 +42,6 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## 🔐 Default Admin Account
 
-* **Email:** `admin@firstlease.com`
+* **Email:** `admin@complianceportalindia.com`
 * **Password:** `Admin@12345`
 * **Admin Portal:** `/admin`

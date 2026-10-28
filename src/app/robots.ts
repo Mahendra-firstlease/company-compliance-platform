@@ -1,14 +1,13 @@
 import { MetadataRoute } from "next";
+import siteConfig from "@/config/site";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://firstlease.com";
-
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: ["/admin/", "/dashboard/", "/api/"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: siteConfig.getAbsoluteUrl("/sitemap.xml"),
   };
 }

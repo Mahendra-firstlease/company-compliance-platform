@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     }
 
     const userRole = (session.user as any)?.role || "CLIENT";
-    if (userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+    if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin privilege required." }, { status: 403 });
     }
 
@@ -94,10 +94,8 @@ export async function GET(request: Request) {
         userEmail: doc.user?.email || "N/A",
         docName: doc.docName,
         fileName: doc.fileName,
-        fileUrl: doc.fileUrl,
-        viewUrl: doc.fileUrl.startsWith("/storage/")
-          ? `/api/documents/${doc.id}`
-          : doc.fileUrl,
+        fileUrl: `/api/documents/${doc.id}`,
+        viewUrl: `/api/documents/${doc.id}`,
         fileSize: doc.fileSize,
         fileType: doc.fileType,
         status: doc.status || "PENDING",
@@ -109,6 +107,7 @@ export async function GET(request: Request) {
       app.documents.forEach((doc) => {
         if (!seenIds.has(doc.id)) {
           seenIds.add(doc.id);
+          if (doc.fileUrl) seenUrls.add(doc.fileUrl);
           documentList.push({
             id: doc.id,
             applicationId: app.id,
@@ -119,10 +118,8 @@ export async function GET(request: Request) {
             userEmail: app.user?.email || "N/A",
             docName: doc.docName,
             fileName: doc.fileName,
-            fileUrl: doc.fileUrl,
-            viewUrl: doc.fileUrl.startsWith("/storage/")
-              ? `/api/documents/${doc.id}`
-              : doc.fileUrl,
+            fileUrl: `/api/documents/${doc.id}`,
+            viewUrl: `/api/documents/${doc.id}`,
             fileSize: doc.fileSize,
             fileType: doc.fileType,
             status: doc.status || "PENDING",
@@ -141,6 +138,7 @@ export async function GET(request: Request) {
         if (!file.url || seenUrls.has(file.url)) return;
 
         seenUrls.add(file.url);
+        const proxyViewUrl = `/api/download?url=${encodeURIComponent(file.url)}&filename=${encodeURIComponent(file.name)}&disposition=inline`;
         documentList.push({
           id: `stored-${app.id}-${docName}`,
           applicationId: app.id,
@@ -151,8 +149,8 @@ export async function GET(request: Request) {
           userEmail: app.user?.email || "N/A",
           docName,
           fileName: file.name,
-          fileUrl: file.url,
-          viewUrl: file.url,
+          fileUrl: proxyViewUrl,
+          viewUrl: proxyViewUrl,
           fileSize: file.size,
           fileType: file.type,
           status: "PENDING_REVIEW",

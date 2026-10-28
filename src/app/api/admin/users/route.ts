@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
 
-    if (!session || (userRole !== "ADMIN" && userRole !== "EXECUTIVE")) {
+    if (!session || userRole !== "ADMIN") {
       return NextResponse.json({ error: "Access denied. Admin authorization required." }, { status: 403 });
     }
 
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     const whereClause: any = {};
 
-    if (roleFilter && ["CLIENT", "ADMIN", "EXECUTIVE"].includes(roleFilter.toUpperCase())) {
+    if (roleFilter && ["CLIENT", "ADMIN"].includes(roleFilter.toUpperCase())) {
       whereClause.role = roleFilter.toUpperCase();
     }
 

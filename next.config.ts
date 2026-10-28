@@ -1,13 +1,32 @@
 import type { NextConfig } from "next";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const cspHeader = `
+  default-src 'self';
+  script-src 'self' ${isProduction ? "" : "'unsafe-eval'"} 'unsafe-inline' https://checkout.razorpay.com;
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob: https://assets.prebuiltui.com https://images.unsplash.com https://*.amazonaws.com;
+  font-src 'self' data:;
+  connect-src 'self' ws: wss: https://api.razorpay.com https://lumberjack.razorpay.com https://*.amazonaws.com https://login.microsoftonline.com;
+  frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.amazonaws.com blob: data:;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'self';
+  ${isProduction ? "upgrade-insecure-requests;" : ""}
+`
+  .replace(/\s{2,}/g, " ")
+  .trim();
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
   allowedDevOrigins: [
     "http://localhost:3000",
     "https://assets.prebuiltui.com",
     "192.168.1.15",
-    "192.168.1.5"
-
+    "192.168.1.5",
   ],
   images: {
     formats: ["image/avif", "image/webp"],
@@ -32,12 +51,16 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: [
           {
+            key: "Content-Security-Policy",
+            value: cspHeader,
+          },
+          {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           {
             key: "Referrer-Policy",

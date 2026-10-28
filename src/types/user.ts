@@ -2,7 +2,7 @@
  * User & Business Profile Type Definitions
  */
 
-export type UserRole = "CLIENT" | "EXECUTIVE" | "ADMIN";
+export type UserRole = "CLIENT" | "ADMIN";
 
 export interface UserProfile {
   id: string;

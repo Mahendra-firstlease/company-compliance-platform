@@ -2,24 +2,40 @@
 
 import React from "react";
 import { FormFieldConfig } from "@/types/form-config.types";
-import { Control, Controller, FieldErrors } from "react-hook-form";
+import { Control, Controller, FieldErrors, UseFormSetError, UseFormClearErrors } from "react-hook-form";
 import FormGroup from "@/components/forms/FormGroup";
 import Input from "@/components/forms/Input";
 import Textarea from "@/components/forms/Textarea";
 import Checkbox from "@/components/forms/Checkbox";
 import { UISelect as Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/forms/Select";
 import DynamicUpload from "./DynamicUpload";
+import { AlertTriangle } from "lucide-react";
+import { getInputValidationProps } from "../validators/resolve-field-validation";
+import { cleanErrorMessage } from "../utils/flatten-form-errors";
 
 interface DynamicFieldProps {
   field: FormFieldConfig;
   control: Control<any>;
   errors: FieldErrors<any>;
   disabled?: boolean;
+  applicationId?: string;
+  setError?: UseFormSetError<any>;
+  clearErrors?: UseFormClearErrors<any>;
+  fieldQuery?: { message?: string; reason?: string; status?: string } | string;
 }
 
-export default function DynamicField({ field, control, errors, disabled = false }: DynamicFieldProps) {
+export default function DynamicField({
+  field,
+  control,
+  errors,
+  disabled = false,
+  applicationId,
+  setError,
+  clearErrors,
+  fieldQuery,
+}: DynamicFieldProps) {
   const fieldError = errors[field.id];
-  const errorMessage =
+  const rawErrorMessage =
     (fieldError?.message as string | undefined) ||
     (field.type === "front-back-file" &&
       typeof fieldError === "object" &&
@@ -29,9 +45,19 @@ export default function DynamicField({ field, control, errors, disabled = false 
         (fieldError as { backUrl?: { message?: string } }).backUrl?.message,
       ].find(Boolean)) ||
     undefined;
-  const isFieldDisabled = disabled || field.disabled;
+  const errorMessage = rawErrorMessage
+    ? cleanErrorMessage(field.label || field.id, rawErrorMessage)
+    : undefined;
+  const queryMsg =
+    typeof fieldQuery === "string"
+      ? fieldQuery
+      : fieldQuery?.message || (fieldQuery as any)?.reason;
 
-  switch (field.type) {
+  const isFieldDisabled = (disabled && !queryMsg) || field.disabled;
+  const inputValidation = getInputValidationProps(field);
+
+  const fieldElement = (() => {
+    switch (field.type) {
     case "text":
     case "email":
     case "phone":
@@ -49,6 +75,11 @@ export default function DynamicField({ field, control, errors, disabled = false 
                 placeholder={field.placeholder}
                 disabled={isFieldDisabled}
                 readOnly={field.readOnly}
+                minLength={typeof inputValidation.minLength === "number" ? inputValidation.minLength : undefined}
+                maxLength={typeof inputValidation.maxLength === "number" ? inputValidation.maxLength : undefined}
+                pattern={typeof inputValidation.pattern === "string" ? inputValidation.pattern : undefined}
+                min={typeof inputValidation.min === "number" ? inputValidation.min : undefined}
+                max={typeof inputValidation.max === "number" ? inputValidation.max : undefined}
               />
             </FormGroup>
           )}
@@ -69,6 +100,8 @@ export default function DynamicField({ field, control, errors, disabled = false 
                 placeholder={field.placeholder}
                 disabled={isFieldDisabled}
                 rows={3}
+                minLength={typeof inputValidation.minLength === "number" ? inputValidation.minLength : undefined}
+                maxLength={typeof inputValidation.maxLength === "number" ? inputValidation.maxLength : undefined}
               />
             </FormGroup>
           )}
@@ -89,6 +122,8 @@ export default function DynamicField({ field, control, errors, disabled = false 
                 type="date"
                 disabled={isFieldDisabled}
                 readOnly={field.readOnly}
+                min={typeof inputValidation.minDate === "string" ? inputValidation.minDate : undefined}
+                max={typeof inputValidation.maxDate === "string" ? inputValidation.maxDate : undefined}
               />
             </FormGroup>
           )}
@@ -155,6 +190,7 @@ export default function DynamicField({ field, control, errors, disabled = false 
             <DynamicUpload
               id={field.id}
               label={field.label}
+              description={field.description}
               type={field.type}
               uploadRule={"uploadRule" in field ? field.uploadRule : undefined}
               frontRule={"frontRule" in field ? field.frontRule : undefined}
@@ -163,6 +199,14 @@ export default function DynamicField({ field, control, errors, disabled = false 
               onChange={controllerField.onChange}
               disabled={isFieldDisabled}
               error={errorMessage}
+              applicationId={applicationId}
+              onUploadError={(msg) => {
+                if (msg) {
+                  setError?.(field.id as any, { type: "custom", message: msg });
+                } else {
+                  clearErrors?.(field.id as any);
+                }
+              }}
             />
           )}
         />
@@ -171,5 +215,27 @@ export default function DynamicField({ field, control, errors, disabled = false 
 
     default:
       return null;
+    }
+  })();
+
+  if (!queryMsg) {
+    return fieldElement;
   }
+
+  return (
+    <div
+      data-queried-field="true"
+      data-field-id={field.id}
+      className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/40 ring-2 ring-amber-400 space-y-2.5 transition-all"
+    >
+      <div className="flex items-start gap-2 p-2.5 bg-amber-100/90 border border-amber-300 rounded-lg text-xs text-amber-950 font-medium">
+        <AlertTriangle size={15} className="text-amber-700 shrink-0 mt-0.5" />
+        <div>
+          <span className="font-bold uppercase tracking-wider text-[11px] text-amber-900 block">Admin Query</span>
+          <p className="mt-0.5 leading-relaxed">{queryMsg}</p>
+        </div>
+      </div>
+      {fieldElement}
+    </div>
+  );
 }

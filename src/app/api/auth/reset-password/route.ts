@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const rateLimit = checkRateLimit(`reset_pw:${ip}`, RATE_LIMIT_CONFIGS.auth);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a few minutes." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { token, password } = body;
 
@@ -14,9 +25,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!password || typeof password !== "string" || password.length < 6) {
+    if (!password || typeof password !== "string" || password.length < 8) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long." },
+        { error: "Password must be at least 8 characters long." },
         { status: 400 }
       );
     }

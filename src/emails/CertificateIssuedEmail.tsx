@@ -6,6 +6,7 @@ import {
   Button,
 } from "@react-email/components";
 import EmailLayout from "./components/EmailLayout";
+import { siteConfig } from "@/config/site";
 
 interface CertificateIssuedEmailProps {
   userName?: string;
@@ -17,56 +18,64 @@ interface CertificateIssuedEmailProps {
 
 export const CertificateIssuedEmail = ({
   userName = "Valued Business Client",
-  certificateName = "Private Limited Certificate of Incorporation",
+  certificateName = "Certificate of Incorporation",
   registrationNumber = "U74999DL2026PTC384920",
   issuedDate = "July 30, 2026",
-  downloadUrl = "https://compliance.in/dashboard/certificates",
+  downloadUrl = siteConfig.getAbsoluteUrl("/dashboard/certificates"),
 }: CertificateIssuedEmailProps) => {
   return (
-    <EmailLayout previewText={`Government Certificate Issued: ${certificateName} (${registrationNumber})`}>
-      <Section className="my-[16px]">
-        <Text className="text-[12px] font-bold uppercase tracking-wider text-emerald-600 my-0">
-          Official Government Release
-        </Text>
-        <Heading className="text-[22px] font-extrabold text-slate-900 leading-[30px] mt-[6px] mb-[16px]">
-          Statutory Certificate Ready for Download 🎉
+    <EmailLayout previewText={`Certificate Issued: ${certificateName} (${registrationNumber})`}>
+      <Section className="my-[8px]">
+        <Heading className="text-[22px] font-bold tracking-tight text-slate-900 leading-[28px] my-0 mb-[16px]">
+          Your certificate is ready
         </Heading>
-        <Text className="text-[14px] text-slate-600 leading-[24px]">
-          Hello <strong className="text-slate-800">{userName}</strong>,
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[14px]">
+          Hello {userName},
         </Text>
-        <Text className="text-[14px] text-slate-600 leading-[24px]">
-          Great news! Your official government statutory certificate for <strong className="text-indigo-600">{certificateName}</strong> has been granted by the ministry and uploaded to your secure Vault.
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[20px]">
+          Your official certificate for <strong className="text-slate-800 font-semibold">{certificateName}</strong> has been granted by the issuing authority and archived in your document vault.
         </Text>
       </Section>
 
       {/* Certificate Meta Box */}
-      <Section className="bg-emerald-50/60 border border-emerald-200/80 rounded-lg p-[20px] my-[20px]">
+      <Section className="bg-slate-50 border border-solid border-slate-200/70 rounded-lg p-[18px] my-[20px]">
         <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Issued Document:</td>
-            <td className="text-[13px] font-bold text-slate-900 pb-[8px]">{certificateName}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Registration / CIN / GSTIN No:</td>
-            <td className="text-[13px] font-mono font-bold text-indigo-700 pb-[8px]">{registrationNumber}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Issuance Date:</td>
-            <td className="text-[13px] font-medium text-slate-700 pb-[8px]">{issuedDate}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Document Vault Status:</td>
-            <td className="text-[12px] font-bold text-emerald-700 pb-[8px]">✓ Verified & Stored</td>
-          </tr>
+          <tbody>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]" style={{ width: "35%" }}>
+                Certificate
+              </td>
+              <td className="text-[13px] font-semibold text-slate-800 pb-[8px]">
+                {certificateName}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                Registration No.
+              </td>
+              <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                {registrationNumber}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400">
+                Issued date
+              </td>
+              <td className="text-[13px] font-medium text-slate-700">
+                {issuedDate}
+              </td>
+            </tr>
+          </tbody>
         </table>
       </Section>
 
-      <Section className="text-center my-[28px]">
+      {/* Action CTA */}
+      <Section className="text-left my-[24px]">
         <Button
           href={downloadUrl}
-          className="bg-emerald-600 text-white font-bold text-[14px] rounded-lg px-[28px] py-[12px] inline-block shadow-sm"
+          className="bg-indigo-600 text-white font-semibold text-[13px] rounded-lg px-[24px] py-[11px] inline-block no-underline"
         >
-          Download Official Certificate PDF →
+          Download certificate
         </Button>
       </Section>
     </EmailLayout>

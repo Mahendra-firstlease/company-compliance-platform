@@ -10,6 +10,7 @@ import {
   extractUploadedDocuments,
   formatApplicationDocuments,
   formatStoredUploadMetadata,
+  mergeUploadedDocuments,
 } from "@/lib/applications";
 
 export async function GET(request: Request) {
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
 
     const userId = (session.user as any).id as string;
     const userRole = (session.user as any).role as string;
-    const isAdminOrExec = userRole === "ADMIN" || userRole === "EXECUTIVE";
+    const isAdmin = userRole === "ADMIN";
 
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
@@ -46,7 +47,7 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     // Regular users see ONLY their own applications; Admins/Execs see all applications
-    const whereCondition = isAdminOrExec ? {} : { userId };
+    const whereCondition = isAdmin ? {} : { userId };
 
     const applications = await prisma.application.findMany({
       where: whereCondition,
@@ -79,10 +80,14 @@ export async function GET(request: Request) {
           certificateUrl: certificate.certificateUrl,
           issuedDate: certificate.issuedDate.toISOString(),
         })),
-        uploadedDocs: {
-          ...savedUploads,
-          ...formatApplicationDocuments(app.documents),
-        },
+        uploadedDocs: mergeUploadedDocuments(
+          savedUploads,
+          formatApplicationDocuments(
+            app.documents,
+            new Set((app.certificates || []).map((c) => c.certificateUrl).filter(Boolean)),
+          ),
+          new Set((app.certificates || []).map((c) => c.certificateUrl).filter(Boolean)),
+        ),
       };
     });
 
@@ -119,8 +124,16 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
 
     let targetUser: any = null;
+    const callerId = (session?.user as any)?.id;
+    const isCallerAdmin = (session?.user as any)?.role === "ADMIN";
 
     if (payload.userId) {
+      if (callerId && !isCallerAdmin && payload.userId !== callerId) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot create applications on behalf of another user." },
+          { status: 403 }
+        );
+      }
       targetUser = await prisma.user.findUnique({
         where: { id: payload.userId },
       });
@@ -146,12 +159,12 @@ export async function POST(request: Request) {
 
     if (!targetUser) {
       targetUser = await prisma.user.upsert({
-        where: { email: "guest@firstlease.com" },
+        where: { email: "guest@complianceportalindia.com" },
         update: {},
         create: {
           id: "guest-user",
           name: payload.customerName || "Guest User",
-          email: "guest@firstlease.com",
+          email: "guest@complianceportalindia.com",
           phone: payload.customerPhone || "0000000000",
           role: "CLIENT",
         },
@@ -183,8 +196,13 @@ export async function POST(request: Request) {
         },
       });
     }
+    const rawFormData =
+      (payload as any).formData && typeof (payload as any).formData === "object"
+        ? ((payload as any).formData as Record<string, any>)
+        : {};
+
     const formDataPayload = {
-      ...(payload as Record<string, any>),
+      ...rawFormData,
       ...(payload.uploadedDocs ? { _uploadedDocs: payload.uploadedDocs } : {}),
     };
 

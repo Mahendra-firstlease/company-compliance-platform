@@ -10,10 +10,11 @@ import {
   calculateChecksum,
   cleanupUploadedFile,
 } from "@/lib/upload";
-import { uploadToS3Storage, deleteFromS3Storage } from "@/lib/s3";
+import { uploadToS3Storage, deleteFromS3Storage, extractS3Key } from "@/lib/s3";
 import { uploadBufferToStorage } from "@/lib/s3/uploadBuffer";
 import { convertImageToPdf } from "@/lib/pdf/convertImageToPdf";
 import { isImageExtension, toPdfFileName } from "@/lib/pdf/is-image-file";
+import { verifyDocumentAccess } from "@/lib/auth/document-auth";
 import fs from "fs/promises";
 import path from "path";
 
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
         );
       }
 
-      if (appCase.userId !== userId && userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+      if (appCase.userId !== userId && userRole !== "ADMIN") {
         console.warn(`⚠️ [SERVER UPLOAD FORBIDDEN]: User '${userId}' does not own application '${applicationId}'.`);
         return NextResponse.json(
           { error: "Forbidden. You do not own this application case." },
@@ -163,10 +164,14 @@ export async function POST(request: Request) {
       checksum,
     });
 
-    // 5. Create Document Record with PENDING_REVIEW Status
+    // 5. Create Document Record with PENDING_REVIEW Status (for applicant uploads only, exclude certificates)
     let dbDocument = null;
+    const isCertificateAttachment =
+      docName.toLowerCase().includes("attach certificate") ||
+      docName.toLowerCase().includes("certificate");
+
     try {
-      if (applicationId && (prisma as any).document) {
+      if (applicationId && !isCertificateAttachment && (prisma as any).document) {
         dbDocument = await (prisma as any).document.create({
           data: {
             applicationId,
@@ -238,6 +243,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
+    const userId = (session.user as any).id as string;
+    const userRole = (session.user as any).role as string;
+
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
     const documentId = searchParams.get("documentId");
@@ -246,8 +254,33 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "File key or documentId required for deletion." }, { status: 400 });
     }
 
-    if (key) {
-      await deleteFromS3Storage(key);
+    // Verify ownership before deleting, including temporary unlinked uploads
+    const authResult = await verifyDocumentAccess({
+      userId,
+      userRole,
+      key,
+      documentId,
+    });
+
+    if (!authResult.authorized) {
+      return NextResponse.json(
+        { error: "Forbidden: You do not have permission to delete this document." },
+        { status: 403 }
+      );
+    }
+
+    const s3Key = extractS3Key(key || authResult.document?.fileUrl);
+    if (s3Key) {
+      await deleteFromS3Storage(s3Key);
+    }
+
+    // If local file, clean up from storage directory
+    const targetUrl = key || authResult.document?.fileUrl;
+    if (targetUrl && (targetUrl.startsWith("/storage/") || targetUrl.startsWith("storage/"))) {
+      const cleanSub = targetUrl.replace(/^\/?storage\//, "");
+      const safeSub = path.normalize(cleanSub).replace(/^(\.\.[\/\\])+/, "");
+      const diskPath = path.resolve(process.cwd(), "storage", safeSub);
+      await cleanupUploadedFile(diskPath);
     }
 
     if (documentId && (prisma as any).document) {

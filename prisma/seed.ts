@@ -10,7 +10,7 @@ async function main() {
   console.log("Starting database seed with updated services catalog...");
 
   // 1. Seed Master Admin User Account
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@firstlease.com";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@complianceportalindia.com";
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
   const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
 
@@ -22,7 +22,7 @@ async function main() {
     },
     create: {
       id: "usr_admin_master",
-      name: "Master Admin Specialist",
+      name: "Platform Administrator",
       email: adminEmail,
       phone: "+91 9999988888",
       passwordHash: adminPasswordHash,

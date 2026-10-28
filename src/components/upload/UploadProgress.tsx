@@ -8,7 +8,7 @@ interface UploadProgressProps {
 }
 
 export default function UploadProgress({
-  progressMessage = "Encrypting & Uploading to S3 Bucket...",
+  progressMessage = "Encrypting & uploading document securely...",
 }: UploadProgressProps) {
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2">

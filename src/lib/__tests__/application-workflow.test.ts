@@ -15,6 +15,20 @@ describe("application-workflow", () => {
     ).toBe(true);
   });
 
+  it("allows client form submission into under review without admin approval", () => {
+    expect(
+      getWorkflowBlockers({
+        currentStatus: "PAYMENT_CONFIRMED",
+        targetStatus: "UNDER_REVIEW",
+        formData: { applicantName: "Asha", panNumber: "ABCDE1234F" },
+        uploadedDocs: {
+          pan: { name: "pan.pdf", url: "/pan.pdf" },
+        },
+        docVerifications: {},
+      }),
+    ).toEqual([]);
+  });
+
   it("auto-approves when there are no submitted form fields", () => {
     expect(isFormDataApproved({ _docVerification: {} })).toBe(true);
   });

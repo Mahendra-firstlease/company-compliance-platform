@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import ServicesPage from "@/features/services/ServicesPage";
 import { Service } from "@/types/services";
 import { ServiceFilterSchema } from "@/schemas/service.schema";
+import { services as fallbackServices } from "@/data/services";
 
 interface ServicesPageProps {
   searchParams: Promise<{
@@ -48,10 +49,15 @@ export default async function Page({ searchParams }: ServicesPageProps) {
   let allServices: Service[] = [];
 
   try {
-    const dbServices = await prisma.service.findMany({
-      include: { details: true },
-      orderBy: { title: "asc" },
-    });
+    const dbServices = await Promise.race([
+      prisma.service.findMany({
+        include: { details: true },
+        orderBy: { title: "asc" },
+      }),
+      new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error("Database connection timeout")), 2000)
+      ),
+    ]);
 
     if (dbServices && dbServices.length > 0) {
       allServices = dbServices.map((s) => {
@@ -66,12 +72,14 @@ export default async function Page({ searchParams }: ServicesPageProps) {
         };
       }) as any[];
     } else {
-      // Do not use mock fallback services if DB returns empty
-      allServices = [];
+      allServices = fallbackServices;
     }
   } catch (error) {
-    console.error("Database query failed:", error);
-    allServices = [];
+    console.warn(
+      "[Prisma Service Notice]: Database connection pool busy, utilizing static services catalogue fallback.",
+      error instanceof Error ? error.message : error
+    );
+    allServices = fallbackServices;
   }
 
   // Server-side filtering

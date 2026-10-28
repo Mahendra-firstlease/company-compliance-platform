@@ -124,7 +124,7 @@ export default function AdminDocumentsPage() {
             User Uploaded Documents Console
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Inspect, verify, and audit user-submitted identity, GST, PAN, and trademark files from MySQL.
+            Inspect, verify, and audit user-submitted identity, GST, PAN, and trademark records in platform.
           </p>
         </div>
 
@@ -356,7 +356,7 @@ export default function AdminDocumentsPage() {
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
             {searchTerm
               ? "No uploaded user documents match your search query."
-              : "No user documents have been uploaded to MySQL yet."}
+              : "No user documents have been uploaded yet."}
           </p>
         </div>
       )}
@@ -431,15 +431,27 @@ export default function AdminDocumentsPage() {
                   <span>Magic Byte Signature Verified</span>
                 </span>
 
-                <a
-                  href={selectedDoc.viewUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-                >
-                  <span>Open Full File</span>
-                  <ExternalLink className="size-3" />
-                </a>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(selectedDoc.viewUrl, selectedDoc.fileName)}
+                    className="text-xs font-bold text-slate-600 hover:text-primary flex items-center gap-1 cursor-pointer"
+                    title="Download file to device"
+                  >
+                    <Download className="size-3" />
+                    <span>Download</span>
+                  </button>
+
+                  <a
+                    href={selectedDoc.viewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                  >
+                    <span>Open Full File</span>
+                    <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
             </div>
 

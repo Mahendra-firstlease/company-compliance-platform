@@ -37,7 +37,7 @@ import { notify } from "@/lib/notify";
 import SearchBar from "@/components/common/SearchBar";
 import { useModal } from "@/components/ui/overlay";
 import Drawer from "@/components/ui/overlay/drawer/Drawer";
-import apiFetch from "@/lib/apiClient";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Select from "@/components/forms/Select";
@@ -62,25 +62,12 @@ export default function AdminDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Form states for application processing
-  const [assignedOfficer, setAssignedOfficer] = useState("");
   const [queryText, setQueryText] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const [isUploadingCert, setIsUploadingCert] = useState(false);
 
-  // Auto-poll applications from MySQL to get live real-time paid filings
-  const [specialists, setSpecialists] = useState<{ id: string; name: string; role: string }[]>([]);
-
   useEffect(() => {
     let active = true;
-
-    // Fetch dynamic team members from MySQL database
-    apiFetch<{ id: string; name: string; role: string }[]>("/admin/team")
-      .then((data) => {
-        if (active && Array.isArray(data)) {
-          setSpecialists(data);
-        }
-      })
-      .catch((err) => console.warn("Error fetching team specialists:", err));
 
     const loadCases = async () => {
       try {
@@ -106,10 +93,9 @@ export default function AdminDashboardPage() {
     return cases.find((c) => c.id === selectedCaseId) || null;
   }, [cases, selectedCaseId]);
 
-  // Sync assigned officer & query text when selecting a case
+  // Sync query text when selecting a case
   useEffect(() => {
     if (selectedCase) {
-      setAssignedOfficer(selectedCase.assignedExecutive || "");
       setQueryText(selectedCase.query || "");
     }
   }, [selectedCase]);
@@ -156,15 +142,6 @@ export default function AdminDashboardPage() {
   };
 
   // Handler functions
-  const handleAssignOfficer = async (officer: string) => {
-    if (!selectedCaseId) return;
-    await updateApplication(selectedCaseId, { assignedExecutive: officer });
-    const list = await getApplications();
-    setCases(list);
-    setAssignedOfficer(officer);
-    notify.success(officer ? `Assigned to ${officer.split(",")[0]}` : "Officer assignment cleared.");
-  };
-
   const handleRaiseQuery = async () => {
     if (!selectedCaseId || !queryText.trim()) return;
     await updateApplication(selectedCaseId, { query: queryText });
@@ -371,69 +348,66 @@ export default function AdminDashboardPage() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-2xs">
         <div>
-          <span className="text-xs font-bold text-primary uppercase tracking-wider block">
-            Backoffice Legal Operations Console
-          </span>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Statutory Filings Queue & Case Management
+            Statutory Filings & Cases
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Real-time live MySQL application stream. Assign executives, audit uploaded documents, raise queries, and upload certificates.
+          <p className="text-sm text-slate-600 mt-1 max-w-xl">
+            Manage case allocations, verify customer documents, raise queries, and issue registration certificates.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>5s Live Sync Active</span>
+            <span className="size-1.5 rounded-full bg-emerald-600" />
+            <span>Live Sync</span>
           </span>
         </div>
       </div>
 
       {/* KPI Stats Counters */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200/90 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Paid Cases</span>
+            <span className="text-xs font-semibold text-slate-600">Total Paid Cases</span>
             <span className="p-1.5 rounded-md bg-slate-100 text-slate-600">
-              <ClipboardList size={14} />
+              <ClipboardList size={15} />
             </span>
           </div>
-          <p className="text-2xl font-black text-slate-900">{cases.length}</p>
+          <p className="text-2xl font-extrabold text-slate-900">{cases.length}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-primary-light/40 border border-primary/20 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Under Review</span>
-            <span className="p-1.5 rounded-md bg-primary-light text-primary">
-              <Clock size={14} />
+            <span className="text-xs font-semibold text-slate-600">Under Review</span>
+            <span className="p-1.5 rounded-md bg-slate-100 text-slate-700">
+              <Clock size={15} />
             </span>
           </div>
-          <p className="text-2xl font-black text-primary">
+          <p className="text-2xl font-extrabold text-slate-900">
             {cases.filter((c) => c.status === "UNDER_REVIEW").length}
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-amber-50/40 border border-amber-100 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Active Queries</span>
-            <span className="p-1.5 rounded-md bg-amber-100 text-amber-600">
-              <AlertTriangle size={14} />
+            <span className="text-xs font-semibold text-slate-600">Active Queries</span>
+            <span className="p-1.5 rounded-md bg-amber-50 text-amber-700">
+              <AlertTriangle size={15} />
             </span>
           </div>
-          <p className="text-2xl font-black text-amber-600">
+          <p className="text-2xl font-extrabold text-slate-900">
             {cases.filter((c) => Boolean(c.query)).length}
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-emerald-50/40 border border-emerald-100 rounded-lg p-4 space-y-1 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Approved & Certs</span>
-            <span className="p-1.5 rounded-md bg-emerald-100 text-emerald-600">
-              <CheckCircle2 size={14} />
+            <span className="text-xs font-semibold text-slate-600">Approved & Certs</span>
+            <span className="p-1.5 rounded-md bg-emerald-50 text-emerald-700">
+              <CheckCircle2 size={15} />
             </span>
           </div>
-          <p className="text-2xl font-black text-emerald-600">
+          <p className="text-2xl font-extrabold text-slate-900">
             {cases.filter((c) => c.status === "APPROVED").length}
           </p>
         </div>
@@ -489,14 +463,22 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Desktop Datatable Queue View (sm+) */}
-      <div className="hidden sm:block bg-white border border-slate-200 rounded-lg overflow-x-auto max-w-full shadow-2xs">
+      <div className="hidden sm:block bg-white border border-slate-200 rounded-xl overflow-hidden max-w-full shadow-2xs">
+        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div>
+            <h3 className="font-bold text-sm text-slate-900">Application Queue</h3>
+            <p className="text-xs text-slate-500">Live statutory registration filings and case progress</p>
+          </div>
+          <span className="text-xs font-semibold text-slate-600">
+            {filteredCases.length} {filteredCases.length === 1 ? "case" : "cases"}
+          </span>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Ref ID</TableHead>
               <TableHead className="hidden xl:table-cell">Service Title</TableHead>
               <TableHead>Customer Details</TableHead>
-              <TableHead className="hidden xl:table-cell">Assigned Executive</TableHead>
               <TableHead>Filing Status</TableHead>
               <TableHead className="w-40 whitespace-nowrap text-right">Action</TableHead>
             </TableRow>
@@ -514,19 +496,14 @@ export default function AdminDashboardPage() {
                 <TableCell className="hidden xl:table-cell">
                   <div>
                     <p className="font-bold text-slate-900">{row.serviceTitle}</p>
-                    <span className="text-[11px] text-slate-400">/{row.serviceSlug}</span>
+                    <span className="text-xs text-slate-500">/{row.serviceSlug}</span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
                     <p className="font-bold text-slate-800">{row.customerName}</p>
-                    <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
+                    <p className="text-xs text-slate-500">{row.customerPhone}</p>
                   </div>
-                </TableCell>
-                <TableCell className="hidden xl:table-cell">
-                  <span className="text-xs font-medium text-slate-600">
-                    {row.assignedExecutive || "Unassigned"}
-                  </span>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={row.query ? "QUERY_RAISED" : row.status} size="sm" />
@@ -556,13 +533,12 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Mobile Stacked Card View (< sm) */}
-      <div className="sm:hidden space-y-3 bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden">
-        <div className="space-y-3 p-3">
+      <div className="sm:hidden space-y-3">
         {paginatedCases.map((row) => (
           <div
             key={row.id}
             onClick={() => handleOpenManageCase(row.id)}
-            className="bg-white border border-slate-200/90 rounded-lg p-4 space-y-3 shadow-2xs hover:shadow-xs transition-all active:bg-slate-50 cursor-pointer"
+            className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs hover:shadow-xs transition-all active:bg-slate-50 cursor-pointer"
           >
             <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
               <span className="font-mono text-xs font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -574,13 +550,10 @@ export default function AdminDashboardPage() {
             <div>
               <h4 className="font-extrabold text-sm text-slate-900 leading-snug">{row.serviceTitle}</h4>
               <p className="text-xs font-semibold text-slate-700 mt-1">{row.customerName}</p>
-              <p className="text-[11px] text-slate-400">{row.customerPhone}</p>
+              <p className="text-xs text-slate-500">{row.customerPhone}</p>
             </div>
 
             <div className="pt-2 border-t border-slate-100 space-y-2 text-xs">
-              <span className="text-[11px] text-slate-500 font-medium">
-                Officer: <strong className="text-slate-800">{row.assignedExecutive || "Unassigned"}</strong>
-              </span>
               <Link className="block w-full" href={`/admin/applications/${row.id}`} onClick={(e) => e.stopPropagation()}>
                 <Button
                   variant="outline"
@@ -594,7 +567,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         ))}
-        </div>
         {filteredCases.length > 0 && (
           <TablePagination
             entryStart={entryStart}
@@ -679,27 +651,6 @@ export default function AdminDashboardPage() {
               ) : (
                 <p className="text-xs text-slate-400 italic">No applicant files uploaded yet.</p>
               )}
-            </div>
-
-            {/* Assign Executive Section */}
-            <div className="space-y-2 border-t border-slate-100 pt-4">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Backoffice Specialist (MySQL Database)</label>
-              <Select
-                value={assignedOfficer}
-                onChange={(val) => {
-                  setAssignedOfficer(val);
-                  handleAssignOfficer(val);
-                }}
-                placeholder="-- Select Specialist from Database --"
-                options={[
-                  { label: "-- Select Specialist from Database --", value: "" },
-                  { label: "Unassigned (Clear Assignment)", value: "Unassigned" },
-                  ...specialists.map((spec) => ({
-                    label: `${spec.name} — ${spec.role}`,
-                    value: `${spec.name} (${spec.role})`,
-                  })),
-                ]}
-              />
             </div>
 
             {/* Filing Status Workflow Buttons */}

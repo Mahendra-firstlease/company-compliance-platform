@@ -37,7 +37,7 @@ export default function PricingConfigPage() {
   const [coupons, setCoupons] = useState<CouponItem[]>([
     { code: "STARTUP1000", discountType: "FLAT", discountValue: 1000, minOrderValue: 2999, status: "ACTIVE", usageCount: 42 },
     { code: "COMPLIANCE20", discountType: "PERCENTAGE", discountValue: 20, minOrderValue: 4999, status: "ACTIVE", usageCount: 89 },
-    { code: "FIRSTLEASE500", discountType: "FLAT", discountValue: 500, minOrderValue: 1499, status: "ACTIVE", usageCount: 124 },
+    { code: "COMPLIANCE500", discountType: "FLAT", discountValue: 500, minOrderValue: 1499, status: "ACTIVE", usageCount: 124 },
     { code: "FESTIVE15", discountType: "PERCENTAGE", discountValue: 15, minOrderValue: 1999, status: "EXPIRED", usageCount: 210 },
   ]);
 

@@ -61,7 +61,7 @@ describe("Dynamic Client File Upload & S3 Helper", () => {
         json: async () => ({
           success: true,
           fileName: "director_pan.pdf",
-          fileUrl: "https://firstlease-compliance-documents.s3.ap-south-1.amazonaws.com/compliance-documents/uuid-director_pan.pdf",
+          fileUrl: "https://compliance-portal-documents.s3.ap-south-1.amazonaws.com/compliance-documents/uuid-director_pan.pdf",
           fileSize: "0.01 MB",
           fileType: "PDF",
           checksum: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

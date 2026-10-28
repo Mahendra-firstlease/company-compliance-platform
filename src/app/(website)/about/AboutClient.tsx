@@ -80,27 +80,27 @@ export default function AboutClient() {
     {
       feature: "Filing Process",
       traditional: "Multiple physical office visits & paper prints",
-      firstLease: "100% Online Digital Workspace in 3 Clicks",
+      compliancePortal: "100% Online Digital Workspace in 3 Clicks",
     },
     {
       feature: "Fee Transparency",
       traditional: "Hidden consultant surcharges & vague invoices",
-      firstLease: "Exact Govt Fee + Professional Fee split upfront",
+      compliancePortal: "Exact Govt Fee + Professional Fee split upfront",
     },
     {
       feature: "Document Verification",
       traditional: "Manual inspection leads to government rejections",
-      firstLease: "Automated Magic-Byte signature & pattern validation",
+      compliancePortal: "Automated Magic-Byte signature & pattern validation",
     },
     {
       feature: "Filing Visibility",
       traditional: "No updates; client must repeatedly call consultants",
-      firstLease: "Real-time 4-step live progress tracking dashboard",
+      compliancePortal: "Real-time 4-step live progress tracking dashboard",
     },
     {
       feature: "Document Vault",
       traditional: "Risk of lost physical certificates & paper files",
-      firstLease: "256-bit encrypted permanent cloud vault access",
+      compliancePortal: "256-bit encrypted permanent cloud vault access",
     },
   ];
 
@@ -254,7 +254,7 @@ export default function AboutClient() {
           <SectionHeading
             badge="Company Purpose"
             title="Why We Built"
-            highlight="FirstLease"
+            highlight="Compliance Portal India"
             description="Transforming traditional offline bureaucratic filing into a transparent 1-click digital compliance experience."
             align="center"
           />
@@ -340,7 +340,7 @@ export default function AboutClient() {
           <SectionHeading
             badge="Direct Comparison"
             title="Traditional Consultants vs."
-            highlight="FirstLease"
+            highlight="Compliance Portal India"
             description="See how our technology cuts turnaround times, eliminates stress, and saves your business money."
             align="center"
           />
@@ -352,7 +352,7 @@ export default function AboutClient() {
                 <XCircle className="size-4 text-rose-500" /> Traditional Way
               </div>
               <div className="text-emerald-700 flex items-center gap-1.5 font-black">
-                <CheckCircle2 className="size-4 text-emerald-600" /> FirstLease
+                <CheckCircle2 className="size-4 text-emerald-600" /> Compliance Portal India
                 Easy Way
               </div>
             </div>
@@ -377,9 +377,9 @@ export default function AboutClient() {
                     <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
                       <span className="md:hidden block text-[10px] font-black uppercase tracking-wider text-emerald-700 mb-1">
-                        FirstLease Easy Way
+                        Compliance Portal India Easy Way
                       </span>
-                      <span>{row.firstLease}</span>
+                      <span>{row.compliancePortal}</span>
                     </div>
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export default function AboutClient() {
               Experience the Genuine, Easy Way to Comply
             </h2>
             <p className="text-primary text-xs sm:text-sm max-w-xl mx-auto leading-relaxed font-medium">
-              Join 12,500+ Indian companies using FirstLease for GST, PAN,
+              Join 12,500+ Indian companies using Compliance Portal India for GST, PAN,
               Trademarks, FSSAI, and MCA filings.
             </p>
             <div className="pt-2 flex justify-center">
@@ -440,7 +440,7 @@ export default function AboutClient() {
                   size="lg"
                   className="font-bold text-xs px-8 py-3.5 bg-white text-primary hover:bg-slate-100 rounded-lg shadow-md border-0 cursor-pointer"
                 >
-                  Get Started with FirstLease
+                  Get Started with Compliance Portal India
                 </Button>
               </Link>
             </div>

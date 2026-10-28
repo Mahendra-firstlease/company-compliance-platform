@@ -56,7 +56,17 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { targetUserId, title, message, type, link } = body;
 
-    const recipientId = targetUserId || (session.user as any).id;
+    const userRole = (session.user as any)?.role;
+    const callerId = (session.user as any)?.id;
+
+    if (targetUserId && targetUserId !== callerId && userRole !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden: Only administrators can dispatch notifications to other users." },
+        { status: 403 }
+      );
+    }
+
+    const recipientId = targetUserId || callerId;
 
     if (!(prisma as any).notification) {
       return NextResponse.json({ error: "Notification service initializing." }, { status: 503 });
@@ -102,11 +112,14 @@ export async function PATCH(request: Request) {
     }
 
     if (notificationId) {
-      const updated = await (prisma as any).notification.update({
-        where: { id: notificationId },
+      const updated = await (prisma as any).notification.updateMany({
+        where: { id: notificationId, userId },
         data: { isRead: true },
       });
-      return NextResponse.json(updated);
+      if (updated.count === 0) {
+        return NextResponse.json({ error: "Notification not found or access denied." }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, message: "Notification marked as read." });
     }
 
     return NextResponse.json({ error: "Notification ID or markAllRead required." }, { status: 400 });

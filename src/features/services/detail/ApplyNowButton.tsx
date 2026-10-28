@@ -48,8 +48,8 @@ export default function ApplyNowButton({ service }: { service: Service }) {
 
     // 3. Open unified checkout modal with single service array
     modal.open({
-      title: `Checkout - ${service.title}`,
-      description: `Complete statutory application and Razorpay payment.`,
+      title: `Complete Your Application`,
+      description: `Review your order details and confirm your contact information before proceeding to secure payment.`,
       size: "md",
       content: (
         <MultiServiceCheckoutModal

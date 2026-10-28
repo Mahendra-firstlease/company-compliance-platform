@@ -46,7 +46,6 @@ export default function PageSizeSelector({
           ))}
         </SelectContent>
       </Select>
-      <span>entries</span>
     </div>
   );
 }

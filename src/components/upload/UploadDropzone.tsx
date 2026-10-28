@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { useDropzone, Accept } from "react-dropzone";
+import React, { useMemo, useCallback } from "react";
+import { useDropzone, Accept, FileRejection } from "react-dropzone";
 import { UploadCloud, AlertCircle, FileCheck, FileX } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { dropzoneRejectMessage } from "./upload-size-utils";
 
 interface UploadDropzoneProps {
   onFilesSelected: (files: File[]) => void;
+  onValidationError?: (message: string | null) => void;
   allowedTypes?: string[];
   maxSizeMb?: number;
+  maxSizeBytes?: number;
   disabled?: boolean;
   multiple?: boolean;
   error?: string | null;
@@ -27,14 +30,20 @@ const MIME_ACCEPT_MAP: Record<string, string> = {
 
 export default function UploadDropzone({
   onFilesSelected,
+  onValidationError,
   allowedTypes = ["pdf", "png", "jpg", "jpeg"],
   maxSizeMb = 5,
+  maxSizeBytes: maxSizeBytesProp,
   disabled = false,
   multiple = false,
   error,
   placeholderText,
 }: UploadDropzoneProps) {
-  const maxSizeBytes = maxSizeMb * 1024 * 1024;
+  const maxSizeBytes = maxSizeBytesProp ?? maxSizeMb * 1024 * 1024;
+  const sizeLabel =
+    maxSizeBytes < 1024 * 1024
+      ? `${Math.round(maxSizeBytes / 1024)}KB`
+      : `${Math.round(maxSizeBytes / (1024 * 1024))}MB`;
 
   const acceptMap = useMemo<Accept>(() => {
     const acc: Record<string, string[]> = {};
@@ -48,12 +57,25 @@ export default function UploadDropzone({
     return acc as Accept;
   }, [allowedTypes]);
 
-  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
-    onDrop: (acceptedFiles) => {
+  const handleDrop = useCallback(
+    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      if (fileRejections.length > 0) {
+        const code = fileRejections[0]?.errors[0]?.code;
+        const message = dropzoneRejectMessage(code, allowedTypes, maxSizeBytes);
+        onValidationError?.(message);
+        return;
+      }
+
+      onValidationError?.(null);
       if (acceptedFiles.length > 0 && !disabled) {
         onFilesSelected(multiple ? acceptedFiles : [acceptedFiles[0]]);
       }
     },
+    [allowedTypes, maxSizeBytes, onValidationError, disabled, onFilesSelected, multiple]
+  );
+
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
+    onDrop: handleDrop,
     accept: acceptMap,
     maxSize: maxSizeBytes,
     disabled,
@@ -65,24 +87,24 @@ export default function UploadDropzone({
       <div
         {...getRootProps()}
         className={cn(
-          "flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-lg text-center transition-all cursor-pointer select-none",
-          isDragAccept ? "border-emerald-500 bg-emerald-50/60 scale-[1.01]" : "",
-          isDragReject ? "border-red-500 bg-red-50/60" : "",
-          isDragActive && !isDragAccept && !isDragReject ? "border-primary bg-primary/5 scale-[1.01]" : "",
+          "flex flex-col items-center justify-center p-5 rounded-lg text-center transition-colors cursor-pointer select-none outline-1 outline-dashed -outline-offset-1",
+          isDragAccept ? "outline-emerald-500 bg-emerald-50/60" : "",
+          isDragReject ? "outline-red-500 bg-red-50/60" : "",
+          isDragActive && !isDragAccept && !isDragReject ? "outline-primary bg-primary/5" : "",
           error
-            ? "border-red-300 hover:border-red-400 bg-red-50/10"
+            ? "outline-red-300 hover:outline-red-400 bg-red-50/10"
             : !isDragActive
-            ? "border-slate-300 hover:border-primary hover:bg-primary/5"
+            ? "outline-slate-300/80 hover:outline-primary hover:bg-primary/5 bg-slate-50/50"
             : "",
-          disabled && "cursor-not-allowed opacity-50 bg-slate-50 border-slate-200 hover:border-slate-200"
+          disabled && "cursor-not-allowed opacity-50 bg-slate-50 outline-slate-200 hover:outline-slate-200"
         )}
       >
         <input {...getInputProps()} />
 
         {isDragAccept ? (
-          <FileCheck size={24} className="mb-1.5 text-emerald-600 animate-bounce" />
+          <FileCheck size={24} className="mb-1.5 text-emerald-600" />
         ) : isDragReject ? (
-          <FileX size={24} className="mb-1.5 text-red-500 animate-pulse" />
+          <FileX size={24} className="mb-1.5 text-red-500" />
         ) : (
           <UploadCloud
             size={24}
@@ -102,8 +124,8 @@ export default function UploadDropzone({
               (multiple ? "Click or drag multiple files here to upload" : "Click or drag file here to upload")}
         </span>
 
-        <span className="text-[11px] text-slate-500 font-semibold mt-1 uppercase tracking-wider">
-          {allowedTypes.join(", ").toUpperCase()} max {maxSizeMb}MB
+        <span className="text-xs text-slate-500 font-medium mt-1">
+          {allowedTypes.join(", ").toUpperCase()} &middot; Max {sizeLabel}
         </span>
       </div>
 

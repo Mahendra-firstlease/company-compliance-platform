@@ -6,6 +6,7 @@ import Container from "@/components/common/Container";
 import Button from "@/components/common/Button";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Star } from "lucide-react";
 
 type Props = {
   children?: React.ReactNode;
@@ -43,162 +44,112 @@ function HeroSection({}: Props) {
   }
 
   return (
-    <>
-      <Section
+    <Section
       id="home"
-      className="w-full bg-cover bg-center bg-no-repeat bg-primary-light border-b border-primary-border/30 px-4 pb-10 heroSection-bg"
-      >
-        <Container className="container flex flex-col-reverse md:flex-row items-center justify-between gap-8">
-          {/* Left */}
-          <div className="flex flex-col items-start" 
+      className="relative w-full bg-primary-light text-slate-900 border-b border-primary-border/20 overflow-hidden px-4 pt-8 pb-12 sm:pb-16"
+    >
+      {/* Decorative Light Background Elements */}
+      <div className="absolute -top-32 -right-32 size-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+
+      <Container className="container relative z-10 flex flex-col-reverse md:flex-row items-center justify-between gap-10">
+        {/* Left Column */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
+          {/* Main Hero Heading with High Contrast — no eyebrow kicker */}
+          <h1 className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-[50px] leading-[1.15] font-extrabold tracking-tight">
+            Compliance Made Simple,{" "}
+            <span className="text-primary">Business Made</span> Strong
+          </h1>
+
+          {/* Supporting Copy - optimal line length */}
+          <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg">
+            Your single unified partner for corporate registration, GST, statutory filings,
+            ISO licensing, and government portal compliance.
+          </p>
+
+          {/* Clean Flat Subscription Form (No nested card-in-card) */}
+          <form
+            onSubmit={handleSubscribe}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 max-w-md w-full mt-6"
           >
-            <a
-              href="#"
-              className="flex items-center gap-2 bg-primary-light border border-primary-border rounded-full p-1 pr-3 text-sm mx-auto md:mx-0 mt-8 sm:mt-12 md:mt-20"
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-11 px-4 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-2xs"
+              required
+              disabled={loading}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={loading}
+              className="h-11 px-6 rounded-lg text-xs font-bold text-white shrink-0 cursor-pointer shadow-2xs disabled:opacity-60"
             >
-              <span className="bg-primary text-white text-xs px-3 py-1 rounded-full">
-                New
-              </span>
-              <p className="flex items-center gap-2 text-primary">
-                <span className="text-sm">Trusted by 1,000+ companies </span>
-                <svg
-                  className="mt-px"
-                  width="6"
-                  height="9"
-                  viewBox="0 0 6 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="m1 1 4 3.5L1 8"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </p>
-            </a>
+              {loading ? "Subscribing..." : "Subscribe Now"}
+            </Button>
+          </form>
 
-            <h1 className="text-center lg:text-left text-neutral-900 text-4xl md:text-5xl lg:text-[52px]/16 leading-tight font-semibold max-w-156.5 mt-4">
-              Compliance Made Simple{" "}
-              <span className="text-primary"> Business Made </span> Strong
-            </h1>
-            <p className="text-center lg:text-left text-base/7 text-neutral-600 max-w-md mt-4 mx-auto md:mx-0">
-             Your trusted partner for regulatory, statutory, ISO, and government compliance solutions - all
-              under one platform.
-            </p>
-
-            <form
-              onSubmit={handleSubscribe}
-              className="flex flex-col sm:flex-row items-center border border-neutral-300 gap-2 max-w-110 w-full rounded-lg sm:rounded-full p-1.5 mt-6 mx-auto md:mx-0"
-            >
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-11 pl-4 sm:pl-5 outline-none text-sm bg-transparent text-neutral-600"
-                required
-                disabled={loading}
+          {/* Social Proof: Avatars + Stars */}
+          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-primary-border/25 w-full justify-center md:justify-start">
+            <div className="flex -space-x-2.5">
+              <Image
+                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200"
+                alt="Client avatar"
+                width={36}
+                height={36}
+                className="size-9 object-cover rounded-full ring-2 ring-white"
               />
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={loading}
-                className="w-full sm:w-auto px-6 h-10 rounded-lg sm:rounded-full text-xs font-bold text-slate-50 cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {loading ? "Subscribing..." : "Subscribe now"}
-              </Button>
-            </form>
-            {/* <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-center lg:text-left text-sm text-neutral-600 mt-4 mx-auto md:mx-0">
-              <span className="font-semibold text-xs text-neutral-500 uppercase tracking-wide">Popular:</span>
-              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
-                GST
-              </span>
-              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
-                FSSI
-              </span>
-              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
-                MSME
-              </span>
-              <span className="font-normal text-xs px-3 py-1 bg-gray-200/80 rounded-lg">
-                IEC
-              </span>
-            </div> */}
+              <Image
+                src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200"
+                alt="Client avatar"
+                width={36}
+                height={36}
+                className="size-9 object-cover rounded-full ring-2 ring-white"
+              />
+              <Image
+                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
+                alt="Client avatar"
+                width={36}
+                height={36}
+                className="size-9 object-cover rounded-full ring-2 ring-white"
+              />
+            </div>
 
-            {/* Avatars + Stars */}
-            <div className="flex items-center mt-10 mx-auto lg:mx-0">
-              <div className="flex -space-x-3 pr-3">
-                <Image
-
-                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200"
-                  alt="user avatar 1"
-                  width={36}
-                  height={36}
-                  className="size-9 object-cover rounded-full border border-slate-50 hover:-translate-y-0.5 transition"
-                />
-                <Image
-                  src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200"
-                  alt="user avatar 2"
-                  width={36}
-                  height={36}
-                  className="size-9 object-cover rounded-full border border-slate-50 hover:-translate-y-0.5 transition"
-                />
-                <Image
-                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
-                  alt="user avatar 3"
-                  width={36}
-                  height={36}
-                  className="size-9 object-cover rounded-full border border-slate-50 hover:-translate-y-0.5 transition"
-                />
+            <div className="flex flex-col text-left">
+              <div className="flex items-center gap-1 text-amber-500">
+                {Array(5)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      className="fill-amber-400 text-amber-400"
+                    />
+                  ))}
               </div>
-
-              <div>
-                <div className="flex">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, i) => (
-                      <svg
-                        key={i}
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-star text-transparent fill-[#FF8F20]"
-                        aria-hidden="true"
-                      >
-                        <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                      </svg>
-                    ))}
-                </div>
-                <p className="text-xs text-neutral-600">
-                  Used by 10,000+ users
-                </p>
-              </div>
+              <p className="text-xs text-slate-600 font-medium mt-0.5">
+                Rated 4.9/5 by 10,000+ businesses across India
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* Right — LCP Element with Priority Preload & Aspect Ratio Placeholder */}
-          <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl aspect-square">
-            <Image
-              className="w-full h-auto object-contain"
-              src={"/images/home/hero-section/heroImage.png"}
-              priority={true}
-              width={1000}
-              height={1000}
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 42rem, 48rem"
-              alt="FirstLease Dashboard and Compliance Platform Preview"
-            />
-          </div>
-        </Container>
-      </Section>
-    </>
+        {/* Right Column — Hero Visual */}
+        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl aspect-square relative flex items-center justify-center">
+          <Image
+            className="w-full h-auto object-contain drop-shadow-sm"
+            src={"/images/home/hero-section/heroImage.png"}
+            priority={true}
+            width={800}
+            height={800}
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 36rem"
+            alt="Compliance Platform Preview"
+          />
+        </div>
+      </Container>
+    </Section>
   );
 }
 

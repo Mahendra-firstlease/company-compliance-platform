@@ -2,12 +2,20 @@
 
 import React from "react";
 import { FileText, ExternalLink, Download } from "lucide-react";
-import { downloadFile } from "@/utils/download";
+import { downloadFile, getInlineViewUrl } from "@/utils/download";
 
 interface FieldValueProps {
   value: any;
   compact?: boolean;
   className?: string;
+}
+
+function formatDocName(name: string): string {
+  const words = name
+    .replace(/([A-Z])/g, " $1")
+    .replace(/_/g, " ")
+    .trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : name;
 }
 
 export default function FieldValue({ value, compact = false, className = "" }: FieldValueProps) {
@@ -38,7 +46,7 @@ export default function FieldValue({ value, compact = false, className = "" }: F
     );
   }
 
-// 3. Handle Objects (Uploaded File Meta, Front/Back scans, or Generic JSON)
+  // 3. Handle Objects (Uploaded File Meta, Front/Back scans, Document Maps, or Generic Objects)
   if (typeof value === "object") {
     // A. Front-Back scan document object
     if (value.frontUrl || value.backUrl || value.front?.url || value.back?.url) {
@@ -78,36 +86,144 @@ export default function FieldValue({ value, compact = false, className = "" }: F
     const fileName = value.name || value.fileName || value.filename || value.title || "Uploaded_Document.pdf";
 
     if (fileUrl) {
+      const isPdf = Boolean(
+        fileName.toLowerCase().endsWith(".pdf") ||
+        (value.type && String(value.type).toUpperCase().includes("PDF")) ||
+        fileUrl.toLowerCase().includes(".pdf")
+      );
+      const inlineHref = getInlineViewUrl(fileUrl, fileName);
+
       if (compact) {
         return (
-          <button
-            type="button"
-            onClick={() => downloadFile(fileUrl, fileName)}
-            className="inline-flex items-center gap-1 text-primary hover:underline font-bold text-xs cursor-pointer"
-          >
-            <FileText size={12} className="shrink-0 text-primary" />
-            <span className="truncate max-w-32">{fileName}</span>
-            <Download size={10} className="shrink-0 opacity-70" />
-          </button>
+          <div className="inline-flex items-center gap-1 text-xs">
+            <FileText size={12} className={isPdf ? "shrink-0 text-rose-600" : "shrink-0 text-primary"} />
+            <a
+              href={inlineHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-bold truncate max-w-32"
+            >
+              {fileName}
+            </a>
+            <button
+              type="button"
+              onClick={() => downloadFile(fileUrl, fileName)}
+              className="shrink-0 opacity-70 hover:opacity-100 text-slate-500 hover:text-primary p-0.5 cursor-pointer"
+              title={`Download ${fileName}`}
+            >
+              <Download size={10} />
+            </button>
+          </div>
         );
       }
 
       return (
-        <button
-          type="button"
-          onClick={() => downloadFile(fileUrl, fileName)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-light hover:bg-primary-light text-primary font-bold border border-primary-border text-xs transition-all max-w-full group cursor-pointer"
+        <div
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-light hover:bg-primary-light/80 text-primary font-bold border border-primary-border text-xs transition-all max-w-full group"
           title={fileName}
         >
-          <FileText size={14} className="shrink-0 text-primary group-hover:scale-110 transition-transform" />
-          <span className="truncate">{fileName}</span>
-          {value.size && <span className="text-[10px] text-primary font-normal shrink-0">({value.size})</span>}
-          <Download size={11} className="shrink-0 opacity-70 group-hover:opacity-100" />
-        </button>
+          <FileText size={14} className={isPdf ? "shrink-0 text-rose-600" : "shrink-0 text-primary"} />
+          <a
+            href={inlineHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="truncate hover:underline"
+          >
+            {fileName}
+          </a>
+          {value.size && <span className="text-[11px] text-primary font-normal shrink-0">({value.size})</span>}
+          <button
+            type="button"
+            onClick={() => downloadFile(fileUrl, fileName)}
+            className="shrink-0 opacity-70 hover:opacity-100 hover:text-primary transition-opacity p-0.5 cursor-pointer"
+            title={`Download ${fileName}`}
+          >
+            <Download size={11} />
+          </button>
+        </div>
       );
     }
 
-    // C. Object with name/title but no URL
+    // C. Document Map / Collection (e.g. _uploadedDocs or { [docKey]: { url, name, size } })
+    const entries = Object.entries(value);
+    const isDocMap =
+      entries.length > 0 &&
+      entries.every(([, item]) => {
+        if (!item || typeof item !== "object") return false;
+        const candidate = item as Record<string, any>;
+        return Boolean(
+          candidate.url ||
+            candidate.fileUrl ||
+            candidate.path ||
+            candidate.location ||
+            candidate.frontUrl ||
+            candidate.backUrl ||
+            candidate.front?.url ||
+            candidate.back?.url ||
+            (candidate.name && (candidate.size || candidate.type))
+        );
+      });
+
+    if (isDocMap) {
+      return (
+        <div className={`flex flex-wrap gap-1.5 items-center ${className}`}>
+          {entries.map(([docKey, docVal]) => {
+            const formattedDocName = formatDocName(docKey);
+            const item = docVal as Record<string, any>;
+            const docUrl = item.url || item.fileUrl || item.path || item.location;
+            const docFileName = item.name || item.fileName || formattedDocName;
+
+            if (docUrl) {
+              const isPdf = Boolean(
+                docFileName.toLowerCase().endsWith(".pdf") ||
+                item.type?.toUpperCase().includes("PDF") ||
+                docUrl.toLowerCase().includes(".pdf")
+              );
+              const inlineHref = getInlineViewUrl(docUrl, docFileName);
+
+              return (
+                <div
+                  key={docKey}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary-light hover:bg-primary-light/80 text-primary font-bold border border-primary-border text-[11px] transition-colors group"
+                  title={`${formattedDocName}: ${docFileName}${item.size ? ` (${item.size})` : ""}`}
+                >
+                  <FileText size={11} className={isPdf ? "text-rose-600 shrink-0" : "text-primary shrink-0"} />
+                  <span className="font-semibold text-slate-700">{formattedDocName}:</span>
+                  <a
+                    href={inlineHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="truncate max-w-28 text-primary hover:underline"
+                  >
+                    {docFileName}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(docUrl, docFileName)}
+                    className="opacity-70 hover:opacity-100 hover:text-primary transition-opacity cursor-pointer p-0.5"
+                    title={`Download ${docFileName}`}
+                  >
+                    <Download size={10} className="shrink-0" />
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <span
+                key={docKey}
+                className="inline-flex items-center gap-1 text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60"
+              >
+                <FileText size={11} className="text-slate-400 shrink-0" />
+                <span className="font-medium">{formattedDocName}</span>
+              </span>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // D. Object with name/title but no URL
     if (value.name || value.title || value.label) {
       return (
         <span className={`font-bold text-slate-800 ${className}`}>
@@ -116,11 +232,37 @@ export default function FieldValue({ value, compact = false, className = "" }: F
       );
     }
 
-    // D. Generic Object fallback
+    // E. Empty Object
+    if (entries.length === 0) {
+      return (
+        <span className="text-slate-400 font-normal italic text-xs">
+          None
+        </span>
+      );
+    }
+
+    // F. Generic Object fallback (render formatted key-value pills instead of raw JSON string)
     return (
-      <span className="font-mono text-slate-800 text-[11px] break-all">
-        {JSON.stringify(value)}
-      </span>
+      <div className={`inline-flex flex-wrap gap-1 items-center ${className}`}>
+        {entries.map(([subKey, subVal]) => {
+          const formattedSubKey = formatDocName(subKey);
+          return (
+            <span
+              key={subKey}
+              className="text-[11px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1 border border-slate-200/60"
+            >
+              <span className="text-slate-500">{formattedSubKey}:</span>
+              <span className="font-semibold text-slate-800">
+                {typeof subVal === "object" ? (
+                  <FieldValue value={subVal} compact={true} />
+                ) : (
+                  String(subVal ?? "")
+                )}
+              </span>
+            </span>
+          );
+        })}
+      </div>
     );
   }
 

@@ -7,6 +7,7 @@ import {
   Hr,
 } from "@react-email/components";
 import EmailLayout from "./components/EmailLayout";
+import { siteConfig } from "@/config/site";
 
 interface PaymentReceiptEmailProps {
   userName?: string;
@@ -20,75 +21,89 @@ interface PaymentReceiptEmailProps {
 
 export const PaymentReceiptEmail = ({
   userName = "Valued Business Client",
-  serviceName = "Private Limited Incorporation Package",
+  serviceName = "Private Limited Incorporation",
   amount = 4999,
   transactionId = "pay_P9aK7x18vLmQ2",
   orderId = "ORD-2026-9042",
   paymentDate = "July 30, 2026",
-  dashboardUrl = "https://compliance.in/dashboard/documents",
+  dashboardUrl = siteConfig.getAbsoluteUrl("/dashboard/applications"),
 }: PaymentReceiptEmailProps) => {
   return (
-    <EmailLayout previewText={`Payment Confirmation: ₹${amount.toLocaleString("en-IN")} for ${serviceName} (${orderId})`}>
-      <Section className="my-[16px]">
-        <Text className="text-[12px] font-bold uppercase tracking-wider text-emerald-600 my-0">
-          Payment Verified & Confirmed
-        </Text>
-        <Heading className="text-[22px] font-extrabold text-slate-900 leading-[30px] mt-[6px] mb-[16px]">
-          Filing Fee Payment Receipt
+    <EmailLayout previewText={`Receipt: ₹${amount.toLocaleString("en-IN")} for ${serviceName} (${orderId})`}>
+      <Section className="my-[8px]">
+        <Heading className="text-[22px] font-bold tracking-tight text-slate-900 leading-[28px] my-0 mb-[16px]">
+          Payment receipt
         </Heading>
-        <Text className="text-[14px] text-slate-600 leading-[24px]">
-          Hello <strong className="text-slate-800">{userName}</strong>,
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[14px]">
+          Hello {userName},
         </Text>
-        <Text className="text-[14px] text-slate-600 leading-[24px]">
-          We have successfully received your payment of <strong className="text-slate-900">₹{amount.toLocaleString("en-IN")}</strong> for <strong className="text-indigo-600">{serviceName}</strong>. Your filing application has entered the active case queue.
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[20px]">
+          We have received your payment of <strong className="text-slate-900 font-semibold">₹{amount.toLocaleString("en-IN")}</strong> for <strong className="text-slate-900 font-semibold">{serviceName}</strong>. Your filing is now in progress.
         </Text>
       </Section>
 
-      {/* Invoice Receipt Box */}
-      <Section className="bg-slate-50 border border-slate-200 rounded-lg p-[20px] my-[20px]">
+      {/* Invoice Receipt Spec */}
+      <Section className="bg-slate-50 border border-solid border-slate-200/70 rounded-lg p-[18px] my-[20px]">
         <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Order Reference:</td>
-            <td className="text-[13px] font-mono font-bold text-slate-800 pb-[8px] align-top">{orderId}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Razorpay Payment ID:</td>
-            <td className="text-[13px] font-mono text-indigo-600 pb-[8px]">{transactionId}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Date:</td>
-            <td className="text-[13px] font-medium text-slate-700 pb-[8px]">{paymentDate}</td>
-          </tr>
+          <tbody>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]" style={{ width: "35%" }}>
+                Service
+              </td>
+              <td className="text-[13px] font-semibold text-slate-800 pb-[8px]">
+                {serviceName}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                Order ID
+              </td>
+              <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                {orderId}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                Payment ID
+              </td>
+              <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                {transactionId}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[12px]">
+                Date
+              </td>
+              <td className="text-[13px] font-medium text-slate-700 pb-[12px]">
+                {paymentDate}
+              </td>
+            </tr>
+          </tbody>
         </table>
 
-        <Hr className="border-slate-200 my-[12px]" />
+        <Hr className="border-slate-200/70 my-[8px]" />
 
         <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
-          <tr>
-            <td className="text-[13px] font-bold text-slate-800 py-[4px]">{serviceName}</td>
-            <td className="text-[13px] font-bold text-slate-900 py-[4px] text-right">
-              ₹{amount.toLocaleString("en-IN")}
-            </td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 py-[2px]">Govt Fee & Filing Professional Desk</td>
-            <td className="text-[12px] text-slate-500 py-[2px] text-right">Included</td>
-          </tr>
-          <tr>
-            <td className="text-[13px] font-black text-slate-900 pt-[10px]">Total Amount Paid:</td>
-            <td className="text-[15px] font-black text-emerald-700 pt-[10px] text-right">
-              ₹{amount.toLocaleString("en-IN")}
-            </td>
-          </tr>
+          <tbody>
+            <tr>
+              <td className="text-[13px] font-semibold text-slate-700 pt-[6px]">
+                Total paid
+              </td>
+              <td className="text-[15px] font-bold text-slate-900 pt-[6px] text-right">
+                ₹{amount.toLocaleString("en-IN")}
+              </td>
+            </tr>
+          </tbody>
         </table>
       </Section>
 
-      <Section className="text-center my-[28px]">
+      {/* Action CTA */}
+      <Section className="text-left my-[24px]">
         <Button
           href={dashboardUrl}
-          className="bg-indigo-600 text-white font-bold text-[14px] rounded-lg px-[28px] py-[12px] inline-block shadow-sm"
+          className="bg-indigo-600 text-white font-semibold text-[13px] rounded-lg px-[24px] py-[11px] inline-block no-underline"
         >
-          Track Case Progress in Portal →
+          Track filing progress
         </Button>
       </Section>
     </EmailLayout>

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import QueryProvider from "@/providers/QueryProvider";
 import APP_CONFIG from "@/config/app-config";
+import siteConfig from "@/config/site";
 
 export const viewport: Viewport = {
   themeColor: "#0f172a",
@@ -16,10 +17,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://firstlease.com"),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "FirstLease — Enterprise Business Compliance Platform",
-    template: "%s | FirstLease",
+    default: "Compliance Portal India — Enterprise Business Compliance Platform",
+    template: "%s | Compliance Portal India",
   },
   description: "Seamless statutory filing, GST, PAN, Trademark, MCA, and corporate compliance services.",
   keywords: ["GST Registration", "PAN Card", "Trademark Registration", "FSSAI Food License", "MCA Incorporation", "Corporate Compliance"],
@@ -28,10 +29,10 @@ export const metadata: Metadata = {
     shortcut: "/company-logo/favicon.png",
   },
   openGraph: {
-    title: "FirstLease — Enterprise Business Compliance Platform",
+    title: "Compliance Portal India — Enterprise Business Compliance Platform",
     description: "Seamless statutory filing, GST, PAN, Trademark, MCA, and corporate compliance services.",
-    url: "https://firstlease.com",
-    siteName: "FirstLease",
+    url: siteConfig.url,
+    siteName: "Compliance Portal India",
     locale: "en_IN",
     type: "website",
   },
@@ -49,9 +50,9 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "FirstLease",
-    url: "https://firstlease.com",
-    logo: "https://firstlease.com/images/logo.png",
+    name: "Compliance Portal India",
+    url: siteConfig.url,
+    logo: siteConfig.getEmailAssetUrl("/company-logo/logo-lg.png"),
     description: "Enterprise Business Compliance & Statutory Registration Platform",
     contactPoint: {
       "@type": "ContactPoint",

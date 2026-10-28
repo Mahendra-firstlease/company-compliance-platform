@@ -4,7 +4,6 @@ import { getPostLoginPath } from "../auth-redirect";
 describe("getPostLoginPath", () => {
   it("sends admin users to the admin dashboard", () => {
     expect(getPostLoginPath("ADMIN")).toBe("/admin");
-    expect(getPostLoginPath("EXECUTIVE")).toBe("/admin");
   });
 
   it("honors admin callback URLs for staff users", () => {

@@ -9,7 +9,7 @@ const INITIAL_SEED_MEMBERS = [
   {
     name: "Anjali Gupta",
     role: "Senior CA Consultant",
-    email: "anjali.gupta@firstlease.com",
+    email: "anjali.gupta@complianceportalindia.com",
     phone: "+91 98765 12345",
     specialization: "MCA Incorporation & GST Registration",
     activeCases: 4,
@@ -20,7 +20,7 @@ const INITIAL_SEED_MEMBERS = [
   {
     name: "Rahul Sharma",
     role: "Company Secretary (CS)",
-    email: "rahul.sharma@firstlease.com",
+    email: "rahul.sharma@complianceportalindia.com",
     phone: "+91 98765 23456",
     specialization: "Trademark & Intellectual Property",
     activeCases: 6,
@@ -31,7 +31,7 @@ const INITIAL_SEED_MEMBERS = [
   {
     name: "Vikram Malhotra",
     role: "Legal Desk Advocate",
-    email: "vikram.malhotra@firstlease.com",
+    email: "vikram.malhotra@complianceportalindia.com",
     phone: "+91 98765 34567",
     specialization: "FSSAI & Udyam Compliance",
     activeCases: 2,
@@ -81,7 +81,7 @@ export async function GET() {
     }
 
     const userRole = (session.user as any)?.role || "CLIENT";
-    if (userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+    if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required." }, { status: 403 });
     }
 
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
     }
 
     const userRole = (session.user as any)?.role || "CLIENT";
-    if (userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+    if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required." }, { status: 403 });
     }
 

@@ -5,6 +5,7 @@ import { trademarkConfig } from "../config/trademark.config";
 import { mcaConfig } from "../config/mca.config";
 import { fssaiConfig } from "../config/fssai.config";
 import { udyamConfig } from "../config/udyam.config";
+import { startupIndia } from "../config/startupIndia.config";
 
 /**
  * Enterprise Service Configuration Registry
@@ -18,6 +19,13 @@ export const serviceRegistry: Record<string, ServiceFormConfig> = {
   "mca-company-llp-registration": mcaConfig,
   "fssai-food-license": fssaiConfig,
   "msme-udyam-registration": udyamConfig,
+  "sme-udyam-registration": udyamConfig,
+  "micro-udyam-registration": udyamConfig,
+  "small-udyam-registration": udyamConfig,
+  "medium-udyam-registration": udyamConfig,
+  "large-udyam-registration": udyamConfig,
+  "enterprise-udyam-registration": udyamConfig,
+  "startup-india-registration": startupIndia,
 };
 
 /**

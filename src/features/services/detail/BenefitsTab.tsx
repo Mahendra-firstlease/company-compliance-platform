@@ -6,24 +6,24 @@ export default function BenefitsTab({ service }: { service: Service }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-semibold text-gray-900">
+      <h2 className="text-base font-semibold text-slate-900">
         Key Benefits of {service.title}
-      </h3>
+      </h2>
 
       {benefits.length > 0 ? (
-        <div className="grid grid-cols-1 gap-2.5">
+        <div className="divide-y divide-slate-100">
           {benefits.map((b, idx) => (
             <div
               key={idx}
-              className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
+              className="flex items-start gap-3 py-2.5 first:pt-0 last:pb-0"
             >
               <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700 font-medium">{b}</span>
+              <span className="text-sm text-slate-700 leading-relaxed">{b}</span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 py-4">
+        <p className="text-sm text-slate-500 py-4">
           No specific benefits listed for this service.
         </p>
       )}

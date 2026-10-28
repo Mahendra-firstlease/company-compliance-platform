@@ -9,4 +9,5 @@ export default function TermsOfService() {
             <div className="h-64 w-full rounded-lg bg-slate-100 animate-pulse" />
         </div>
     </div>
-  )}
+  )
+}

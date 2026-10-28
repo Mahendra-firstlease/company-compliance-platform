@@ -13,7 +13,7 @@ export async function GET(
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
 
-    if (!session || (userRole !== "ADMIN" && userRole !== "EXECUTIVE")) {
+    if (!session || userRole !== "ADMIN") {
       return NextResponse.json({ error: "Access denied. Admin authorization required." }, { status: 403 });
     }
 
@@ -115,7 +115,7 @@ export async function PATCH(
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.phone !== undefined) updateData.phone = body.phone;
-    if (body.role && ["CLIENT", "ADMIN", "EXECUTIVE"].includes(body.role)) {
+    if (body.role && ["CLIENT", "ADMIN"].includes(body.role)) {
       updateData.role = body.role as Role;
     }
 

@@ -45,7 +45,7 @@ export default function UserNavDropdown() {
   const avatarChar =
     session.user.name?.[0] || session.user.email?.[0]?.toUpperCase() || "U";
   const userRole = (session.user as any)?.role || "CLIENT";
-  const isAdminOrExec = userRole === "ADMIN" || userRole === "EXECUTIVE";
+  const isAdmin = userRole === "ADMIN";
 
   return (
     <Menu as="div" className="relative">
@@ -58,8 +58,8 @@ export default function UserNavDropdown() {
           {avatarChar}
         </div>
         <span className="hidden sm:inline-block max-w-30 truncate">{userName.split(" ")[0]}</span>
-        {isAdminOrExec && (
-          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-primary-light text-primary text-[10px] font-bold uppercase">
+        {isAdmin && (
+          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-primary-light text-primary text-xs font-semibold">
             Admin
           </span>
         )}
@@ -74,19 +74,21 @@ export default function UserNavDropdown() {
             <p className="text-xs font-bold text-slate-900 truncate">
               {userName}
             </p>
-            {isAdminOrExec && (
-              <span className="text-[9px] font-bold bg-primary text-white px-1.5 py-0.5 rounded">
+            {isAdmin && (
+              <span className="text-[11px] font-bold bg-primary text-white px-1.5 py-0.5 rounded">
                 ADMIN
               </span>
             )}
           </div>
-          <p className="text-[11px] text-slate-400 truncate">{userEmail}</p>
+          <p className="text-xs text-slate-500 truncate">{userEmail}</p>
         </div>
 
-        {isAdminOrExec ? (
+        {isAdmin ? (
           <MenuItem>
             <Link
               href={ROUTES.ADMIN.DASHBOARD}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-primary bg-primary-light hover:bg-primary/10 transition-colors"
             >
               <ShieldCheckIcon className="size-4 text-primary" />
@@ -118,6 +120,8 @@ export default function UserNavDropdown() {
             <MenuItem>
               <Link
                 href={ROUTES.DASHBOARD.HOME}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <Squares2X2Icon className="size-4 text-slate-400" />

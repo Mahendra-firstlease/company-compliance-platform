@@ -92,6 +92,25 @@ export async function verifyRazorpayPaymentAction({
     }
 
     const userId = (session.user as any).id;
+    const userRole = (session.user as any).role;
+    const isAdmin = userRole === "ADMIN";
+
+    // Enforce ownership check: non-admins cannot confirm another user's applications
+    if (!isAdmin && applicationIds.length > 0) {
+      const ownedCount = await prisma.application.count({
+        where: {
+          id: { in: applicationIds },
+          userId,
+        },
+      });
+
+      if (ownedCount !== applicationIds.length) {
+        return {
+          success: false,
+          error: "Forbidden: You do not have permission to verify payments for one or more specified applications.",
+        };
+      }
+    }
 
     // 1. Verify HMAC SHA256 Signature
     const generatedSignature = crypto
@@ -99,7 +118,11 @@ export async function verifyRazorpayPaymentAction({
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    const isSignatureValid = generatedSignature === razorpay_signature;
+    const generatedBuffer = Buffer.from(generatedSignature, "utf-8");
+    const receivedBuffer = Buffer.from(razorpay_signature, "utf-8");
+    const isSignatureValid =
+      generatedBuffer.length === receivedBuffer.length &&
+      crypto.timingSafeEqual(generatedBuffer, receivedBuffer);
 
     if (!isSignatureValid) {
       return {

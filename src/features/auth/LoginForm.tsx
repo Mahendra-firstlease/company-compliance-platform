@@ -70,7 +70,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
 
       notify.success({
         title: "Welcome Back! 👋",
-        description: "Successfully signed in to FirstLease.",
+        description: "Successfully signed in to Compliance Portal India.",
       });
 
       modal.closeAll();

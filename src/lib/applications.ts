@@ -88,6 +88,113 @@ export function formatStoredUploadMetadata(
   );
 }
 
+/**
+ * Merges form data uploads with database Document records,
+ * deduplicating by file URL, storage key, and filename to prevent duplicate entries when
+ * the database docName (e.g. "PAN Card Copy") differs from the form field name (e.g. "panDocument").
+ */
+export function mergeUploadedDocuments(
+  formDataUploads: Record<string, UploadedFile> = {},
+  dbDocuments: Record<string, UploadedFile> = {},
+  certificateUrls: string[] | Set<string> = [],
+): Record<string, UploadedFile> {
+  const result: Record<string, UploadedFile> = {};
+  const certUrlSet =
+    certificateUrls instanceof Set
+      ? certificateUrls
+      : new Set(certificateUrls || []);
+  const seenUrls = new Set<string>(certUrlSet);
+  const seenFiles = new Set<string>();
+
+  const normalizeFilename = (name?: string) => {
+    if (!name) return "";
+    return name.trim().toLowerCase();
+  };
+
+  const getStorageBasename = (url?: string) => {
+    if (!url) return "";
+    const cleanUrl = url.split("?")[0];
+    const base = cleanUrl.split("/").pop() || "";
+    return base.replace(/^(\d+_[a-f0-9-]+-|\d+_|[a-f0-9-]+-)/i, "").toLowerCase();
+  };
+
+  const recordFile = (file: UploadedFile) => {
+    if (file.url) {
+      seenUrls.add(file.url);
+      const base = getStorageBasename(file.url);
+      if (base) seenFiles.add(`base:${base}`);
+    }
+    const rawUrl = (file as any).rawUrl;
+    if (rawUrl) {
+      seenUrls.add(rawUrl);
+      const base = getStorageBasename(rawUrl);
+      if (base) seenFiles.add(`base:${base}`);
+    }
+    const key = (file as any).key;
+    if (key) {
+      seenUrls.add(key);
+      const base = getStorageBasename(key);
+      if (base) seenFiles.add(`base:${base}`);
+    }
+    if (file.name) {
+      seenFiles.add(`name:${normalizeFilename(file.name)}`);
+    }
+  };
+
+  const isDuplicate = (file: UploadedFile) => {
+    if (file.url && seenUrls.has(file.url)) return true;
+    const rawUrl = (file as any).rawUrl;
+    if (rawUrl && seenUrls.has(rawUrl)) return true;
+    const key = (file as any).key;
+    if (key && seenUrls.has(key)) return true;
+
+    if (file.url) {
+      const base = getStorageBasename(file.url);
+      if (base && seenFiles.has(`base:${base}`)) return true;
+    }
+    if (rawUrl) {
+      const base = getStorageBasename(rawUrl);
+      if (base && seenFiles.has(`base:${base}`)) return true;
+    }
+    if (key) {
+      const base = getStorageBasename(key);
+      if (base && seenFiles.has(`base:${base}`)) return true;
+    }
+    if (file.name && seenFiles.has(`name:${normalizeFilename(file.name)}`)) {
+      return true;
+    }
+    return false;
+  };
+
+  // 1. Prefer database Document records (persisted with official label/ID and verification status)
+  Object.entries(dbDocuments).forEach(([docName, file]) => {
+    if (
+      !file?.url ||
+      isDuplicate(file) ||
+      docName.toLowerCase().includes("attach certificate")
+    ) {
+      return;
+    }
+    recordFile(file);
+    result[docName] = file;
+  });
+
+  // 2. Add form-level uploads only if their URL or file is not already registered or an issued certificate
+  Object.entries(formDataUploads).forEach(([docName, file]) => {
+    if (
+      !file?.url ||
+      isDuplicate(file) ||
+      docName.toLowerCase().includes("attach certificate")
+    ) {
+      return;
+    }
+    recordFile(file);
+    result[docName] = file;
+  });
+
+  return result;
+}
+
 export type {
   UploadedFile,
   IssuedCertificate,
@@ -106,6 +213,7 @@ export interface VaultDocument {
   applicationId: string;
   status: string;
   fileUrl?: string;
+  rawUrl?: string;
   uploadedAt: string;
   source: "CLIENT" | "ADMIN";
 }
@@ -123,7 +231,7 @@ export function resolveDocumentViewUrl(fileUrl?: string, docId?: string): string
   if (!fileUrl) return "";
   if (fileUrl.startsWith("/api/documents/")) return fileUrl;
   if (fileUrl.startsWith("/storage/") && docId) return `/api/documents/${docId}`;
-  return `/api/download?url=${encodeURIComponent(fileUrl)}`;
+  return `/api/download?url=${encodeURIComponent(fileUrl)}&disposition=inline`;
 }
 
 function formatVaultDate(dateStr?: string): string {
@@ -144,6 +252,7 @@ export function mergeVaultDocuments(applications: ApplicationCase[]): VaultDocum
     if (application.uploadedDocs) {
       Object.entries(application.uploadedDocs).forEach(([docName, file], idx) => {
         const rawUrl = file.url || "";
+        if (rawUrl && seenUrls.has(rawUrl)) return;
         if (rawUrl) seenUrls.add(rawUrl);
 
         const isVerified =
@@ -163,6 +272,7 @@ export function mergeVaultDocuments(applications: ApplicationCase[]): VaultDocum
           applicationId: application.id,
           status: isVerified ? "VERIFIED" : "REGISTERED",
           fileUrl: resolveDocumentViewUrl(rawUrl, file.id),
+          rawUrl: rawUrl || undefined,
           uploadedAt: formatVaultDate(file.uploadedAt || application.createdAt),
           source: file.status === "VERIFIED" ? "ADMIN" : "CLIENT",
         });
@@ -184,6 +294,7 @@ export function mergeVaultDocuments(applications: ApplicationCase[]): VaultDocum
         applicationId: application.id,
         status: "VERIFIED",
         fileUrl: resolveDocumentViewUrl(cert.certificateUrl),
+        rawUrl: cert.certificateUrl || undefined,
         uploadedAt: formatVaultDate(cert.issuedDate),
         source: "ADMIN",
       });
@@ -217,10 +328,21 @@ export function getDashboardCertificates(
  * Shared helper to format Prisma document relations into UploadedFile record map
  */
 export function formatApplicationDocuments(
-  documents: Array<{ id?: string; docName: string; fileName: string; fileSize: string | number; fileType: string; fileUrl?: string }>
+  documents: Array<{ id?: string; docName: string; fileName: string; fileSize: string | number; fileType: string; fileUrl?: string }>,
+  certificateUrls?: string[] | Set<string>,
 ): Record<string, UploadedFile> {
+  const certUrlSet =
+    certificateUrls instanceof Set
+      ? certificateUrls
+      : new Set(certificateUrls || []);
   const uploadedDocs: Record<string, UploadedFile> = {};
   documents.forEach((doc) => {
+    if (
+      (doc.fileUrl && certUrlSet.has(doc.fileUrl)) ||
+      doc.docName.toLowerCase().includes("attach certificate")
+    ) {
+      return;
+    }
     uploadedDocs[doc.docName] = {
       id: doc.id || doc.docName,
       name: doc.fileName,
@@ -228,6 +350,7 @@ export function formatApplicationDocuments(
         doc.fileUrl?.startsWith("/storage/") && doc.id
           ? `/api/documents/${doc.id}`
           : doc.fileUrl || "",
+      rawUrl: doc.fileUrl,
       size: typeof doc.fileSize === "number" ? doc.fileSize : 0,
       type: doc.fileType,
       uploadedAt: new Date().toISOString(),

@@ -3,27 +3,51 @@
 import React from "react";
 import { FormSectionConfig } from "@/types/form-config.types";
 import DynamicField from "./DynamicField";
-import { Control, FieldErrors } from "react-hook-form";
+import { Control, FieldErrors, UseFormSetError, UseFormClearErrors } from "react-hook-form";
+import { isFieldVisible } from "../utils/field-visibility";
 
 interface DynamicSectionProps {
   section: FormSectionConfig;
   control: Control<any>;
   errors: FieldErrors<any>;
+  formValues?: Record<string, unknown>;
   disabled?: boolean;
+  applicationId?: string;
+  setError?: UseFormSetError<any>;
+  clearErrors?: UseFormClearErrors<any>;
+  fieldQueries?: Record<string, any>;
+  docVerifications?: Record<string, any>;
 }
 
-export default function DynamicSection({ section, control, errors, disabled = false }: DynamicSectionProps) {
+export default function DynamicSection({
+  section,
+  control,
+  errors,
+  formValues,
+  disabled = false,
+  applicationId,
+  setError,
+  clearErrors,
+  fieldQueries,
+  docVerifications,
+}: DynamicSectionProps) {
+  const visibleFields = formValues
+    ? section.fields.filter((field) => isFieldVisible(field, formValues))
+    : section.fields;
+
+  if (visibleFields.length === 0) return null;
+
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-2xs space-y-6">
+    <div className="p-6 space-y-6">
       <div>
         <h3 className="text-sm font-bold text-slate-900 tracking-tight">{section.title}</h3>
         {section.description && (
-          <p className="text-xs text-slate-500 leading-normal mt-0.5">{section.description}</p>
+          <p className="text-xs text-slate-500 leading-normal mt-0.5 max-w-md">{section.description}</p>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {section.fields.map((field) => (
+        {visibleFields.map((field) => (
           <div
             key={field.id}
             className={
@@ -35,7 +59,21 @@ export default function DynamicSection({ section, control, errors, disabled = fa
                 : "col-span-1"
             }
           >
-            <DynamicField field={field} control={control} errors={errors} disabled={disabled} />
+            <DynamicField
+              field={field}
+              control={control}
+              errors={errors}
+              disabled={disabled}
+              applicationId={applicationId}
+              setError={setError}
+              clearErrors={clearErrors}
+              fieldQuery={
+                fieldQueries?.[field.id] ||
+                (docVerifications?.[field.id]?.status === "DEFECTIVE"
+                  ? { message: docVerifications[field.id].reason || "Document flagged as defective. Please re-upload a clear copy." }
+                  : undefined)
+              }
+            />
           </div>
         ))}
       </div>

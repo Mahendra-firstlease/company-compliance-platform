@@ -45,7 +45,7 @@ export default function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "bg-white border-r border-slate-200 shrink-0 z-20 transition-all duration-300 flex flex-col justify-between overflow-x-hidden",
+        "bg-white border-r border-slate-200 shrink-0 z-20 flex flex-col justify-between overflow-x-hidden",
         // Mobile classes
         mobileMenuOpen
           ? "fixed top-16 inset-x-0 bottom-0 bg-white min-h-[calc(100vh-64px)] w-full block z-30"

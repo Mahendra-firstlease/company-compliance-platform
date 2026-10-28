@@ -28,7 +28,7 @@ async function resetUserTable() {
     console.log(`  └─ Deleted ${deleteResult.count} existing user records.`);
 
     // Re-seed Master Admin Specialist Account
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@firstlease.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@complianceportalindia.com";
     const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
     const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
 

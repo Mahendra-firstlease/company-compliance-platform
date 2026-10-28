@@ -128,7 +128,7 @@ export function AccordionTrigger({
       type="button"
       onClick={() => accordionContext.toggleItem(value)}
       className={cn(
-        "flex w-full items-center justify-between text-left py-2 font-semibold text-sm text-slate-700 hover:text-primary transition-colors focus:outline-none cursor-pointer",
+        "flex w-full items-center justify-between text-left py-2 font-semibold text-sm text-slate-800 hover:text-primary transition-colors focus:outline-none cursor-pointer",
         className
       )}
       aria-expanded={isOpen}
@@ -164,14 +164,14 @@ export function AccordionContent({
   return (
     <div
       className={cn(
-        "grid transition-all duration-350 ease-in-out",
+        "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out",
         isOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0 pointer-events-none mt-0"
       )}
     >
       <div className="overflow-hidden">
         <div
           className={cn(
-            "text-xs text-slate-400 leading-relaxed pl-1 pb-2",
+            "text-sm text-slate-600 leading-relaxed pl-1 pb-2",
             className
           )}
           {...props}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getPresignedDownloadUrl } from "@/lib/s3/presigned";
 import fs from "fs/promises";
 import path from "path";
 
@@ -24,6 +25,9 @@ export async function GET(
       return NextResponse.json({ error: "Document ID missing." }, { status: 400 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const disposition = searchParams.get("disposition") === "attachment" ? "attachment" : "inline";
+
     // 1. Fetch Document from Database
     let documentRecord = null;
     if ((prisma as any).document) {
@@ -36,12 +40,11 @@ export async function GET(
       return NextResponse.json({ error: "Document not found." }, { status: 404 });
     }
 
+    const customFilename =
+      searchParams.get("filename") || documentRecord.fileName || "document.pdf";
+
     // 2. Authorization Check: Document must belong to user OR user must be ADMIN
-    if (
-      documentRecord.userId !== userId &&
-      userRole !== "ADMIN" &&
-      userRole !== "EXECUTIVE"
-    ) {
+    if (documentRecord.userId !== userId && userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden. Access denied to document." }, { status: 403 });
     }
 
@@ -57,8 +60,12 @@ export async function GET(
       // Legacy fallback
       filePath = path.join(process.cwd(), "public", "uploads", path.basename(fileUrl));
     } else if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-      // Remote S3 URL redirect
-      return NextResponse.redirect(fileUrl);
+      // Route remote storage through secure authenticated download proxy with requested disposition
+      const proxyRedirect = new URL(
+        `/api/download?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(customFilename)}&disposition=${disposition}`,
+        request.url
+      );
+      return NextResponse.redirect(proxyRedirect);
     } else {
       filePath = path.join(process.cwd(), "storage", "documents", path.basename(fileUrl));
     }
@@ -82,7 +89,7 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `inline; filename="${documentRecord.fileName}"`,
+        "Content-Disposition": `${disposition}; filename="${customFilename}"`,
         "X-Content-Type-Options": "nosniff",
         "Cache-Control": "private, max-age=3600",
       },

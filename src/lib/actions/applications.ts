@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ApplicationStatus } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
 
 export async function updateApplicationStatusAction(
@@ -13,6 +15,19 @@ export async function updateApplicationStatusAction(
   }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return { success: false, error: "Unauthorized: Please log in." };
+    }
+
+    const role = (session.user as any)?.role;
+    if (role !== "ADMIN") {
+      return {
+        success: false,
+        error: "Forbidden: Admin privileges required.",
+      };
+    }
+
     const updated = await prisma.application.update({
       where: { id },
       data: {
@@ -38,15 +53,12 @@ export async function createApplicationAction(formData: {
   address?: string;
 }) {
   try {
-    const defaultUser = await prisma.user.upsert({
-      where: { email: "guest@compliance.in" },
-      update: { name: formData.customerName, phone: formData.customerPhone },
-      create: {
-        name: formData.customerName,
-        email: "guest@compliance.in",
-        phone: formData.customerPhone,
-      },
-    });
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !(session.user as any)?.id) {
+      return { success: false, error: "Authentication required to initiate filing." };
+    }
+
+    const userId = (session.user as any).id;
 
     const service = await prisma.service.findUnique({
       where: { slug: formData.serviceSlug },
@@ -60,7 +72,7 @@ export async function createApplicationAction(formData: {
       data: {
         id: `COMP-${Date.now().toString().slice(-6)}-${crypto.randomBytes(2).toString("hex")}`,
         serviceId: service.id,
-        userId: defaultUser.id,
+        userId,
         serviceSlug: service.slug,
         serviceTitle: service.title,
         customerName: formData.customerName,

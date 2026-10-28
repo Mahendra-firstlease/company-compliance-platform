@@ -2,7 +2,7 @@
 
 import { downloadFile } from "@/utils/download";
 
-import React, { use, useState, useEffect } from "react";
+import React, { use, useState, useEffect, useMemo } from "react";
 import { notFound } from "next/navigation";
 import { WorkspaceSkeleton } from "@/components/ui/skeletons";
 import Section from "@/components/common/Section";
@@ -32,6 +32,7 @@ import {
   AlertTriangle,
   Activity,
   ArrowRight,
+  ArrowDown,
   ShieldAlert,
   Loader2,
   User,
@@ -46,6 +47,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getServiceConfig } from "@/features/services/registry";
 import DynamicForm from "@/features/services/components/DynamicForm";
+import {
+  mapBusinessProfileToFormDefaults,
+  mergeFormInitialValues,
+} from "@/features/services/utils/form-prefill";
+import { getUserProfileWithBusinessAction } from "@/lib/actions/profile";
 import { MultiFileUpload, UploadedFile } from "@/components/upload";
 
 interface PageProps {
@@ -65,6 +71,35 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
   const [appCase, setAppCase] = useState<ApplicationCase | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [supportingDocs, setSupportingDocs] = useState<UploadedFile[]>([]);
+  const [profileDefaults, setProfileDefaults] = useState<Record<string, string>>({});
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+
+  useEffect(() => {
+    getUserProfileWithBusinessAction()
+      .then((res) => {
+        if (res.success && res.data) {
+          setProfileDefaults(
+            mapBusinessProfileToFormDefaults(res.data.user, res.data.businessProfile),
+          );
+        }
+      })
+      .finally(() => setProfileLoaded(true));
+  }, []);
+
+  const formInitialValues = useMemo(() => {
+    if (!appCase) return {};
+    const fromApplication = {
+      applicantName: appCase.customerName,
+      fullName: appCase.customerName,
+      mobileNumber: appCase.customerPhone,
+      registeredAddress: appCase.address,
+      ...Object.fromEntries(
+        Object.entries(appCase.formData || {}).filter(([key]) => !key.startsWith("_")),
+      ),
+    };
+    return mergeFormInitialValues(fromApplication, profileDefaults);
+  }, [appCase, profileDefaults]);
 
   // Sync application status from backend (polled gently every 10 seconds)
   useEffect(() => {
@@ -119,7 +154,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
     {
       key: "UNDER_REVIEW",
       label: "Verification",
-      desc: "Undergoing executive review",
+      desc: "Undergoing compliance review",
       icon: FileText,
     },
     {
@@ -236,6 +271,17 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
     setTimeout(() => setIsDownloadingCert(false), 800);
   };
 
+  const handleScrollToQuery = () => {
+    const firstTarget =
+      document.querySelector('[data-queried-field="true"]') ||
+      document.getElementById("filing-form-workspace");
+    if (firstTarget) {
+      firstTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = firstTarget.querySelector("input, textarea, select") as HTMLElement | null;
+      input?.focus();
+    }
+  };
+
   if (isInitialLoading) {
     return (
       <Section className="bg-slate-50/50 min-h-screen pt-8 pb-20">
@@ -282,11 +328,10 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
         />
 
         {/* Executive Workspace Command Header Hero */}
-        <div className="relative overflow-hidden rounded-lg bg-linear-to-r from-slate-950 via-slate-900 to-primary text-white p-6 md:p-8 shadow-xl border border-slate-800">
-          <div className="absolute top-0 right-0 -mt-8 -mr-8 size-64 bg-primary-light0/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 space-y-4">
+        <div className="rounded-xl bg-slate-900 text-white p-6 md:p-8 shadow-sm border border-slate-800">
+          <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[11px] font-mono text-primary bg-primary-light0/20 border border-primary-border/30 px-3 py-1 rounded-full font-bold backdrop-blur-md">
+              <span className="text-xs font-mono font-medium text-slate-300 bg-slate-800 border border-slate-700 px-3 py-1 rounded-md">
                 Ref ID: {appCase.id}
               </span>
               <StatusBadge
@@ -298,9 +343,9 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               />
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-t border-slate-800/80">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-t border-slate-800">
               <div>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
                   {appCase.serviceTitle}
                 </h1>
                 <p className="text-xs text-slate-300 mt-1.5 flex items-center gap-2">
@@ -328,7 +373,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   size="sm"
                   onClick={triggerInvoiceDownload}
                   disabled={isGeneratingInvoice}
-                  className="text-xs font-bold text-slate-200 bg-white/10 hover:bg-white/20 border-white/20 backdrop-blur-md"
+                  className="text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border-slate-700"
                   leftIcon={
                     isGeneratingInvoice ? (
                       <Loader2 size={13} className="animate-spin" />
@@ -344,7 +389,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-xs bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md font-bold"
+                    className="text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 border-slate-700 font-medium"
                   >
                     Admin Panel <ExternalLink size={12} />
                   </Button>
@@ -362,16 +407,16 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
             <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
               <div className="flex items-start gap-3">
                 <div
-                  className={`size-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-primary-light text-primary" : "bg-amber-100 text-amber-700 animate-pulse"}`}
+                  className={`size-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${appCase.queryStatus === "CLIENT_RESPONDED" ? "bg-primary-light text-primary" : "bg-amber-100 text-amber-700"}`}
                 >
                   <AlertTriangle size={20} />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-extrabold text-sm">
+                  <h3 className="font-extrabold text-sm">
                     {appCase.queryStatus === "CLIENT_RESPONDED"
-                      ? "✅ Clarification Response Submitted to Officer"
-                      : "⚠️ Action Required: Specialist Clarification Needed"}
-                  </h4>
+                      ? " Clarification Response Submitted"
+                      : " Action Required: Compliance Clarification Needed"}
+                  </h3>
                   <p className="text-xs font-semibold leading-relaxed opacity-90">
                     "
                     {appCase.query ||
@@ -386,15 +431,15 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => setIsQueryModalOpen(true)}
-                  className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shrink-0 shadow-sm"
-                  leftIcon={<Send size={13} />}
+                  onClick={handleScrollToQuery}
+                  className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shrink-0 shadow-sm cursor-pointer flex items-center gap-1.5"
+                  leftIcon={<ArrowDown size={14} />}
                 >
-                  Respond to Query & Re-upload
+                  Review & Correct Details
                 </Button>
               ) : (
                 <span className="text-[11px] font-extrabold text-primary bg-primary-light px-3 py-1 rounded-full border border-primary-border shrink-0">
-                  Pending Officer Audit
+                  Pending Review
                 </span>
               )}
             </div>
@@ -415,10 +460,10 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
         {/* Dynamic Timeline Stepper (Step 8: Application Tracking) */}
         <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-lg shadow-xs relative overflow-hidden">
-          <h3 className="font-bold text-slate-900 text-sm mb-8 tracking-tight flex items-center gap-2">
-            <span className="size-2 rounded-full bg-primary animate-pulse" />
+          <h2 className="font-bold text-slate-900 text-sm mb-8 tracking-tight flex items-center gap-2">
+            <span className="size-2 rounded-full bg-primary" />
             Application Progress Tracker
-          </h3>
+          </h2>
 
           <div className="relative">
             {/* Background Connector Bar (Desktop) */}
@@ -426,8 +471,8 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
             {/* Active Connector Bar (Desktop) */}
             <div
-              className="absolute top-5 left-[10%] h-0.75 bg-green-600 hidden md:block rounded-full z-0 transition-all duration-500 ease-out"
-              style={{ width: `${(currentStepIndex / 4) * 80}%` }}
+              className="absolute top-5 left-[10%] w-[80%] h-0.75 bg-green-600 hidden md:block rounded-full z-0 origin-left transition-transform duration-500 ease-out"
+              style={{ transform: `scaleX(${currentStepIndex / 4})` }}
             />
 
             {/* Background Connector Bar (Mobile) */}
@@ -435,8 +480,8 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
             {/* Active Connector Bar (Mobile) */}
             <div
-              className="absolute left-5 top-5 w-0.75 bg-green-600 md:hidden rounded-full z-0 transition-all duration-500 ease-out"
-              style={{ height: `${(currentStepIndex / 4) * 100}%` }}
+              className="absolute left-5 top-5 bottom-5 w-0.75 bg-green-600 md:hidden rounded-full z-0 origin-top transition-transform duration-500 ease-out"
+              style={{ transform: `scaleY(${currentStepIndex / 4})` }}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-4 relative z-10">
@@ -457,19 +502,14 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   >
                     {/* Stepper Circle Icon */}
                     <div
-                      className={`size-10 md:size-11 rounded-full flex items-center justify-center transition-all duration-300 relative shrink-0 ${
+                      className={`size-10 md:size-11 rounded-full flex items-center justify-center transition-colors duration-300 relative shrink-0 ${
                         isCompleted
                           ? "bg-green-600 text-white shadow-xs ring-2 ring-green-100"
                           : isActive
                             ? "bg-primary text-white shadow-xs ring-4 ring-primary-light scale-105"
-                            : "bg-white text-slate-400 border-2 border-slate-200"
+                            : "bg-white text-slate-500 border-2 border-slate-200"
                       }`}
                     >
-                      {/* Pulse Ring for Active Step */}
-                      {isActive && (
-                        <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-25" />
-                      )}
-
                       {isCompleted ? (
                         <Check size={16} className="stroke-3" />
                       ) : (
@@ -480,7 +520,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                             isActive
                               ? "text-white"
                               : isPending
-                                ? "text-slate-450"
+                                ? "text-slate-500"
                                 : "",
                           )}
                         />
@@ -489,22 +529,22 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
                     {/* Step Labels & Info */}
                     <div className="text-left md:text-center space-y-0.5">
-                      <h4
+                      <h3
                         className={`font-semibold text-xs tracking-wide transition-colors ${
                           isCompleted
                             ? "text-green-700"
                             : isActive
                               ? "text-primary"
-                              : "text-slate-450"
+                              : "text-slate-600"
                         }`}
                       >
                         {step.label}
-                      </h4>
+                      </h3>
                       <p
                         className={`text-xs leading-normal transition-colors max-w-40 md:mx-auto ${
                           isActive
                             ? "text-slate-600 font-medium"
-                            : "text-slate-400"
+                            : "text-slate-500"
                         }`}
                       >
                         {step.desc}
@@ -522,54 +562,88 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
           {/* Dynamic Schema-Driven Filing Form & Upload Portal */}
           <div className="lg:col-span-2 space-y-6">
             {/* Dynamic Schema-Driven Form Engine */}
-            <div className="space-y-4">
-              <DynamicForm
-                config={serviceConfig}
-                disabled={
-                  appCase
-                    ? (appCase.status === "UNDER_REVIEW" ||
-                        appCase.status === "SUBMITTED" ||
-                        appCase.status === "APPROVED") &&
-                      !appCase.query
-                    : false
-                }
-                initialValues={{
-                  applicantName: appCase.customerName,
-                  fullName: appCase.customerName,
-                  mobileNumber: appCase.customerPhone,
-                  registeredAddress: appCase.address,
-                  ...Object.fromEntries(
-                    Object.entries(appCase.formData || {}).filter(
-                      ([key]) => !key.startsWith("_")
-                    )
-                  ),
-                }}
-                onSubmit={async (formData) => {
-                  console.log("Filing Form Data:", formData);
-                  notify.loading({
-                    title: "Submitting Filing Application...",
-                    description:
-                      "Transmitting dynamic form payload to backend.",
-                  });
+            <div id="filing-form-workspace" className="space-y-4">
+              {profileLoaded ? (
+                <DynamicForm
+                  config={serviceConfig}
+                  applicationId={appCase.id}
+                  isSubmitting={isFormSubmitting}
+                  disabled={
+                    appCase
+                      ? (appCase.status === "UNDER_REVIEW" ||
+                          appCase.status === "SUBMITTED" ||
+                          appCase.status === "APPROVED") &&
+                        !appCase.query
+                      : false
+                  }
+                  initialValues={formInitialValues}
+                  fieldQueries={(appCase.formData as any)?._fieldQueries}
+                  docVerifications={(appCase.formData as any)?._docVerification}
+                  globalQuery={appCase.query || appCase.queryNote}
+                  onSubmit={async (formData) => {
+                    setIsFormSubmitting(true);
+                    try {
+                      notify.loading({
+                        title: "Submitting Filing Application...",
+                        description:
+                          "Transmitting dynamic form payload to backend.",
+                      });
 
-                  const payload = buildApplicationFormDataPayload(
-                    formData as Record<string, any>,
-                    supportingDocs
-                  );
+                      const payload = buildApplicationFormDataPayload(
+                        formData as Record<string, any>,
+                        supportingDocs
+                      );
 
-                  await updateApplication(appCase.id, {
-                    status: "UNDER_REVIEW",
-                    query: "",
-                    formData: payload,
-                  });
-                  const activeApp = await getApplicationBySlug(slug);
-                  setAppCase(activeApp);
-                  notify.success({
-                    title: "Filing Application Submitted! 🎉",
-                    description: "Updated workspace status to UNDER_REVIEW.",
-                  });
-                }}
-              />
+                      const hasActiveQuery = Boolean(
+                        appCase.query ||
+                          (appCase.formData as any)?._fieldQueries ||
+                          (appCase.formData as any)?._docVerification
+                      );
+                      const isResolvingQuery =
+                        hasActiveQuery && appCase.queryStatus !== "CLIENT_RESPONDED";
+
+                      const updatedFormData = {
+                        ...payload,
+                        ...(isResolvingQuery ? { _fieldQueries: {} } : {}),
+                      };
+
+                      const result = await updateApplication(appCase.id, {
+                        status: "UNDER_REVIEW",
+                        query: isResolvingQuery ? "" : undefined,
+                        queryStatus: isResolvingQuery ? "CLIENT_RESPONDED" : undefined,
+                        queryResponse: isResolvingQuery
+                          ? "Client revised registration details in workspace."
+                          : undefined,
+                        formData: updatedFormData,
+                      });
+
+                      if (!result.success) {
+                        throw new Error(result.error || "Failed to submit application.");
+                      }
+
+                      const activeApp = await getApplicationBySlug(slug);
+                      setAppCase(activeApp);
+                      notify.success({
+                        title: isResolvingQuery ? "Corrections Submitted! 🎉" : "Filing Application Submitted! 🎉",
+                        description: isResolvingQuery
+                          ? "Your updated details have been submitted to the compliance officer."
+                          : "Updated workspace status to UNDER_REVIEW.",
+                      });
+                    } catch (err: unknown) {
+                      notify.error({
+                        title: "Submission Error",
+                        description: err instanceof Error ? err.message : "Failed to submit application.",
+                      });
+                    } finally {
+                      setIsFormSubmitting(false);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="py-8 text-center text-xs text-slate-500">
+                  Loading form profile data...
+                </div>
+              )}
             </div>
 
             {/* Additional Supporting Documents MultiFileUpload Portal */}
@@ -580,7 +654,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                   Upload Additional Supporting Documents & Attachments
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed max-w-md">
                 Attach supporting verification files for your filing (e.g.
                 Utility Bills, Property Leases, NOCs, Bank Statements, Financial
                 Audit Reports).
@@ -593,6 +667,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                 maxSizeMb={10}
                 allowedTypes={["pdf", "png", "jpg", "jpeg"]}
                 disabled={appCase.status === "APPROVED"}
+                applicationId={appCase.id}
               />
             </div>
           </div>
@@ -623,7 +698,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
 
               <div className="pt-2">
                 <Button
-                  className="text-xs md:text-sm"
+                  className="text-xs md:text-sm py-2.5"
                   variant="outline"
                   fullWidth
                   onClick={triggerInvoiceDownload}
@@ -643,26 +718,22 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Assigned Executive details */}
+            {/* Compliance Review Desk */}
             <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-xs space-y-3 text-xs">
               <h3 className="font-semibold text-slate-800 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
                 <User size={16} className="text-primary" />
-                Assigned Specialist
+                Compliance Review Desk
               </h3>
               <div className="flex items-center gap-2.5">
-                <div className="size-8 bg-slate-100 rounded-full flex items-center justify-center font-semibold text-slate-500">
-                  {appCase.assignedExecutive
-                    ? appCase.assignedExecutive[0]
-                    : "?"}
+                <div className="size-8 bg-primary-light rounded-full flex items-center justify-center font-bold text-primary">
+                  CD
                 </div>
                 <div>
                   <div className="font-semibold text-slate-800">
-                    {appCase.assignedExecutive || "Assigning Officer..."}
+                    Direct Compliance & Legal Desk
                   </div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    {appCase.assignedExecutive
-                      ? "MCA Filing Specialist"
-                      : "Pending officer allocation"}
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    Admin verification & MCA statutory review
                   </div>
                 </div>
               </div>
@@ -684,8 +755,8 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                     <h4 className="font-semibold text-xs text-slate-800">
                       Registration Approved!
                     </h4>
-                    <p className="text-xs text-slate-400 leading-normal px-2">
-                      Your specialist has uploaded official documents. Download them below.
+                    <p className="text-xs text-slate-500 leading-normal px-2">
+                      Official certificates have been issued. Download them below.
                     </p>
                   </div>
 
@@ -701,7 +772,7 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                               {cert.certificateName}
                             </p>
                             {cert.issuedDate && (
-                              <p className="text-[10px] text-slate-400">
+                              <p className="text-xs text-slate-500">
                                 Issued {new Date(cert.issuedDate).toLocaleDateString("en-IN")}
                               </p>
                             )}
@@ -729,21 +800,21 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 text-center">
-                      No documents uploaded yet. Your specialist will deliver them shortly.
+                    <p className="text-xs text-slate-500 text-center">
+                      No documents uploaded yet. They will be delivered here upon release.
                     </p>
                   )}
                 </div>
               ) : (
                 /* Locked Vault Panel */
-                <div className="text-center py-4 bg-slate-50/50 border border-slate-100 rounded-lg space-y-2">
-                  <div className="size-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto">
-                    <Lock size={18} className="text-slate-400" />
+                <div className="text-center py-6 space-y-2">
+                  <div className="size-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center mx-auto">
+                    <Lock size={18} className="text-slate-500" />
                   </div>
-                  <h4 className="font-semibold text-xs text-slate-500">
+                  <h4 className="font-semibold text-xs text-slate-700">
                     Vault Locked
                   </h4>
-                  <p className="text-xs text-slate-400 leading-normal px-6">
+                  <p className="text-xs text-slate-500 leading-normal px-6 max-w-xs mx-auto">
                     Download will be unlocked automatically once the application
                     reaches APPROVED status.
                   </p>

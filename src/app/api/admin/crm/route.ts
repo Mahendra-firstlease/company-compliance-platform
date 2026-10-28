@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     }
 
     const userRole = (session.user as any)?.role || "CLIENT";
-    if (userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+    if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required." }, { status: 403 });
     }
 

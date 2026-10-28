@@ -13,7 +13,7 @@ export const trademarkConfig: ServiceFormConfig = {
           id: "brandName",
           type: "text",
           label: "Brand / Wordmark Name",
-          placeholder: "e.g. FirstLease",
+          placeholder: "e.g. Acme Enterprises",
           required: true,
         },
         {

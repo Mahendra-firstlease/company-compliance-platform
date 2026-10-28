@@ -6,6 +6,7 @@ import {
   Button,
 } from "@react-email/components";
 import EmailLayout from "./components/EmailLayout";
+import siteConfig from "@/config/site";
 
 interface ContactInquiryEmailProps {
   name?: string;
@@ -26,45 +27,67 @@ export const ContactInquiryEmail = ({
 }: ContactInquiryEmailProps) => {
   if (isAdminNotification) {
     return (
-      <EmailLayout previewText={`New Lead Alert: Inquiry from ${name} for ${service}`}>
-        <Section className="my-[16px]">
-          <Text className="text-[12px] font-bold uppercase tracking-wider text-amber-600 my-0">
-            Internal Sales & Compliance Lead Alert
-          </Text>
-          <Heading className="text-[22px] font-extrabold text-slate-900 leading-[30px] mt-[6px] mb-[16px]">
-            New Website Inquiry Received
+      <EmailLayout previewText={`Lead Alert: Inquiry from ${name} for ${service}`}>
+        <Section className="my-[8px]">
+          <Heading className="text-[22px] font-bold tracking-tight text-slate-900 leading-[28px] my-0 mb-[16px]">
+            New website inquiry
           </Heading>
-          <Text className="text-[14px] text-slate-600 leading-[24px]">
-            A new client inquiry has been submitted via the web portal contact desk.
+          <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[20px]">
+            A new client inquiry was submitted via the contact form.
           </Text>
         </Section>
 
-        <Section className="bg-amber-50/60 border border-amber-200/80 rounded-lg p-[20px] my-[20px]">
+        {/* Lead Details */}
+        <Section className="bg-slate-50 border border-solid border-slate-200/70 rounded-lg p-[18px] my-[20px]">
           <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
-            <tr>
-              <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Client Name:</td>
-              <td className="text-[13px] font-bold text-slate-900 pb-[8px]">{name}</td>
-            </tr>
-            <tr>
-              <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Email Address:</td>
-              <td className="text-[13px] font-mono text-indigo-600 pb-[8px]">{email}</td>
-            </tr>
-            <tr>
-              <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Phone Number:</td>
-              <td className="text-[13px] font-mono text-slate-900 pb-[8px]">{phone || "N/A"}</td>
-            </tr>
-            <tr>
-              <td className="text-[12px] font-semibold text-slate-500 pb-[8px]">Service Interest:</td>
-              <td className="text-[13px] font-bold text-indigo-700 pb-[8px]">{service || "General Inquiry"}</td>
-            </tr>
-            <tr>
-              <td className="text-[12px] font-semibold text-slate-500 pt-[8px]" colSpan={2}>
-                <div className="border-t border-amber-200/60 pt-[12px] mt-[4px]">
-                  <strong className="text-slate-800 block mb-[4px]">Message Notes:</strong>
-                  <span className="text-[13px] text-slate-700 italic leading-[20px]">"{message}"</span>
-                </div>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <td className="text-[12px] font-medium text-slate-400 pb-[8px]" style={{ width: "30%" }}>
+                  Name
+                </td>
+                <td className="text-[13px] font-semibold text-slate-800 pb-[8px]">
+                  {name}
+                </td>
+              </tr>
+              <tr>
+                <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                  Email
+                </td>
+                <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                  {email}
+                </td>
+              </tr>
+              <tr>
+                <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                  Phone
+                </td>
+                <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                  {phone || "Not provided"}
+                </td>
+              </tr>
+              <tr>
+                <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                  Service
+                </td>
+                <td className="text-[13px] font-semibold text-slate-800 pb-[8px]">
+                  {service || "General Inquiry"}
+                </td>
+              </tr>
+              {message && (
+                <tr>
+                  <td colSpan={2} className="pt-[10px]">
+                    <div className="border-t border-slate-200/70 pt-[10px]">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-[4px]">
+                        Message
+                      </span>
+                      <span className="text-[13px] text-slate-700 leading-[20px]">
+                        {message}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
           </table>
         </Section>
       </EmailLayout>
@@ -72,45 +95,66 @@ export const ContactInquiryEmail = ({
   }
 
   return (
-    <EmailLayout previewText={`Inquiry Confirmation: We received your request for ${service}`}>
-      <Section className="my-[16px]">
-        <Text className="text-[12px] font-bold uppercase tracking-wider text-indigo-600 my-0">
-          Inquiry Received
-        </Text>
-        <Heading className="text-[22px] font-extrabold text-slate-900 leading-[30px] mt-[6px] mb-[16px]">
-          Thank you for contacting Compliance Portal India
+    <EmailLayout previewText={`We received your inquiry regarding ${service}`}>
+      <Section className="my-[8px]">
+        <Heading className="text-[22px] font-bold tracking-tight text-slate-900 leading-[28px] my-0 mb-[16px]">
+          We received your inquiry
         </Heading>
-        <Text className="text-[14px] text-slate-600 leading-[24px]">
-          Hello <strong className="text-slate-800">{name}</strong>,
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[14px]">
+          Hello {name},
         </Text>
-        <Text className="text-[14px] text-slate-600 leading-[24px]">
-          We have received your inquiry regarding <strong className="text-indigo-600">{service}</strong>. A dedicated compliance executive has been assigned to your request and will get in touch with you within 2 business hours.
-        </Text>
-      </Section>
-
-      <Section className="bg-slate-50 border border-slate-200 rounded-lg p-[20px] my-[20px]">
-        <Text className="text-[12px] font-bold text-slate-700 uppercase tracking-wider my-0 mb-[8px]">
-          Summary of Your Request:
-        </Text>
-        <Text className="text-[13px] text-slate-600 my-[4px]">
-          <strong>Selected Service:</strong> {service || "General Compliance Inquiry"}
-        </Text>
-        {phone && (
-          <Text className="text-[13px] text-slate-600 my-[4px]">
-            <strong>Callback Contact:</strong> {phone}
-          </Text>
-        )}
-        <Text className="text-[13px] text-slate-600 my-[4px]">
-          <strong>Submitted Message:</strong> "{message}"
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[20px]">
+          Thank you for contacting us regarding <strong className="text-slate-800 font-semibold">{service}</strong>. A compliance specialist will review your requirements and reach out within two business hours.
         </Text>
       </Section>
 
-      <Section className="text-center my-[28px]">
+      {/* Inquiry Summary */}
+      <Section className="bg-slate-50 border border-solid border-slate-200/70 rounded-lg p-[18px] my-[20px]">
+        <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
+          <tbody>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]" style={{ width: "30%" }}>
+                Service
+              </td>
+              <td className="text-[13px] font-semibold text-slate-800 pb-[8px]">
+                {service || "General Compliance Inquiry"}
+              </td>
+            </tr>
+            {phone && (
+              <tr>
+                <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                  Contact
+                </td>
+                <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                  {phone}
+                </td>
+              </tr>
+            )}
+            {message && (
+              <tr>
+                <td colSpan={2} className="pt-[10px]">
+                  <div className="border-t border-slate-200/70 pt-[10px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-[4px]">
+                      Your message
+                    </span>
+                    <span className="text-[13px] text-slate-700 leading-[20px]">
+                      {message}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Section>
+
+      {/* Action CTA */}
+      <Section className="text-left my-[24px]">
         <Button
-          href="https://compliance.in/services"
-          className="bg-indigo-600 text-white font-bold text-[14px] rounded-lg px-[28px] py-[12px] inline-block shadow-sm"
+          href={siteConfig.getAbsoluteUrl("/services")}
+          className="bg-indigo-600 text-white font-semibold text-[13px] rounded-lg px-[24px] py-[11px] inline-block no-underline"
         >
-          Explore All Compliance Services →
+          Explore services
         </Button>
       </Section>
     </EmailLayout>

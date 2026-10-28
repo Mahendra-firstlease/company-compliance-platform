@@ -1,59 +1,41 @@
 "use client";
 
-import { downloadFile } from "@/utils/download";
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle,
   CheckCircle2,
-  XCircle,
-  X,
-  ShieldAlert,
-  Clock,
-  Send,
-  UserCheck,
   AlertTriangle,
   Loader2,
   FileText,
   Download,
   Award,
-  CreditCard,
   MessageSquare,
-  Building2,
-  User,
   Phone,
-  Mail,
-  ShieldCheck,
-  Calendar,
   ExternalLink,
+  X,
+  Paperclip,
+  Send,
   Eye,
+  Check,
 } from "lucide-react";
 import Button from "@/components/common/Button";
-import StatusBadge from "@/components/common/StatusBadge";
-import FieldValue from "@/components/common/FieldValue";
-import Select from "@/components/forms/Select";
-import Textarea from "@/components/forms/Textarea";
 import Input from "@/components/forms/Input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import FieldValue from "@/components/common/FieldValue";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   getApplicationBySlug,
   updateApplication,
   ApplicationCase,
   certificateDownloadName,
+  resolveDocumentViewUrl,
 } from "@/lib/applications";
-import { FileUpload, MultiFileUpload, UploadedFile } from "@/components/upload";
+import { MultiFileUpload, UploadedFile } from "@/components/upload";
 import { notify } from "@/lib/notify";
-import apiFetch from "@/lib/apiClient";
 import { formatDate } from "@/utils/formatters";
+import { downloadFile } from "@/utils/download";
 import {
   areApplicantFilesApproved,
   canAdvanceWorkflowStatus,
@@ -63,20 +45,14 @@ import {
   isFormDataApproved,
 } from "@/lib/application-workflow";
 
-interface SpecialistMember {
-  id: string;
-  name: string;
-  role: string;
-}
-
 export default function AdminApplicationDetailPage() {
   const params = useParams();
   const caseId = params.id as string;
+  const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const documentsSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [application, setApplication] = useState<ApplicationCase | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [specialists, setSpecialists] = useState<SpecialistMember[]>([]);
-  const [assignedOfficer, setAssignedOfficer] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const [queryText, setQueryText] = useState("");
   const [isUploadingCert, setIsUploadingCert] = useState(false);
@@ -88,17 +64,20 @@ export default function AdminApplicationDetailPage() {
     Record<string, { status: "VERIFIED" | "DEFECTIVE"; reason?: string }>
   >({});
   const [flaggingDocKey, setFlaggingDocKey] = useState<string | null>(null);
+  const [flaggingFieldKey, setFlaggingFieldKey] = useState<string | null>(null);
+  const [fieldQueryInput, setFieldQueryInput] = useState("");
   const [selectedReason, setSelectedReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [previewDocument, setPreviewDocument] = useState<{
     docKey: string;
     file: UploadedFile;
   } | null>(null);
+
   const submittedFormEntries = getSubmittedFormEntries(
     application?.formData || {},
   );
 
-  // Load application details & team specialists
+  // Load application details
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -106,7 +85,6 @@ export default function AdminApplicationDetailPage() {
         const data = await getApplicationBySlug(caseId);
         if (data) {
           setApplication(data);
-          setAssignedOfficer(data.assignedExecutive || "");
           setDocVerifications(data.formData?._docVerification || {});
         }
       } catch (err) {
@@ -116,14 +94,6 @@ export default function AdminApplicationDetailPage() {
       }
     }
     loadData();
-
-    // Mock Team Specialists List
-    setSpecialists([
-      { id: "1", name: "Rahul Sharma (CA)", role: "Senior Tax Consultant" },
-      { id: "2", name: "Priya Patel (CS)", role: "Company Law Specialist" },
-      { id: "3", name: "Amit Verma (Advocate)", role: "Trademark Attorney" },
-      { id: "4", name: "Neha Gupta (Compliance Lead)", role: "Filing Manager" },
-    ]);
   }, [caseId]);
 
   // Handle Verify Document
@@ -145,9 +115,71 @@ export default function AdminApplicationDetailPage() {
 
     if (res.success && res.data) {
       setApplication(res.data);
-      notify.success(`Document '${docKey}' verified successfully! 🟢`);
+      notify.success(`Document '${docKey}' verified successfully!`);
     } else {
       notify.error("Failed to verify document.");
+    }
+  };
+
+  // Handle Field-level Query
+  const handleSendFieldQuery = async (fieldKey: string) => {
+    if (!application || !fieldQueryInput.trim()) {
+      notify.error("Please enter a correction note for this field.");
+      return;
+    }
+
+    const currentForm = (application.formData || {}) as Record<string, any>;
+    const currentQueries = (currentForm._fieldQueries || {}) as Record<string, any>;
+    const updatedQueries = {
+      ...currentQueries,
+      [fieldKey]: {
+        message: fieldQueryInput.trim(),
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    const queryTextMsg = `Correction required on ${fieldKey.replace(/_/g, " ")}: ${fieldQueryInput.trim()}`;
+
+    const res = await updateApplication(application.id, {
+      query: queryTextMsg,
+      formData: {
+        ...currentForm,
+        _fieldQueries: updatedQueries,
+      },
+    });
+
+    if (res.success && res.data) {
+      setApplication(res.data);
+      setFlaggingFieldKey(null);
+      setFieldQueryInput("");
+      notify.success(`Query raised on '${fieldKey.replace(/_/g, " ")}' and sent to client.`);
+    } else {
+      notify.error("Failed to raise query on field.");
+    }
+  };
+
+  const handleClearFieldQuery = async (fieldKey: string) => {
+    if (!application) return;
+
+    const currentForm = (application.formData || {}) as Record<string, any>;
+    const currentQueries = { ...((currentForm._fieldQueries || {}) as Record<string, any>) };
+    delete currentQueries[fieldKey];
+
+    const hasRemainingQueries = Object.keys(currentQueries).length > 0;
+
+    const res = await updateApplication(application.id, {
+      query: hasRemainingQueries ? application.query : "",
+      formData: {
+        ...currentForm,
+        _fieldQueries: currentQueries,
+      },
+    });
+
+    if (res.success && res.data) {
+      setApplication(res.data);
+      notify.success(`Query on '${fieldKey.replace(/_/g, " ")}' cleared.`);
+    } else {
+      notify.error("Failed to clear query.");
     }
   };
 
@@ -157,9 +189,7 @@ export default function AdminApplicationDetailPage() {
     const reasonText =
       selectedReason === "Other" ? customReason.trim() : selectedReason;
     if (!reasonText) {
-      notify.error(
-        "Please select or enter a reason for flagging this document.",
-      );
+      notify.error("Please select or enter a reason for flagging this document.");
       return;
     }
 
@@ -179,17 +209,13 @@ export default function AdminApplicationDetailPage() {
 
     if (res.success && res.data) {
       setApplication(res.data);
-
-      // Smart Feature: Auto-fill Raise Query text
       const autoQueryMsg = `Document verification issue identified on '${flaggingDocKey}': ${reasonText}. Please re-upload a clear and valid copy.`;
       setQueryText(autoQueryMsg);
-
-      notify.warning(
-        `'${flaggingDocKey}' flagged as defective 🔴 Query alert pre-filled below!`,
-      );
+      notify.warning(`'${flaggingDocKey}' flagged as defective  Message pre-filled below.`);
       setFlaggingDocKey(null);
       setSelectedReason("");
       setCustomReason("");
+      messageInputRef.current?.scrollIntoView({ behavior: "smooth" });
     } else {
       notify.error("Failed to flag document.");
     }
@@ -279,46 +305,71 @@ export default function AdminApplicationDetailPage() {
 
     if (res.success && res.data) {
       setApplication(res.data);
-      notify.success("Applicant form details approved by compliance officer.");
+      notify.success("Applicant form details approved by admin.");
     } else {
       notify.error("Failed to approve applicant form details.");
     }
   };
 
-  // Assign Executive / Officer
-  const handleAssignOfficer = async (execName: string) => {
-    if (!application) return;
-    setAssignedOfficer(execName);
-    try {
-      const res = await updateApplication(application.id, {
-        assignedExecutive: execName,
-      });
-      if (res.success && res.data) {
-        setApplication(res.data);
-        notify.success(`Assigned ${execName} as case specialist.`);
-      }
-    } catch (err) {
-      notify.error("Failed to assign executive.");
-    }
-  };
-
-  // Raise Customer Query Alert
+  // Raise Customer Query Alert with Smart Field Matching
   const handleRaiseQuery = async () => {
     if (!application || !queryText.trim()) {
-      notify.error("Please enter a query message for the client.");
+      notify.error("Please enter a message for the client.");
       return;
     }
     try {
+      const currentForm = (application.formData || {}) as Record<string, any>;
+      const currentQueries = { ...((currentForm._fieldQueries || {}) as Record<string, any>) };
+      const lowerMsg = queryText.toLowerCase();
+
+      // Smart Field Matching
+      const formKeys = Object.keys(currentForm).filter((k) => !k.startsWith("_"));
+      let smartMatchedCount = 0;
+
+      for (const key of formKeys) {
+        const lowerKey = key.toLowerCase();
+        const isPanMatch = lowerMsg.includes("pan") && lowerKey.includes("pan");
+        const isAddressMatch = lowerMsg.includes("address") && lowerKey.includes("address");
+        const isPhoneMatch =
+          (lowerMsg.includes("phone") || lowerMsg.includes("mobile")) &&
+          (lowerKey.includes("phone") || lowerKey.includes("mobile"));
+        const isNameMatch =
+          (lowerMsg.includes("trade") || lowerMsg.includes("name")) &&
+          (lowerKey.includes("trade") || lowerKey.includes("name"));
+        const isAadhaarMatch = lowerMsg.includes("aadhaar") && lowerKey.includes("aadhaar");
+        const isEmailMatch = lowerMsg.includes("email") && lowerKey.includes("email");
+
+        if (isPanMatch || isAddressMatch || isPhoneMatch || isNameMatch || isAadhaarMatch || isEmailMatch) {
+          currentQueries[key] = {
+            message: queryText.trim(),
+            createdAt: new Date().toISOString(),
+            autoTagged: true,
+          };
+          smartMatchedCount++;
+        }
+      }
+
       const res = await updateApplication(application.id, {
         query: queryText.trim(),
+        formData: {
+          ...currentForm,
+          _fieldQueries: currentQueries,
+        },
       });
+
       if (res.success && res.data) {
         setApplication(res.data);
         setQueryText("");
-        notify.warning("Query alert sent to customer workspace.");
+        if (smartMatchedCount > 0) {
+          notify.success(`Message sent & smart-matched ${smartMatchedCount} field(s) for client correction.`);
+        } else {
+          notify.success("Message sent to customer workspace.");
+        }
+      } else {
+        notify.error("Failed to send message.");
       }
     } catch (err) {
-      notify.error("Failed to raise query alert.");
+      notify.error("Failed to send message.");
     }
   };
 
@@ -326,11 +377,20 @@ export default function AdminApplicationDetailPage() {
   const handleClearQuery = async () => {
     if (!application) return;
     try {
-      const res = await updateApplication(application.id, { query: "" });
+      const currentForm = (application.formData || {}) as Record<string, any>;
+      const res = await updateApplication(application.id, {
+        query: "",
+        formData: {
+          ...currentForm,
+          _fieldQueries: {},
+        },
+      });
       if (res.success && res.data) {
         setApplication(res.data);
         setQueryText("");
-        notify.success("Active query warning cleared.");
+        notify.success("Customer query and field flags marked as resolved.");
+      } else {
+        notify.error("Failed to clear query.");
       }
     } catch (err) {
       notify.error("Failed to clear query.");
@@ -342,16 +402,12 @@ export default function AdminApplicationDetailPage() {
     if (!application) return;
 
     if (certFiles.length === 0 && !certName.trim()) {
-      notify.error(
-        "Please attach at least one certificate file or enter a title.",
-      );
+      notify.error("Please attach at least one certificate file or enter a title.");
       return;
     }
 
     if (application.status !== "SUBMITTED" && application.status !== "APPROVED") {
-      notify.error(
-        'Advance the filing stage to "Submitted to Ministry" before issuing certificates.',
-      );
+      notify.error('Advance filing stage to "Submitted to Ministry" before issuing certificates.');
       return;
     }
 
@@ -409,9 +465,7 @@ export default function AdminApplicationDetailPage() {
         if (refreshed) setApplication(refreshed);
         setCertName("");
         setCertFiles([]);
-        notify.success(
-          `Issued ${successCount} official certificate(s) to the customer.`,
-        );
+        notify.success(`Issued ${successCount} official certificate(s) to the customer.`);
       }
     } catch (err) {
       notify.error("Failed to issue certificates.");
@@ -420,10 +474,78 @@ export default function AdminApplicationDetailPage() {
     }
   };
 
+  // Template Quick Click Helper
+  const applyTemplate = (template: string) => {
+    setQueryText(template);
+    messageInputRef.current?.focus();
+  };
+
+  // Calculate Next Step Configuration
+  const nextStepInfo = useMemo(() => {
+    if (!application) return null;
+    const status = application.status;
+
+    if (
+      status === "PAYMENT_CONFIRMED" ||
+      status === "DOCUMENTS_PENDING" ||
+      status === "PAYMENT_PENDING"
+    ) {
+      return {
+        target: "UNDER_REVIEW",
+        title: "Start verification",
+        description: "Review applicant files and begin backoffice CA audit.",
+        buttonLabel: "Start review",
+        canAdvance: canAdvanceTo("UNDER_REVIEW"),
+        blockers: getStatusBlockers("UNDER_REVIEW"),
+      };
+    }
+
+    if (status === "UNDER_REVIEW") {
+      return {
+        target: "SUBMITTED",
+        title: "Submit to government",
+        description: `Send the verified application to the ${application.serviceTitle} portal.`,
+        buttonLabel: "Submit to govt",
+        canAdvance: canAdvanceTo("SUBMITTED"),
+        blockers: getStatusBlockers("SUBMITTED"),
+      };
+    }
+
+    if (status === "SUBMITTED") {
+      return {
+        target: "APPROVED",
+        title: "Approve and issue certificate",
+        description: "Ministry processing is complete. Release the official registration certificate to the client.",
+        buttonLabel: "Approve & issue",
+        canAdvance: canAdvanceTo("APPROVED"),
+        blockers: getStatusBlockers("APPROVED"),
+      };
+    }
+
+    return {
+      target: null,
+      title: "Filing completed",
+      description: "All statutory requirements satisfied and certificate delivered.",
+      buttonLabel: "Completed",
+      canAdvance: false,
+      blockers: [],
+    };
+  }, [application, workflowContext, docVerifications]);
+
+  // Action Count Needed
+  const itemsNeedingAction = useMemo(() => {
+    if (!application) return 0;
+    let count = 0;
+    if (docSummary.total === 0 || !filesApproved) count++;
+    if (!formApproved && submittedFormEntries.length > 0) count++;
+    if (application.query) count++;
+    return count;
+  }, [docSummary, filesApproved, formApproved, submittedFormEntries, application?.query]);
+
   if (isLoading) {
     return (
-      <div className="p-12 text-center space-y-3">
-        <Loader2 className="size-8 text-primary animate-spin mx-auto" />
+      <div className="p-16 text-center space-y-3">
+        <Loader2 className="size-8 text-emerald-700 animate-spin mx-auto" />
         <p className="text-xs text-slate-500 font-semibold">
           Loading case workspace...
         </p>
@@ -433,7 +555,7 @@ export default function AdminApplicationDetailPage() {
 
   if (!application) {
     return (
-      <div className="p-12 text-center space-y-4">
+      <div className="p-16 text-center space-y-4">
         <AlertTriangle className="size-10 text-amber-500 mx-auto" />
         <h2 className="text-lg font-bold text-slate-800">
           Application Case Not Found
@@ -452,135 +574,124 @@ export default function AdminApplicationDetailPage() {
     );
   }
 
-  const steps = [
+  // Active step ranking for horizontal stepper
+  const currentStepMap: Record<string, number> = {
+    PAYMENT_PENDING: 1,
+    PAYMENT_CONFIRMED: 1,
+    DOCUMENTS_PENDING: 1,
+    UNDER_REVIEW: 2,
+    SUBMITTED: 3,
+    APPROVED: 4,
+  };
+  const activeStepNo = currentStepMap[application.status] || 2;
+
+  const stepperSteps = [
     {
-      key: "PAYMENT_CONFIRMED",
-      title: "Payment Verified",
-      sub: "Fee received via Razorpay",
+      num: 1,
+      title: "Payment verified",
+      subtitle: `Razorpay · ${formatDate(application.createdAt)}`,
     },
     {
-      key: "UNDER_REVIEW",
-      title: "Under Verification",
-      sub: "CA Audit & Document Check",
+      num: 2,
+      title: "Under verification",
+      subtitle: "CA audit and document check",
     },
     {
-      key: "SUBMITTED",
-      title: "Submitted to Ministry",
-      sub: "Govt MCA/GST Filing Portal",
+      num: 3,
+      title: "Submitted to ministry",
+      subtitle: `Filed on the portal`,
     },
     {
-      key: "APPROVED",
-      title: "Approved & Issued",
-      sub: "Certificate Ready for Download",
+      num: 4,
+      title: "Approved and issued",
+      subtitle: "Certificate ready to download",
     },
   ];
 
-  const currentStepIdx = steps.findIndex((s) => s.key === application.status);
-  const activeStepNumber =
-    currentStepIdx >= 0
-      ? currentStepIdx + 1
-      : application.status === "APPROVED"
-        ? 4
-        : 1;
+  const applicantDocsList = Object.entries(application.uploadedDocs || {}).filter(
+    ([k]) => !k.startsWith("_"),
+  );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-12">
-      {/* Top Header & Breadcrumbs */}
-      <div className="space-y-3 border-b border-slate-200/80 pb-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href="/admin/applications" className="w-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs font-bold gap-1.5 cursor-pointer"
-            >
-              <ArrowLeft size={14} /> Back to Filing Queue
-            </Button>
-          </Link>
+    <div className="space-y-6 animate-in fade-in duration-200 pb-16 font-sans">
+      {/* Top Breadcrumb */}
+      <div>
+        <Link
+          href="/admin/applications"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft size={14} /> Back to filing queue
+        </Link>
+      </div>
 
-          <StatusBadge
-            status={application.query ? "QUERY_RAISED" : application.status}
-            size="md"
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                {application.serviceTitle}
-              </h1>
-              <span className="font-mono text-xs font-bold text-primary bg-primary-light px-2.5 py-0.5 rounded-full border border-primary-border shrink-0">
+      {/* Case Header Hero */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="size-14 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center shrink-0 shadow-2xs">
+            <FileText size={26} className="text-emerald-700" />
+          </div>
+          <div className="space-y-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+              {application.serviceTitle}
+            </h1>
+            <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500">
+              <span className="font-bold text-slate-800">{application.customerName}</span>
+              <span>&middot;</span>
+              <span>Submitted {formatDate(application.createdAt)}</span>
+              <span>&middot;</span>
+              <span className="font-mono text-slate-500 font-semibold">
                 #{application.id}
               </span>
             </div>
-            <p className="text-xs text-slate-500 flex flex-wrap items-center gap-1.5">
-              <span>Customer: <strong className="text-slate-800">{application.customerName}</strong></span>
-              <span>&middot;</span>
-              <span>Submitted {formatDate(application.createdAt)}</span>
-            </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-            <a
-              href={`https://wa.me/${application.customerPhone.replace(/[^0-9]/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto"
-            >
-              <Button
-                variant="primary"
-                size="sm"
-                className="w-full sm:w-auto text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 border-0 shadow-xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer py-2 px-3.5"
-              >
-                <MessageSquare size={14} className="text-white" /> WhatsApp Applicant
-              </Button>
-            </a>
-          </div>
+        {/* Status Badge */}
+        <div className="shrink-0 self-start md:self-center">
+          <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full px-3.5 py-1 text-xs font-bold shadow-2xs">
+            <Check size={14} className="stroke-[2.5]" /> Payment confirmed
+          </span>
         </div>
       </div>
 
-      {/* Visual Filing Stepper */}
+      {/* Horizontal Step Progress Bar */}
       <Card>
-        <CardContent className="p-3.5 sm:p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 relative">
-            {steps.map((step, idx) => {
-              const stepNo = idx + 1;
-              const isCompleted =
-                activeStepNumber > stepNo || application.status === "APPROVED";
-              const isCurrent =
-                activeStepNumber === stepNo &&
-                application.status !== "APPROVED";
+        <CardContent className="p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stepperSteps.map((step) => {
+              const isDone =
+                activeStepNo > step.num || application.status === "APPROVED";
+              const isInProgress =
+                activeStepNo === step.num && application.status !== "APPROVED";
 
               return (
-                <div
-                  key={step.key}
-                  className={`p-3 rounded-lg border transition-all ${
-                    isCompleted
-                      ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                      : isCurrent
-                        ? "bg-[color-mix(in_srgb,var(--primary)_8%,white)] border-[color-mix(in_srgb,var(--primary)_25%,transparent)] ring-1 ring-[color-mix(in_srgb,var(--primary)_10%,transparent)] text-[var(--primary)] shadow-xs"
-                        : "bg-slate-50/60 border-slate-200 text-slate-400"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div
-                      className={`size-6 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${
-                        isCompleted
-                          ? "bg-emerald-600 text-white"
-                          : isCurrent
-                            ? "bg-[var(--primary)] text-white shadow-xs animate-pulse"
-                            : "bg-slate-200 text-slate-500"
-                      }`}
-                    >
-                      {isCompleted ? "✓" : stepNo}
-                    </div>
-                    <span className="text-xs font-black leading-tight">
-                      {step.title}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 font-medium pl-8 leading-snug">
-                    {step.sub}
+                <div key={step.num} className="space-y-1.5">
+                  <div
+                    className={`h-1 w-full rounded-full mb-3 ${
+                      isDone
+                        ? "bg-emerald-600"
+                        : isInProgress
+                          ? "bg-blue-600"
+                          : "bg-slate-200"
+                    }`}
+                  />
+                  <span
+                    className={`text-[11px] font-extrabold uppercase tracking-wider block ${
+                      isDone
+                        ? "text-emerald-800"
+                        : isInProgress
+                          ? "text-blue-700"
+                          : "text-slate-400"
+                    }`}
+                  >
+                    {step.num} &middot;{" "}
+                    {isDone ? "DONE" : isInProgress ? "IN PROGRESS" : "UP NEXT"}
+                  </span>
+                  <p className="font-bold text-sm text-slate-900 leading-tight">
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-slate-500 leading-normal">
+                    {step.subtitle}
                   </p>
                 </div>
               );
@@ -590,834 +701,779 @@ export default function AdminApplicationDetailPage() {
       </Card>
 
       {/* Main Grid: 2-Column Desktop View */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Workflow Actions & Uploaded Documents */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column (Approx 66% width) */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Card 1: Filing Stage Workflow & Actions */}
+          {/* Card 1: NEXT STEP */}
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle>Advance Filing Stage & Actions</CardTitle>
-              <CardDescription>
-                Update filing lifecycle, manage customer queries, or issue
-                certificates.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 space-y-5">
-              {application.query || application.queryResponse ? (
-                <div className="space-y-4">
-                  <div
-                    className={`p-4 sm:p-5 rounded-lg border shadow-xs space-y-3.5 ${
-                      application.queryStatus === "CLIENT_RESPONDED"
-                        ? "bg-primary-light/90 border-primary-border text-primary"
-                        : "bg-amber-50/90 border-amber-200 text-amber-950"
+            <CardContent className="p-6 space-y-5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                  NEXT STEP
+                </span>
+                {itemsNeedingAction > 0 ? (
+                  <span className="bg-amber-100/90 text-amber-900 border border-amber-200 px-3 py-0.5 rounded-full text-xs font-bold flex items-center gap-1.5">
+                    <AlertTriangle size={13} className="text-amber-700" />
+                    <span>
+                      {itemsNeedingAction} item
+                      {itemsNeedingAction > 1 ? "s" : ""} needs action
+                    </span>
+                  </span>
+                ) : (
+                  <span className="bg-emerald-100/90 text-emerald-900 border border-emerald-200 px-3 py-0.5 rounded-full text-xs font-bold flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-emerald-700" />
+                    <span>Ready to advance</span>
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                  {nextStepInfo?.title}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {nextStepInfo?.description}
+                </p>
+              </div>
+
+              {/* Checklist Items */}
+              <div className="space-y-2.5">
+                {/* 1. Payment Received */}
+                <div className="p-3.5 rounded-xl border border-slate-200/80 bg-white flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <Check size={14} className="stroke-[2.5]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-900">Payment received</p>
+                      <p className="text-[11px] text-slate-500">
+                        ₹{(application.totalFee || 0).toLocaleString("en-IN")} paid via Razorpay
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 shrink-0">
+                    Done
+                  </span>
+                </div>
+
+                {/* 2. Customer Queries Resolved */}
+                <div
+                  className={`p-3.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                    application.query
+                      ? "border-amber-200 bg-amber-50/50"
+                      : "border-slate-200/80 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`size-6 rounded-full flex items-center justify-center shrink-0 ${
+                        application.query
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {application.query ? (
+                        <AlertTriangle size={13} />
+                      ) : (
+                        <Check size={14} className="stroke-[2.5]" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-900">
+                        Customer queries resolved
+                      </p>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {application.query
+                          ? `Active query: "${application.query}"`
+                          : "No open queries"}
+                      </p>
+                    </div>
+                  </div>
+                  {application.query ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClearQuery}
+                      className="border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-xs py-1 px-3 h-8 rounded-lg shrink-0 cursor-pointer"
+                    >
+                      Resolve query
+                    </Button>
+                  ) : (
+                    <span className="text-xs font-bold text-emerald-700 shrink-0">
+                      Done
+                    </span>
+                  )}
+                </div>
+
+                {/* 3. Documents Uploaded and Verified */}
+                <div
+                  className={`p-3.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                    docSummary.total === 0 || !filesApproved
+                      ? "border-amber-200 bg-amber-50/60"
+                      : "border-slate-200/80 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`size-6 rounded-full flex items-center justify-center shrink-0 ${
+                        docSummary.total === 0 || !filesApproved
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {docSummary.total === 0 || !filesApproved ? (
+                        <span className="font-black text-xs">!</span>
+                      ) : (
+                        <Check size={14} className="stroke-[2.5]" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-900">
+                        Documents uploaded and verified
+                      </p>
+                      <p className="text-[11px] text-amber-800 font-medium">
+                        {docSummary.total === 0
+                          ? "The customer has not uploaded any files yet"
+                          : filesApproved
+                            ? `All ${docSummary.total} documents verified`
+                            : `${docSummary.verified}/${docSummary.total} verified (${docSummary.defective > 0 ? `${docSummary.defective} defective` : `${docSummary.pending} pending`})`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {docSummary.total === 0 ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        applyTemplate(
+                          "Please upload the required verification documents in your workspace so we can proceed with your application.",
+                        );
+                      }}
+                      className="border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-xs py-1 px-3 h-8 rounded-lg shrink-0 cursor-pointer bg-white"
+                    >
+                      Request documents
+                    </Button>
+                  ) : !filesApproved ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        documentsSectionRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                        });
+                      }}
+                      className="border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-xs py-1 px-3 h-8 rounded-lg shrink-0 cursor-pointer bg-white"
+                    >
+                      Review documents
+                    </Button>
+                  ) : (
+                    <span className="text-xs font-bold text-emerald-700 shrink-0">
+                      Done
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Button & Explanatory Text */}
+              <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
+                {nextStepInfo?.target ? (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => handleUpdateStatus(nextStepInfo.target!)}
+                    disabled={
+                      isUpdatingStatus !== null || !nextStepInfo.canAdvance
+                    }
+                    title={nextStepInfo.blockers[0]}
+                    className={`font-bold text-xs py-2.5 px-6 rounded-lg shrink-0 cursor-pointer ${
+                      nextStepInfo.canAdvance
+                        ? "bg-[#008069] hover:bg-[#00705c] text-white"
+                        : "bg-slate-200 text-slate-500 cursor-not-allowed border-0 opacity-80"
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                        <div
-                          className={`size-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                            application.queryStatus === "CLIENT_RESPONDED"
-                              ? "bg-primary-light text-primary"
-                              : "bg-amber-100 text-amber-700 animate-pulse"
-                          }`}
-                        >
-                          <AlertTriangle className="size-5" />
-                        </div>
-                        <div className="min-w-0 space-y-1.5 flex-1">
-                          <h4 className="font-extrabold text-xs sm:text-sm tracking-tight leading-snug">
-                            {application.queryStatus === "CLIENT_RESPONDED"
-                              ? "Client Responded to Active Query"
-                              : "Active Query Alert Pending Customer Response"}
-                          </h4>
-                          <div className="p-2.5 bg-white/90 rounded-lg border border-amber-200/60 shadow-2xs font-mono text-[11px] leading-relaxed text-slate-800 break-words">
-                            "{application.query || application.queryNote}"
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 self-start sm:self-center">
-                        <StatusBadge
-                          status={application.queryStatus || "QUERY_RAISED"}
-                          size="sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Render Client Written Response & Uploaded Files if Client Responded */}
-                    {application.queryResponse && (
-                      <div className="p-3.5 bg-white rounded-lg border border-slate-200/80 shadow-2xs space-y-2 text-xs">
-                        <span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider block">
-                          Applicant Written Clarification:
-                        </span>
-                        <p className="text-slate-900 font-semibold bg-slate-50 p-3 rounded-lg border border-slate-200/60 italic leading-relaxed break-words">
-                          "{application.queryResponse}"
-                        </p>
-
-                        {application.clientResponseFiles &&
-                          application.clientResponseFiles.length > 0 && (
-                            <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                              <span className="font-bold text-[11px] text-slate-600 block">
-                                Re-uploaded Document(s):
-                              </span>
-                              <div className="flex flex-wrap gap-2">
-                                {application.clientResponseFiles.map(
-                                  (file: any, idx: number) => (
-                                    <FieldValue
-                                      key={idx}
-                                      value={file}
-                                      compact
-                                    />
-                                  ),
-                                )}
-                              </div>
-                            </div>
-                          )}
-                      </div>
+                    {isUpdatingStatus ? (
+                      <span className="flex items-center gap-1.5">
+                        <Loader2 size={14} className="animate-spin" /> Updating...
+                      </span>
+                    ) : (
+                      nextStepInfo.buttonLabel
                     )}
+                  </Button>
+                ) : (
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-lg">
+                    ✔ Application Completed
+                  </span>
+                )}
+                <span className="text-xs text-slate-500 leading-relaxed">
+                  Unlocks after documents are verified. The certificate is issued
+                  once the ministry approves.
+                </span>
+              </div>
+            </CardContent>
+          </Card>
 
-                    <div className="pt-1">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleClearQuery}
-                        className="w-full sm:w-auto text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-xs flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg active:scale-95 cursor-pointer"
-                        leftIcon={
-                          <CheckCircle className="size-4 text-white" />
-                        }
-                      >
-                        Approve & Mark Query Resolved
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Move Filing Stage Forward
-                  </label>
+          {/* Card 2: Message the Customer */}
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Message the customer
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Ask for a document or a correction. The customer sees it in their
+                  workspace.
+                </p>
+              </div>
 
-                  {(!formApproved || !filesApproved) && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 space-y-1.5">
-                      <p className="font-extrabold flex items-center gap-1.5">
-                        <ShieldAlert className="size-4 shrink-0" />
-                        Complete client review before advancing
-                      </p>
-                      {!formApproved && submittedFormEntries.length > 0 && (
-                        <p>• Approve submitted form data and information.</p>
-                      )}
-                      {!filesApproved && docSummary.total > 0 && (
-                        <p>
-                          • Verify all applicant files (
-                          {docSummary.verified}/{docSummary.total} verified
-                          {docSummary.defective > 0
-                            ? `, ${docSummary.defective} defective`
-                            : ""}
-                          ).
-                        </p>
-                      )}
-                      {!filesApproved && docSummary.total === 0 && (
-                        <p>• Wait for applicant files before advancing.</p>
-                      )}
-                    </div>
-                  )}
+              {/* Quick Templates */}
+              <div className="flex items-center gap-2 flex-wrap pt-1 text-xs">
+                <span className="text-slate-500 font-medium">Quick templates</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    applyTemplate(
+                      "Please upload the required verification documents in your workspace so we can proceed with your application.",
+                    )
+                  }
+                  className="px-3 py-1 rounded-full border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 font-semibold cursor-pointer transition-colors"
+                >
+                  Request documents
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    applyTemplate(
+                      "Some submitted details require correction. Please review your form information and update accordingly.",
+                    )
+                  }
+                  className="px-3 py-1 rounded-full border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 font-semibold cursor-pointer transition-colors"
+                >
+                  Correct details
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    applyTemplate(
+                      "We need additional clarification regarding your filing before we can submit it to the government portal.",
+                    )
+                  }
+                  className="px-3 py-1 rounded-full border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 font-semibold cursor-pointer transition-colors"
+                >
+                  Need clarification
+                </button>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <Button
-                      variant={
-                        application.status === "UNDER_REVIEW"
-                          ? "primary"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => handleUpdateStatus("UNDER_REVIEW")}
-                      disabled={
-                        isUpdatingStatus !== null ||
-                        !canAdvanceTo("UNDER_REVIEW")
-                      }
-                      title={getStatusBlockers("UNDER_REVIEW")[0]}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer disabled:cursor-not-allowed"
-                      leftIcon={
-                        isUpdatingStatus === "UNDER_REVIEW" ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <UserCheck className="size-4" />
-                        )
-                      }
-                    >
-                      1. In Review
-                    </Button>
-
-                    <Button
-                      variant={
-                        application.status === "SUBMITTED"
-                          ? "primary"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => handleUpdateStatus("SUBMITTED")}
-                      disabled={
-                        isUpdatingStatus !== null || !canAdvanceTo("SUBMITTED")
-                      }
-                      title={getStatusBlockers("SUBMITTED")[0]}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 cursor-pointer disabled:cursor-not-allowed"
-                      leftIcon={
-                        isUpdatingStatus === "SUBMITTED" ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Send className="size-4" />
-                        )
-                      }
-                    >
-                      2. Submit to Govt
-                    </Button>
-
-                    <Button
-                      variant={
-                        application.status === "APPROVED"
-                          ? "primary"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => handleUpdateStatus("APPROVED")}
-                      disabled={
-                        isUpdatingStatus !== null || !canAdvanceTo("APPROVED")
-                      }
-                      title={getStatusBlockers("APPROVED")[0]}
-                      className="rounded-lg justify-start font-bold text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      leftIcon={
-                        isUpdatingStatus === "APPROVED" ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <CheckCircle className="size-4" />
-                        )
-                      }
-                    >
-                      3. Approve & Issue
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Raise Customer Query */}
-              <div className="space-y-3 border-t border-slate-100 pt-4">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Raise Clarification Query to Customer Workspace
+              {/* Textarea */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700">
+                  Your message
                 </label>
-
-                <Select
-                  onChange={(val) => {
-                    if (val) setQueryText(val);
-                  }}
-                  placeholder="Quick Query Templates..."
-                  options={[
-                    { label: "Quick Query Templates...", value: "" },
-                    {
-                      label: "📄 Address proof blurred or unreadable",
-                      value:
-                        "Address proof blurred or unreadable. Please re-upload clear utility bill or registered lease agreement.",
-                    },
-                    {
-                      label: "🆔 PAN Card name mismatch",
-                      value:
-                        "PAN Card name does not match applicant full legal name. Please provide official name change proof or gazette copy.",
-                    },
-                    {
-                      label: "📑 Aadhaar Card front & back missing",
-                      value:
-                        "Aadhaar Card front and back side scans missing. Please upload complete document.",
-                    },
-                    {
-                      label: "🏬 FSSAI / Premises NOC Missing",
-                      value:
-                        "Premises No Objection Certificate (NOC) or electricity bill copy missing for business address verification.",
-                    },
-                    {
-                      label: "✍️ Signature Scan Invalid",
-                      value:
-                        "Specimen signature scan blurred or has colored background. Please upload clear black ink signature on white paper.",
-                    },
-                  ]}
-                />
-
-                <Textarea
-                  rows={2}
+                <textarea
+                  ref={messageInputRef}
+                  rows={4}
+                  maxLength={1000}
                   value={queryText}
                   onChange={(e) => setQueryText(e.target.value)}
-                  placeholder="Type specific query for client workspace..."
-                  className="text-xs p-2.5"
+                  placeholder="Write a message for the customer..."
+                  className="w-full text-xs p-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-700 bg-white leading-relaxed resize-y"
                 />
+                <div className="flex justify-end text-[11px] text-slate-400 font-mono">
+                  {queryText.length} / 1000
+                </div>
+              </div>
 
+              {/* Send Button */}
+              <div>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="md"
                   onClick={handleRaiseQuery}
-                  className="text-xs font-bold text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100"
-                  leftIcon={<AlertTriangle className="size-4 text-amber-600" />}
+                  className="bg-[#008069] hover:bg-[#00705c] text-white font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-2 cursor-pointer shadow-xs"
                 >
-                  Send Query Alert to Customer
+                  <Send size={14} /> Send to customer
                 </Button>
               </div>
-
-              {/* Issue Certificate Section (Only Visible when Submitted to Ministry or Approved) */}
-              {application.status === "SUBMITTED" ||
-              application.status === "APPROVED" ? (
-                <div className="space-y-3 border-t border-slate-100 pt-4">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Issue Official Government Filing Certificate
-                    </label>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle size={10} /> Unlocked (Submitted to Ministry)
-                    </span>
-                  </div>
-
-                  {application.issuedCertificates &&
-                    application.issuedCertificates.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-bold text-emerald-800">
-                          Issued Certificates:
-                        </p>
-                        {application.issuedCertificates.map((cert: any, i) => (
-                          <div
-                            key={i}
-                            className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between text-xs"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Award className="size-4 text-emerald-600 shrink-0" />
-                              <span className="font-bold text-emerald-900">
-                                {cert.certificateName || cert.name}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                downloadFile(
-                                  cert.certificateUrl || cert.url,
-                                  certificateDownloadName(
-                                    application.serviceTitle,
-                                    cert.certificateName || cert.name || "Official_Certificate",
-                                  ),
-                                )
-                              }
-                              className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1 cursor-pointer hover:underline"
-                            >
-                              <Download size={13} /> Download PDF
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                  <div className="space-y-3 bg-slate-50/70 border border-slate-200/80 rounded-lg p-4">
-                    <Input
-                      type="text"
-                      value={certName}
-                      onChange={(e) => setCertName(e.target.value)}
-                      placeholder="Certificate Title (e.g. Certificate of Incorporation - Form INC-11)"
-                      className="text-xs py-2 px-3 bg-white"
-                    />
-
-                    <MultiFileUpload
-                      label="Attach Official Certificate Document(s) (PDF / Image - auto-converted to PDF)"
-                      value={certFiles}
-                      onChange={setCertFiles}
-                      allowedTypes={["pdf", "png", "jpg", "jpeg"]}
-                      maxFiles={5}
-                      maxSizeMb={10}
-                      applicationId={application.id}
-                      convertToPdf
-                    />
-
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={handleIssueCertificate}
-                      disabled={
-                        isUploadingCert ||
-                        (!certName.trim() && certFiles.length === 0)
-                      }
-                      className="w-full sm:w-auto text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
-                      leftIcon={
-                        isUploadingCert ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Award className="size-4" />
-                        )
-                      }
-                    >
-                      {isUploadingCert
-                        ? "Issuing Certificate(s)..."
-                        : `Attach & Issue ${certFiles.length > 1 ? `${certFiles.length} Certificates` : "Certificate"} to Customer`}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-t border-slate-100 pt-4">
-                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-500 flex items-center gap-2.5">
-                    <Clock size={16} className="text-slate-400 shrink-0" />
-                    <span>
-                      Official Certificate Issuance will unlock once filing
-                      stage is advanced to{" "}
-                      <strong>2. Submit to Govt (Submitted to Ministry)</strong>
-                      .
-                    </span>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 
-          {/* Card 2: Submitted Applicant Form Data & Information */}
+          {/* 1. Application Details (Full Width Row) */}
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="size-4 text-primary" />
-                  Submitted Form Data & Information
-                </CardTitle>
-                <CardDescription>
-                  Dynamic form input fields provided by the applicant.
-                </CardDescription>
-              </div>
-              {submittedFormEntries.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleApproveFormData}
-                    disabled={formApproved}
-                    className={`text-xs font-bold ${
-                      formApproved
-                        ? "text-emerald-800 bg-emerald-100 border-emerald-300 opacity-90 cursor-default"
-                        : "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
-                    }`}
-                    leftIcon={<CheckCircle size={13} />}
-                  >
-                    {formApproved ? "Details Approved" : "Approve Details"}
-                  </Button>
-                )}
-            </CardHeader>
-            <CardContent className="p-5">
-              {submittedFormEntries.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {submittedFormEntries.map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg space-y-1"
-                    >
-                      <span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider block">
-                        {k.replace(/([A-Z])/g, " $1")}
-                      </span>
-                      <div className="font-bold text-xs text-slate-900 font-mono block break-words">
-                        <FieldValue value={v} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 text-center text-slate-400 text-xs italic">
-                  Standard checkout details: Customer (
-                  {application.customerName}), Phone (
-                  {application.customerPhone}), Address (
-                  {application.address || "N/A"}).
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Card: Query Communication Audit Log & History */}
-          {application.queryHistory && application.queryHistory.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+            <CardContent className="p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <AlertTriangle className="size-4 text-amber-500" />
-                    Query Communication History Log (
-                    {application.queryHistory.length})
-                  </CardTitle>
-                  <CardDescription>
-                    Chronological log of queries raised, specialist notes, and
-                    customer responses.
-                  </CardDescription>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Application details
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Applicant profile, contact info, and submitted statutory registration inputs.
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent className="p-5">
-                <div className="space-y-3">
-                  {application.queryHistory.map((item, idx) => (
-                    <div
-                      key={item.id || idx}
-                      className="p-4 rounded-lg bg-slate-50 border border-slate-200/80 space-y-2 text-xs"
+                <div className="flex items-center gap-2">
+                  {submittedFormEntries.length > 0 && !formApproved && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleApproveFormData}
+                      className="text-xs font-bold text-emerald-800 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 cursor-pointer flex items-center gap-1.5 h-8 px-3 rounded-lg"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-amber-900 bg-amber-100/70 px-2 py-0.5 rounded text-[11px]">
-                          Officer Query: "{item.queryText}"
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {item.respondedAt
-                            ? new Date(item.respondedAt).toLocaleDateString(
-                                "en-IN",
-                              )
-                            : "Pending"}
-                        </span>
-                      </div>
-
-                      {item.clientReply && (
-                        <div className="p-2.5 bg-white rounded-lg border border-slate-200 text-slate-800 space-y-1.5">
-                          <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider block">
-                            Customer Reply:
-                          </span>
-                          <p className="font-medium italic text-slate-900">
-                            "{item.clientReply}"
-                          </p>
-
-                          {item.clientFiles && item.clientFiles.length > 0 && (
-                            <div className="pt-1.5 border-t border-slate-100 space-y-1">
-                              <span className="text-[10px] font-bold text-slate-500 block">
-                                Attached File(s):
-                              </span>
-                              <div className="flex flex-wrap gap-2">
-                                {item.clientFiles.map(
-                                  (f: any, fIdx: number) => (
-                                    <FieldValue key={fIdx} value={f} compact />
-                                  ),
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                      <CheckCircle size={13} className="text-emerald-700" />
+                      <span>Approve Details</span>
+                    </Button>
+                  )}
+                  {formApproved && (
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <Check size={13} className="text-emerald-700 stroke-[2.5]" />
+                      <span>Approved</span>
+                    </span>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Card 3: Submitted Verification Documents Vault */}
-          <Card>
-            <CardHeader className="pb-4 border-b border-slate-100 flex flex-row items-start justify-between gap-4">
-              <div>
-                <CardTitle>
-                  Submitted Applicant Files ({Object.keys(application.uploadedDocs || {}).length})
-                </CardTitle>
-                <CardDescription>
-                  Preview each file, then verify it or raise a clear correction request.
-                </CardDescription>
               </div>
-              <span className="shrink-0 rounded-full border border-primary-border bg-primary-light px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-primary">
-                {filesApproved
-                  ? "All files verified"
-                  : `${docSummary.verified}/${docSummary.total || 0} verified`}
-              </span>
-            </CardHeader>
-            <CardContent className="p-5">
-              {Object.keys(application.uploadedDocs || {}).length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.entries(application.uploadedDocs || {}).map(
-                    ([docKey, docFile]: [string, any]) => {
-                      const verifInfo = docVerifications[docKey];
-                      const isVerified = verifInfo?.status === "VERIFIED";
-                      const isDefective = verifInfo?.status === "DEFECTIVE";
+
+              {/* Basic Details Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50/80 border border-slate-200/70 text-xs">
+                <div>
+                  <span className="text-slate-500 block text-[11px] font-semibold uppercase tracking-wider">
+                    Customer Name
+                  </span>
+                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">
+                    {application.customerName}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[11px] font-semibold uppercase tracking-wider">
+                    Contact Phone
+                  </span>
+                  <span className="font-mono font-bold text-slate-800 text-sm mt-0.5 block">
+                    {application.customerPhone}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[11px] font-semibold uppercase tracking-wider">
+                    Registered Address
+                  </span>
+                  <span className="font-medium text-slate-800 text-xs mt-0.5 block">
+                    {application.address || "Not provided"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Submitted Dynamic Form Data & Uploaded Documents */}
+              {submittedFormEntries.length > 0 && (
+                <div className="pt-2 space-y-3">
+                  <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">
+                    Submitted Registration Form Fields ({submittedFormEntries.length}):
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {submittedFormEntries.map(([k, v]) => {
+                      const fieldQueries = ((application.formData as any)?._fieldQueries || {}) as Record<string, { message: string }>;
+                      const currentFieldQuery = fieldQueries[k];
+                      const isFlaggingThisField = flaggingFieldKey === k;
 
                       return (
                         <div
-                          key={docKey}
-                          className={`p-4 rounded-lg border transition-all space-y-3 shadow-xs ${
-                            isVerified
-                              ? "bg-emerald-50/70 border-emerald-300"
-                              : isDefective
-                                ? "bg-rose-50/70 border-rose-300"
-                                : "bg-slate-50 border-slate-200"
+                          key={k}
+                          className={`p-3.5 rounded-xl border bg-white space-y-2 text-xs shadow-2xs transition-all ${
+                            currentFieldQuery
+                              ? "border-amber-300 ring-2 ring-amber-300/30 bg-amber-50/20"
+                              : "border-slate-200/80"
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">
-                              {docKey}
+                            <span className="text-slate-500 font-bold capitalize block text-[11px]">
+                              {k.replace(/_/g, " ")}
                             </span>
-
-                            {isVerified && (
-                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-emerald-300">
-                                <CheckCircle2
-                                  size={11}
-                                  className="text-emerald-600"
-                                />{" "}
-                                VERIFIED
-                              </span>
-                            )}
-                            {isDefective && (
-                              <span className="text-[10px] font-bold text-rose-800 bg-rose-100 px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-rose-300">
-                                <AlertTriangle
-                                  size={11}
-                                  className="text-rose-600"
-                                />{" "}
-                                DEFECTIVE
-                              </span>
-                            )}
-                            {!isVerified && !isDefective && (
-                              <span className="text-[10px] font-bold text-slate-600 bg-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                                <Clock size={11} /> PENDING AUDIT
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="text-xs text-slate-600 truncate font-mono bg-white/70 p-1.5 rounded border border-slate-200/70">
-                            {docFile.name}
-                          </p>
-
-                          <button
-                            type="button"
-                            onClick={() => setPreviewDocument({ docKey, file: docFile })}
-                            className="group relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-950 text-left transition hover:border-primary"
-                            title={`Preview ${docFile.name}`}
-                          >
-                            {docFile.url && /\.(png|jpe?g|webp)$/i.test(docFile.name || "") ? (
-                              <img
-                                src={docFile.url}
-                                alt={`Preview of ${docFile.name}`}
-                                className="size-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex items-center gap-2 text-slate-200">
-                                <FileText className="size-7 text-primary" />
-                                <span className="text-[11px] font-bold">PDF / document preview</span>
-                              </div>
-                            )}
-                            <span className="absolute inset-0 flex items-center justify-center gap-1.5 bg-slate-950/55 text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
-                              <Eye size={14} /> Preview file
-                            </span>
-                          </button>
-
-                          {isDefective && verifInfo.reason && (
-                            <p className="text-[11px] text-rose-900 font-semibold bg-rose-100/70 p-2 rounded-lg border border-rose-200/80">
-                              Reason: "{verifInfo.reason}"
-                            </p>
-                          )}
-
-                          <div className="flex flex-col gap-2.5 pt-1">
-                            {docFile.url ? (
+                            {currentFieldQuery ? (
                               <button
                                 type="button"
-                                onClick={() => setPreviewDocument({ docKey, file: docFile })}
-                                className="inline-flex w-fit items-center gap-1 text-xs font-bold text-primary hover:underline"
+                                onClick={() => handleClearFieldQuery(k)}
+                                className="text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-full cursor-pointer flex items-center gap-1 transition-colors"
+                                title="Click to clear query"
                               >
-                                <Eye size={13} /> Preview
+                                <span>Query Raised</span>
+                                <span className="font-mono text-slate-500">✕</span>
                               </button>
                             ) : (
-                              <span className="text-[10px] text-slate-400 font-mono">
-                                No URL
-                              </span>
-                            )}
-
-                            <div className="grid w-full grid-cols-2 gap-2">
-                              <Button
-                                variant={isVerified ? "outline" : "primary"}
-                                size="sm"
-                                onClick={() => handleVerifyDoc(docKey)}
-                                disabled={isVerified}
-                                className={`w-full min-w-0 whitespace-normal text-[11px] leading-tight font-black px-2 py-1.5 rounded-lg shadow-xs transition-all justify-center flex items-center gap-1 ${
-                                  isVerified
-                                    ? "bg-emerald-100 text-emerald-900 border-emerald-300 opacity-80 cursor-default"
-                                    : "bg-emerald-600 hover:bg-emerald-700 text-white border-0 cursor-pointer active:scale-95 shadow-sm"
-                                }`}
-                              >
-                                <CheckCircle2 size={13} className="shrink-0" />
-                                <span>{isVerified ? "Verified" : "Verify Doc"}</span>
-                              </Button>
-
-                              <Button
-                                variant={isDefective ? "outline" : "primary"}
-                                size="sm"
+                              <button
+                                type="button"
                                 onClick={() => {
-                                  setFlaggingDocKey(docKey);
-                                  setSelectedReason(
-                                    "Image blurred or unreadable scan",
-                                  );
-                                  setCustomReason("");
+                                  setFlaggingFieldKey(k);
+                                  setFieldQueryInput("");
                                 }}
-                                disabled={isDefective}
-                                className={`w-full min-w-0 whitespace-normal text-[11px] leading-tight font-black px-2 py-1.5 rounded-lg shadow-xs transition-all justify-center flex items-center gap-1 ${
-                                  isDefective
-                                    ? "bg-rose-100 text-rose-900 border-rose-300 opacity-80 cursor-default"
-                                    : "bg-rose-600 hover:bg-rose-700 text-white border-0 cursor-pointer active:scale-95 shadow-sm"
-                                }`}
+                                className="text-[10px] font-semibold text-slate-500 hover:text-amber-800 hover:bg-amber-50 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
                               >
-                                <AlertTriangle size={13} className="shrink-0" />
-                                <span>
-                                  {isDefective
-                                    ? "Flagged Defective"
-                                    : "Flag Defective"}
-                                </span>
-                              </Button>
-                            </div>
+                                Flag Query
+                              </button>
+                            )}
                           </div>
+
+                          <div className="font-medium text-slate-900 break-words">
+                            <FieldValue value={v} compact />
+                          </div>
+
+                          {currentFieldQuery && (
+                            <div className="text-[11px] p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-medium">
+                              <span className="font-bold text-[10px] uppercase tracking-wider block text-amber-800">Note to Client:</span>
+                              {currentFieldQuery.message}
+                            </div>
+                          )}
+
+                          {isFlaggingThisField && (
+                            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2 pt-2 animate-fade-in">
+                              <span className="text-[11px] font-bold text-slate-700 block">
+                                Request correction for {k.replace(/_/g, " ")}:
+                              </span>
+                              <input
+                                type="text"
+                                value={fieldQueryInput}
+                                onChange={(e) => setFieldQueryInput(e.target.value)}
+                                placeholder="e.g. Value does not match PAN / invalid format"
+                                className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                                autoFocus
+                              />
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setFlaggingFieldKey(null)}
+                                  className="h-7 text-[11px] px-2.5"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => handleSendFieldQuery(k)}
+                                  className="h-7 text-[11px] px-2.5 bg-[#008069] text-white"
+                                >
+                                  Send Query
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
-                    },
-                  )}
+                    })}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 2. Applicant Documents (Full Width Row, Below Details) */}
+          <Card ref={documentsSectionRef}>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Applicant documents
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Uploaded verification files, identification scans, and premises documents.
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+                  {applicantDocsList.length} files
+                </span>
+              </div>
+
+              {applicantDocsList.length === 0 ? (
+                <div className="border-2 border-dashed border-slate-200 rounded-xl p-10 text-center space-y-2.5">
+                  <Paperclip size={28} className="text-slate-400 mx-auto" />
+                  <p className="text-xs font-medium text-slate-600">
+                    No documents uploaded for this case yet.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      applyTemplate(
+                        "Please upload your required verification documents (PAN Card, Address Proof, Photographs) in the portal.",
+                      );
+                    }}
+                    className="text-xs font-bold text-primary hover:underline cursor-pointer block mx-auto"
+                  >
+                    Ask the customer to upload
+                  </button>
                 </div>
               ) : (
-                <div className="p-8 text-center text-slate-400 text-xs italic">
-                  No applicant verification files uploaded for this case.
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {applicantDocsList.map(([docKey, fileData]) => {
+                    const file = fileData as UploadedFile;
+                    const verification = docVerifications[docKey];
+                    const isVerified = verification?.status === "VERIFIED";
+                    const isDefective = verification?.status === "DEFECTIVE";
+
+                    return (
+                      <div
+                        key={docKey}
+                        className="p-3.5 rounded-xl border border-slate-200/90 bg-white space-y-2.5 text-xs shadow-2xs"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-slate-900 capitalize truncate">
+                            {docKey.replace(/_/g, " ")}
+                          </span>
+                          {isVerified ? (
+                            <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                              VERIFIED
+                            </span>
+                          ) : isDefective ? (
+                            <span className="text-[10px] font-extrabold text-rose-800 bg-rose-100 px-2.5 py-0.5 rounded-full">
+                              DEFECTIVE
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-extrabold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                              PENDING
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg">
+                          <span className="truncate max-w-[200px] font-mono">
+                            {file?.name || "Uploaded file"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewDocument({ docKey, file })}
+                            className="text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+                          >
+                            <Eye size={12} /> Inspect file
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleVerifyDoc(docKey)}
+                            disabled={isVerified}
+                            className={`h-8 text-xs font-bold px-3 flex-1 rounded-lg ${
+                              isVerified
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200 cursor-default"
+                                : "text-emerald-700 border-slate-300 hover:bg-emerald-50 cursor-pointer"
+                            }`}
+                          >
+                            {isVerified ? "Verified" : "Verify"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setFlaggingDocKey(docKey)}
+                            disabled={isDefective}
+                            className={`h-8 text-xs font-bold px-3 flex-1 rounded-lg ${
+                              isDefective
+                                ? "bg-rose-50 text-rose-800 border-rose-200 cursor-default"
+                                : "text-rose-700 border-slate-300 hover:bg-rose-50 cursor-pointer"
+                            }`}
+                          >
+                            {isDefective ? "Defective" : "Flag"}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column: Specialist Roster & Customer Summary */}
+        {/* Right Column (Approx 33% width) */}
         <div className="space-y-6">
-          {/* Card 1: Specialist Roster Assignment */}
+          {/* Card 1: Applicant */}
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle>Assigned Backoffice Specialist</CardTitle>
-              <CardDescription>
-                Assign or transfer case to a chartered accountant or legal desk
-                specialist.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 space-y-3">
-              <Select
-                value={assignedOfficer}
-                onChange={(val) => handleAssignOfficer(val)}
-                placeholder="-- Select Specialist from Database --"
-                options={[
-                  { label: "-- Select Specialist from Database --", value: "" },
-                  {
-                    label: "Unassigned (Clear Assignment)",
-                    value: "Unassigned",
-                  },
-                  ...specialists.map((spec) => ({
-                    label: `${spec.name} — ${spec.role}`,
-                    value: `${spec.name} (${spec.role})`,
-                  })),
-                ]}
-              />
-              <p className="text-[11px] text-slate-400">
-                Specialists receive case status notifications & client query
-                updates in real time.
-              </p>
-            </CardContent>
-          </Card>
+            <CardContent className="p-5 space-y-4">
+              <h3 className="font-bold text-sm text-slate-900">Applicant</h3>
 
-          {/* Card 2: Customer Contact Card */}
-          <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle>Applicant Contact Info</CardTitle>
-            </CardHeader>
-            <CardContent className="p-5 space-y-3 text-xs">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="size-10 rounded-full bg-primary-light text-primary font-extrabold flex items-center justify-center text-sm shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="size-11 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-base shrink-0">
                   {application.customerName.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <h4 className="font-extrabold text-sm text-slate-900">
+                <div className="min-w-0">
+                  <h4 className="font-bold text-sm text-slate-900 truncate">
                     {application.customerName}
                   </h4>
-                  <p className="text-slate-400 text-[11px] font-mono">
+                  <p className="text-xs text-slate-500 font-mono">
                     {application.customerPhone}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-1">
+                <a
+                  href={`https://wa.me/${application.customerPhone.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full"
+                >
+                  <Button
+                    fullWidth
+                    className="bg-[#008069] hover:bg-[#00705c] text-white font-bold text-xs py-2.5 rounded-lg flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                  >
+                    <MessageSquare size={15} /> WhatsApp
+                  </Button>
+                </a>
+                <a href={`tel:${application.customerPhone}`} className="block w-full">
+                  <Button
+                    fullWidth
+                    variant="outline"
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs py-2.5 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Phone size={15} /> Call
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Payment */}
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <h3 className="font-bold text-sm text-slate-900">Payment</h3>
+
+              <div className="space-y-2.5 text-xs">
                 <div className="flex items-center justify-between text-slate-600">
-                  <span className="font-medium">Phone:</span>
-                  <span className="font-mono font-bold text-slate-800">
-                    {application.customerPhone}
+                  <span>Government filing fee</span>
+                  <span className="font-semibold text-slate-800 font-mono">
+                    ₹{(application.governmentFee || 0).toLocaleString("en-IN")}
                   </span>
                 </div>
-                {application.address && (
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span className="font-medium">State / Address:</span>
-                    <span className="font-semibold text-slate-800">
-                      {application.address}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between text-slate-600">
+                  <span>Professional consultation fee</span>
+                  <span className="font-semibold text-slate-800 font-mono">
+                    ₹{(application.professionalFee || application.totalFee || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </div>
 
-                {submittedFormEntries.length > 0 && (
-                    <div className="pt-3 border-t border-slate-150 space-y-2">
-                      <span className="font-extrabold text-[10px] text-primary uppercase tracking-wider block">
-                        Submitted Service Form Fields
-                      </span>
-                      <div className="space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200/80 font-mono text-[11px]">
-                        {submittedFormEntries.map(([k, v]) => (
-                          <div
-                            key={k}
-                            className="flex justify-between items-center text-slate-700 gap-2"
-                          >
-                            <span className="font-medium text-slate-500 truncate">
-                              {k}:
-                            </span>
-                            <div className="font-bold text-slate-900 text-right truncate max-w-56">
-                              <FieldValue value={v} compact />
-                            </div>
+              <div className="pt-3 border-t border-slate-100 flex items-baseline justify-between">
+                <span className="text-xs font-semibold text-slate-600">Total paid</span>
+                <span className="text-2xl font-black text-emerald-800 font-mono">
+                  ₹{(application.totalFee || 0).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              <div className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-lg py-2.5 px-3 text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-emerald-700 shrink-0" />
+                <span>Confirmed via Razorpay</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Certificate Issuance & Deliverables (Visible when Submitted or Approved) */}
+          {(application.status === "SUBMITTED" ||
+            application.status === "APPROVED" ||
+            (application.issuedCertificates &&
+              application.issuedCertificates.length > 0)) && (
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                    <Award size={16} className="text-emerald-700" />
+                    Official Certificates
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    Active
+                  </span>
+                </div>
+
+                {application.issuedCertificates &&
+                  application.issuedCertificates.length > 0 && (
+                    <div className="space-y-2">
+                      {application.issuedCertificates.map((cert: any, i) => (
+                        <div
+                          key={i}
+                          className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-lg flex items-center justify-between text-xs"
+                        >
+                          <div className="min-w-0 pr-2">
+                            <p className="font-bold text-emerald-950 truncate">
+                              {cert.certificateName || cert.name}
+                            </p>
                           </div>
-                        ))}
-                      </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              downloadFile(
+                                cert.certificateUrl || cert.url,
+                                certificateDownloadName(
+                                  application.serviceTitle,
+                                  cert.certificateName ||
+                                    cert.name ||
+                                    "Official_Certificate",
+                                ),
+                              )
+                            }
+                            className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1 cursor-pointer shrink-0"
+                          >
+                            <Download size={13} /> PDF
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
-              </div>
 
-              <a
-                href={`https://wa.me/${application.customerPhone.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-sm active:scale-95 transition-all text-xs cursor-pointer"
-              >
-                <MessageSquare size={15} className="text-white" /> Chat on
-                WhatsApp
-              </a>
-            </CardContent>
-          </Card>
+                <div className="space-y-3 pt-1 border-t border-slate-100">
+                  <Input
+                    type="text"
+                    value={certName}
+                    onChange={(e) => setCertName(e.target.value)}
+                    placeholder="Certificate Title (e.g. GST Certificate - Form REG-06)"
+                    className="text-xs py-2 px-3 bg-white"
+                  />
 
-          {/* Card 3: Fee Breakdown & Payment Summary */}
-          <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle>Fee & Payment Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="p-5 space-y-3 text-xs">
-              <div className="space-y-2">
-                <div className="flex justify-between text-slate-500">
-                  <span>Government Filing Fee:</span>
-                  <span className="font-semibold text-slate-800">
-                    ₹{application.governmentFee || 0}
-                  </span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Professional Consultation Fee:</span>
-                  <span className="font-semibold text-slate-800">
-                    ₹{application.professionalFee || 0}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-slate-100 pt-2 font-black text-sm text-slate-900">
-                  <span>Total Amount Paid:</span>
-                  <span className="text-primary">
-                    ₹{application.totalFee || 0}
-                  </span>
-                </div>
-              </div>
+                  <MultiFileUpload
+                    label="Attach Certificate (PDF / Image)"
+                    value={certFiles}
+                    onChange={setCertFiles}
+                    allowedTypes={["pdf", "png", "jpg", "jpeg"]}
+                    maxFiles={5}
+                    maxSizeMb={10}
+                    convertToPdf
+                  />
 
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-emerald-800 font-bold text-[11px]">
-                <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-                <span>Payment Confirmed via Razorpay Portal</span>
-              </div>
-            </CardContent>
-          </Card>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    fullWidth
+                    onClick={handleIssueCertificate}
+                    disabled={
+                      isUploadingCert ||
+                      (!certName.trim() && certFiles.length === 0)
+                    }
+                    className="bg-[#008069] hover:bg-[#00705c] text-white font-bold text-xs py-2 rounded-lg cursor-pointer"
+                  >
+                    {isUploadingCert ? (
+                      <span className="flex items-center gap-1.5 justify-center">
+                        <Loader2 size={13} className="animate-spin" /> Issuing...
+                      </span>
+                    ) : (
+                      "Issue Certificate to Client"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
+      {/* Document Inline Preview Modal */}
       {previewDocument && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
           <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-slate-700 bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary">{previewDocument.docKey}</p>
-                <h3 className="truncate text-sm font-extrabold text-slate-900">{previewDocument.file.name}</h3>
+                <p className="text-xs font-bold text-primary capitalize">
+                  {previewDocument.docKey.replace(/_/g, " ")}
+                </p>
+                <h3 className="truncate text-base font-extrabold text-slate-900">
+                  {previewDocument.file.name}
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewDocument(null)}
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
                 aria-label="Close document preview"
               >
                 <X size={18} />
@@ -1426,21 +1482,59 @@ export default function AdminApplicationDetailPage() {
             <div className="min-h-80 flex-1 bg-slate-950 p-3">
               {previewDocument.file.url ? (
                 /\.(png|jpe?g|webp)$/i.test(previewDocument.file.name || "") ? (
-                  <img src={previewDocument.file.url} alt={previewDocument.file.name} className="size-full max-h-[65vh] object-contain" />
+                  <img
+                    src={resolveDocumentViewUrl(previewDocument.file.url)}
+                    alt={previewDocument.file.name}
+                    className="size-full max-h-[65vh] object-contain"
+                  />
                 ) : (
-                  <iframe src={previewDocument.file.url} title={`Preview of ${previewDocument.file.name}`} className="h-[65vh] w-full rounded border-0 bg-white" />
+                  <object
+                    data={resolveDocumentViewUrl(previewDocument.file.url)}
+                    type="application/pdf"
+                    className="h-[65vh] w-full rounded"
+                  >
+                    <iframe
+                      src={resolveDocumentViewUrl(previewDocument.file.url)}
+                      title={`Preview of ${previewDocument.file.name}`}
+                      className="h-[65vh] w-full rounded border-0 bg-white"
+                    >
+                      <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-slate-300">
+                        <FileText className="size-8 text-primary" />
+                        <p className="text-xs font-semibold">
+                          Inline preview not supported by your browser.
+                        </p>
+                        <a
+                          href={resolveDocumentViewUrl(previewDocument.file.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-primary underline"
+                        >
+                          Open document in new tab
+                        </a>
+                      </div>
+                    </iframe>
+                  </object>
                 )
               ) : (
                 <div className="flex h-80 flex-col items-center justify-center gap-2 text-slate-300">
                   <FileText className="size-8" />
-                  <p className="text-xs font-semibold">This document does not have a preview URL.</p>
+                  <p className="text-xs font-semibold">
+                    This document does not have a preview URL.
+                  </p>
                 </div>
               )}
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 px-5 py-3">
-              <span className="text-[11px] text-slate-500">Preview files carefully before approving.</span>
+              <span className="text-[11px] text-slate-500">
+                Preview files carefully before approving.
+              </span>
               {previewDocument.file.url && (
-                <a href={previewDocument.file.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline">
+                <a
+                  href={resolveDocumentViewUrl(previewDocument.file.url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                >
                   <ExternalLink size={14} /> Open full file
                 </a>
               )}
@@ -1462,7 +1556,7 @@ export default function AdminApplicationDetailPage() {
               </div>
               <button
                 onClick={() => setFlaggingDocKey(null)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg"
+                className="p-1 text-slate-500 hover:text-slate-800 rounded-lg cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1514,7 +1608,7 @@ export default function AdminApplicationDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setFlaggingDocKey(null)}
-                className="text-xs font-bold"
+                className="text-xs font-bold cursor-pointer"
               >
                 Cancel
               </Button>
@@ -1522,9 +1616,9 @@ export default function AdminApplicationDetailPage() {
                 variant="primary"
                 size="sm"
                 onClick={handleConfirmFlagDefective}
-                className="text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white"
+                className="text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
               >
-                Flag File & Pre-fill Query Alert
+                Flag File & Pre-fill Message
               </Button>
             </div>
           </div>

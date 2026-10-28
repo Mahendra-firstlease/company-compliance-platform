@@ -6,6 +6,7 @@ import {
   Button,
 } from "@react-email/components";
 import EmailLayout from "./components/EmailLayout";
+import { siteConfig } from "@/config/site";
 
 interface ApplicationStatusEmailProps {
   userName?: string;
@@ -22,86 +23,102 @@ export const ApplicationStatusEmail = ({
   applicationId = "APP-2026-8941",
   status = "UNDER_REVIEW",
   notes = "Your statutory documents are being verified by our compliance executive officer before submission to the MCA/GST portal.",
-  dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/applications`,
+  dashboardUrl = siteConfig.getAbsoluteUrl("/dashboard/applications"),
 }: ApplicationStatusEmailProps) => {
   const getStatusBadge = (st: string) => {
     switch (st.toUpperCase()) {
       case "APPROVED":
       case "COMPLETED":
-        return { text: "APPROVED & ISSUED", bg: "#dcfce7", color: "#15803d" };
+        return { label: "Approved", bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" };
       case "QUERY_RAISED":
       case "ACTION_REQUIRED":
-        return { text: "ACTION REQUIRED", bg: "#fef3c7", color: "#b45309" };
+        return { label: "Action required", bg: "#fffbeb", color: "#b45309", border: "#fde68a" };
       case "REJECTED":
-        return { text: "REJECTED", bg: "#fee2e2", color: "#b91c1c" };
+        return { label: "Rejected", bg: "#fef2f2", color: "#b91c1c", border: "#fecaca" };
       case "UNDER_REVIEW":
       default:
-        return { text: "IN PROGRESS / UNDER REVIEW", bg: "#e0e7ff", color: "#4338ca" };
+        return { label: "Under review", bg: "#eef2ff", color: "#4338ca", border: "#c7d2fe" };
     }
   };
 
   const badge = getStatusBadge(status);
 
   return (
-    <EmailLayout previewText={`Update on ${serviceName} (${applicationId}): Status is now ${badge.text}`}>
-      <Section className="my-4">
-        <Text className="text-[12px] font-bold uppercase tracking-wider text-slate-400 my-0">
-          Case Status Notification
-        </Text>
-        <Heading className="text-[22px] font-extrabold text-slate-900 leading-7.5 mt-1.5 mb-4">
-          Filing Status Update for {serviceName}
+    <EmailLayout previewText={`Update on ${serviceName} (${applicationId}): ${badge.label}`}>
+      <Section className="my-[8px]">
+        <Heading className="text-[22px] font-bold tracking-tight text-slate-900 leading-[28px] my-0 mb-[16px]">
+          Status update: {serviceName}
         </Heading>
-        <Text className="text-[14px] text-slate-600 leading-6">
-          Hello <strong className="text-slate-800">{userName}</strong>,
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[14px]">
+          Hello {userName},
         </Text>
-        <Text className="text-[14px] text-slate-600 leading-6">
-          There is an official update regarding your statutory compliance application reference{" "}
-          <strong className="font-mono text-indigo-600">{applicationId}</strong>.
+        <Text className="text-[14px] text-slate-600 leading-[22px] my-0 mb-[20px]">
+          There is an official update regarding your statutory compliance application.
         </Text>
       </Section>
 
-      {/* Case Details Box */}
-      <Section className="bg-slate-50 border border-slate-200 rounded-lg p-5 my-5">
+      {/* Clean Metadata Spec */}
+      <Section className="bg-slate-50 border border-solid border-slate-200/70 rounded-lg p-[18px] my-[20px]">
         <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-2">Service:</td>
-            <td className="text-[13px] font-bold text-slate-800 pb-2 align-top">{serviceName}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-2">Reference ID:</td>
-            <td className="text-[13px] font-mono font-bold text-slate-800 pb-2">{applicationId}</td>
-          </tr>
-          <tr>
-            <td className="text-[12px] font-semibold text-slate-500 pb-2">Current Status:</td>
-            <td className="pb-2">
-              <span
-                style={{ backgroundColor: badge.bg, color: badge.color }}
-                className="text-[11px] font-black px-2.5 py-0.75 rounded-full uppercase inline-block"
-              >
-                {badge.text}
-              </span>
-            </td>
-          </tr>
-          {notes && (
+          <tbody>
             <tr>
-              <td className="text-[12px] font-semibold text-slate-500 pt-2" colSpan={2}>
-                <div className="border-t border-slate-200/80 pt-3 mt-1">
-                  <strong className="text-slate-700 block mb-1">Compliance Officer Notes:</strong>
-                  <span className="text-[13px] text-slate-600 leading-5">{notes}</span>
-                </div>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]" style={{ width: "35%" }}>
+                Service
+              </td>
+              <td className="text-[13px] font-semibold text-slate-800 pb-[8px]">
+                {serviceName}
               </td>
             </tr>
-          )}
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400 pb-[8px]">
+                Application ID
+              </td>
+              <td className="text-[13px] font-mono text-slate-700 pb-[8px]">
+                {applicationId}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-[12px] font-medium text-slate-400">
+                Status
+              </td>
+              <td>
+                <span
+                  style={{
+                    backgroundColor: badge.bg,
+                    color: badge.color,
+                    border: `1px solid ${badge.border}`,
+                  }}
+                  className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md inline-block"
+                >
+                  {badge.label}
+                </span>
+              </td>
+            </tr>
+            {notes && (
+              <tr>
+                <td colSpan={2} className="pt-[14px]">
+                  <div className="border-t border-slate-200/70 pt-[12px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-[4px]">
+                      Compliance note
+                    </span>
+                    <span className="text-[13px] text-slate-600 leading-[20px]">
+                      {notes}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </Section>
 
-      {/* Action Button */}
-      <Section className="text-center my-7">
+      {/* Action CTA */}
+      <Section className="text-left my-[24px]">
         <Button
           href={dashboardUrl}
-          className="bg-indigo-600 text-white font-bold text-[14px] rounded-lg px-7 py-3 inline-block shadow-sm"
+          className="bg-indigo-600 text-white font-semibold text-[13px] rounded-lg px-[24px] py-[11px] inline-block no-underline"
         >
-          View Case Details in Portal →
+          View application
         </Button>
       </Section>
     </EmailLayout>

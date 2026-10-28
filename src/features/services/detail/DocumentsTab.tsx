@@ -8,17 +8,17 @@ export default function DocumentsTab({ service }: { service: Service }) {
     <div className="space-y-6">
       {/* Required Documents Section */}
       <div className="space-y-3">
-        <h3 className="text-base font-semibold text-gray-900">
+        <h2 className="text-base font-semibold text-slate-900">
           Required Documents for {service.title}
-        </h3>
+        </h2>
         {docs.length > 0 ? (
-          <div className="grid grid-cols-1 gap-2.5">
+          <div className="divide-y divide-slate-100">
             {docs.map((doc, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm font-medium text-gray-700"
+                className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0 text-sm text-slate-700"
               >
-                <span className="size-5 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                <span className="size-5 rounded-full bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center shrink-0">
                   {idx + 1}
                 </span>
                 <span>{doc}</span>
@@ -26,7 +26,7 @@ export default function DocumentsTab({ service }: { service: Service }) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 py-2">
+          <p className="text-sm text-slate-500 py-2">
             Standard identity and business registration documents required.
           </p>
         )}
@@ -34,11 +34,11 @@ export default function DocumentsTab({ service }: { service: Service }) {
 
       {/* Eligibility Section */}
       {eligibility.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-gray-100">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+        <div className="space-y-3 pt-4 border-t border-slate-100">
+          <h3 className="text-sm font-semibold text-slate-900">
             Eligibility Criteria
-          </h4>
-          <ul className="space-y-2 text-sm text-gray-600 list-disc pl-5">
+          </h3>
+          <ul className="space-y-2 text-sm text-slate-600 list-disc pl-5">
             {eligibility.map((el, idx) => (
               <li key={idx}>{el}</li>
             ))}

@@ -9,7 +9,7 @@ export function getPostLoginPath(
       ? callbackUrl
       : null;
 
-  if (role === "ADMIN" || role === "EXECUTIVE") {
+  if (role === "ADMIN") {
     if (safeCallback?.startsWith("/admin")) {
       return safeCallback;
     }

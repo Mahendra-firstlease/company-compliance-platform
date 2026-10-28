@@ -21,6 +21,9 @@ export default function Toaster() {
       gap={12}
       offset={20}
       toastOptions={{
+        style: {
+          transition: "transform 400ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms, box-shadow 200ms",
+        },
         classNames: {
           toast:
             "rounded-lg border border-slate-200 bg-white shadow-lg",

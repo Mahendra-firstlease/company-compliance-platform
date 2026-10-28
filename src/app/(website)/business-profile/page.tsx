@@ -26,6 +26,8 @@ import {
   Briefcase,
   ShoppingBag,
   Check,
+  MoveRight,
+  ArrowRight,
 } from "lucide-react";
 
 export default function BusinessProfilePage() {
@@ -241,8 +243,8 @@ export default function BusinessProfilePage() {
             <div className="absolute -right-10 -bottom-10 size-64 bg-primary-light0/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <span className="px-3 py-1 rounded-full bg-primary-light0/20 text-primary border border-primary-border0/30 text-xs font-bold uppercase tracking-wider">
-                  🏢 Business Regulatory Hub
+                <span className="px-3 py-1 rounded-full bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold uppercase tracking-wider">
+                  Business Regulatory Hub
                 </span>
                 <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight mt-2">
                   {businessProfile
@@ -404,12 +406,13 @@ export default function BusinessProfilePage() {
                 </div>
 
                 <Button
+                rightIcon={<ArrowRight className="size-4" />}
                   variant="outline"
                   size="sm"
                   onClick={() => router.push("/services")}
                   className="hidden sm:flex text-xs font-bold"
                 >
-                  View Full Catalog →
+                  View Full Catalog
                 </Button>
               </div>
 

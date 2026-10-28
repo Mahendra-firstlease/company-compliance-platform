@@ -21,31 +21,38 @@ export async function uploadBufferToStorage(
   const client = getS3Client();
 
   if (client && config.hasCredentials) {
-    await client.send(
-      new PutObjectCommand({
-        Bucket: config.bucketName,
-        Key: uniqueKey,
-        Body: buffer,
-        ContentType: contentType,
-        Metadata: {
-          filename: sanitized,
-          checksum,
-          ...metadata,
-        },
-      }),
-    );
+    try {
+      await client.send(
+        new PutObjectCommand({
+          Bucket: config.bucketName,
+          Key: uniqueKey,
+          Body: buffer,
+          ContentType: contentType,
+          Metadata: {
+            filename: sanitized,
+            checksum,
+            ...metadata,
+          },
+        }),
+      );
 
-    return {
-      success: true,
-      fileUrl: `https://${config.bucketName}.s3.${config.region}.amazonaws.com/${uniqueKey}`,
-      fileName: sanitized,
-      fileSizeBytes,
-      fileSize: fileSizeStr,
-      fileType: fileExtension.toUpperCase(),
-      key: uniqueKey,
-      checksum,
-      isMock: false,
-    };
+      return {
+        success: true,
+        fileUrl: `https://${config.bucketName}.s3.${config.region}.amazonaws.com/${uniqueKey}`,
+        fileName: sanitized,
+        fileSizeBytes,
+        fileSize: fileSizeStr,
+        fileType: fileExtension.toUpperCase(),
+        key: uniqueKey,
+        checksum,
+        isMock: false,
+      };
+    } catch (err: any) {
+      console.error("💥 [AWS S3 BUFFER UPLOAD FAILURE]:", err);
+      if (config.isProduction) {
+        throw new Error(`Failed to upload document buffer to AWS S3: ${err.message}`);
+      }
+    }
   }
 
   return {

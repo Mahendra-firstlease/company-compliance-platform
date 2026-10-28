@@ -5,8 +5,8 @@ import { ArrowLeft, KeyRound, CheckCircle2, Award, Lock } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Forgot Password | FirstLease Statutory Compliance",
-  description: "Reset your FirstLease corporate compliance account password.",
+  title: "Forgot Password | Compliance Portal India",
+  description: "Reset your Compliance Portal India corporate compliance account password.",
 };
 
 export default function ForgotPasswordPage() {
@@ -85,8 +85,8 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="relative z-10 flex items-center justify-between pt-6 border-t border-slate-200/80 text-xs text-slate-500 font-semibold">
-          <span>FirstLease Statutory Security Protocols</span>
-          <span>Help: support@firstlease.in</span>
+          <span>Compliance Portal India Security Protocols</span>
+          <span>Help: support@complianceportalindia.com</span>
         </div>
       </div>
     </div>

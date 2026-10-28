@@ -219,7 +219,7 @@ export default function ProfilePage() {
                     <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       {session?.user?.name || "User Account"}
                     </h1>
-                    <span className="px-2.5 py-0.5 rounded-full bg-primary-light0/20 text-primary border border-primary-border0/30 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-full bg-white-light0/20 text-secondary border border-primary-border0/30 text-[10px] font-bold uppercase tracking-wider">
                       {((session?.user as { role?: string } | undefined)?.role || "CLIENT")}
                     </span>
                   </div>

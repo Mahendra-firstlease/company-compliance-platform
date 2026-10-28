@@ -162,17 +162,34 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
+        {/* Statutory Regulatory Disclaimer */}
+        {/* <div className="mt-10 pt-6 border-t border-slate-200/80 text-xs text-slate-500 leading-relaxed text-center sm:text-left space-y-2 max-w-2xl mx-auto sm:mx-0">
+          <p className="font-semibold text-slate-700 uppercase tracking-wider text-[11px]">
+            Legal &amp; Regulatory Disclaimer
+          </p>
+          <p className="max-w-[70ch]">
+            {footerData.companyInfo.name || "Filing Compliance"} is a private technology facilitation and business consultancy platform operated by Compliance Portal India Pvt Ltd. We are <strong>NOT</strong> affiliated with, associated with, or an agency of the Government of India, the Ministry of Corporate Affairs (MCA), the Income Tax Department, the GST Network, or any state or central statutory authority. We assist businesses and individuals with documentation, preparation, and advisory facilitation for statutory filings and certifications.
+          </p>
+        </div> */}
+
         {/* Bottom Legal & Copyright Bar */}
-        <div className="mt-12 border-t border-slate-200/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
-          {/* <p>
-            &copy; {new Date().getFullYear()} {footerData.companyInfo.name || "FirstLease Platforms Pvt Ltd"}. All rights reserved.
-          </p> */}
+        <div className="mt-8 border-t border-slate-200/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
+          <p>
+            &copy; {new Date().getFullYear()} {footerData.companyInfo.name || "Filing Compliance"}. All rights reserved.
+          </p>
 
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
-      
+            <Link href="/terms-of-service" className="hover:text-primary transition-colors">
+              Terms of Service
+            </Link>
+            <span>&bull;</span>
+            <Link href="/privacy-policy" className="hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            <span>&bull;</span>
             <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
               <ShieldCheck className="size-3.5" />
-              {/* <span>256-Bit SSL Encrypted</span> */}
+              <span>256-Bit SSL Encrypted</span>
             </span>
           </div>
         </div>

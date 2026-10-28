@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     }
 
     const userRole = (session.user as any)?.role || "CLIENT";
-    if (userRole !== "ADMIN" && userRole !== "EXECUTIVE") {
+    if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required." }, { status: 403 });
     }
 
@@ -40,25 +40,79 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { id, price, governmentFee, professionalFee, popular, featured } = body;
+    const {
+      id,
+      title,
+      shortDescription,
+      description,
+      image,
+      duration,
+      price,
+      originalPrice,
+      governmentFee,
+      professionalFee,
+      popular,
+      featured,
+      details,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Service ID is required." }, { status: 400 });
     }
 
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = String(title).trim();
+    if (shortDescription !== undefined) updateData.shortDescription = String(shortDescription).trim();
+    if (description !== undefined) updateData.description = String(description).trim();
+    if (image !== undefined) updateData.image = String(image).trim();
+    if (duration !== undefined) updateData.duration = String(duration).trim();
+    if (price !== undefined) updateData.price = parseFloat(price) || 0;
+    if (originalPrice !== undefined) updateData.originalPrice = originalPrice ? parseFloat(originalPrice) : null;
+    if (governmentFee !== undefined) updateData.governmentFee = parseFloat(governmentFee) || 0;
+    if (professionalFee !== undefined) updateData.professionalFee = parseFloat(professionalFee) || 0;
+    if (popular !== undefined) updateData.popular = Boolean(popular);
+    if (featured !== undefined) updateData.featured = Boolean(featured);
+
+    if (details !== undefined && typeof details === "object" && details !== null) {
+      const cleanDetails = {
+        benefits: Array.isArray(details.benefits)
+          ? details.benefits.map((b: unknown) => String(b || "").trim()).filter(Boolean)
+          : [],
+        eligibility: Array.isArray(details.eligibility)
+          ? details.eligibility.map((e: unknown) => String(e || "").trim()).filter(Boolean)
+          : [],
+        requiredDocuments: Array.isArray(details.requiredDocuments)
+          ? details.requiredDocuments.map((d: unknown) => String(d || "").trim()).filter(Boolean)
+          : [],
+        packageDeliverables: Array.isArray(details.packageDeliverables)
+          ? details.packageDeliverables.map((p: unknown) => String(p || "").trim()).filter(Boolean)
+          : [],
+        faqs: Array.isArray(details.faqs)
+          ? details.faqs
+              .filter((f: any) => f && typeof f === "object" && Boolean(f.question?.trim()))
+              .map((f: any) => ({
+                question: String(f.question || "").trim(),
+                answer: String(f.answer || "").trim(),
+              }))
+          : [],
+      };
+
+      updateData.details = {
+        upsert: {
+          create: cleanDetails,
+          update: cleanDetails,
+        },
+      };
+    }
+
     const updatedService = await prisma.service.update({
       where: { id },
-      data: {
-        ...(price !== undefined && { price: parseFloat(price) }),
-        ...(governmentFee !== undefined && { governmentFee: parseFloat(governmentFee) }),
-        ...(professionalFee !== undefined && { professionalFee: parseFloat(professionalFee) }),
-        ...(popular !== undefined && { popular: Boolean(popular) }),
-        ...(featured !== undefined && { featured: Boolean(featured) }),
-      },
+      data: updateData,
+      include: { details: true },
     });
 
     return NextResponse.json(updatedService, { status: 200 });
   } catch (error) {
-    return handleApiError(error, "Failed to update service pricing.");
+    return handleApiError(error, "Failed to update service details.");
   }
 }

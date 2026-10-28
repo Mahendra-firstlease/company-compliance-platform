@@ -21,26 +21,23 @@ const SectionHeading = ({
   return (
     <div
       className={clsx(
-        "max-w-2xl mx-auto ",
-        align === "center" ? "text-center mb-16" : "text-left mb-4",
+        "max-w-2xl mx-auto",
+        align === "center" ? "text-center mb-12 sm:mb-16" : "text-left mb-6",
         className
       )}
     >
       {badge && (
-        <div
+        <span
           className={clsx(
-            "inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-light border border-primary-border mb-4",
-            align === "left" && "mx-0"
+            "text-xs font-semibold uppercase tracking-wider text-primary mb-3 block",
+            align === "left" ? "text-left" : "text-center"
           )}
         >
-          <span className="size-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm font-medium text-primary">
-            {badge}
-          </span>
-        </div>
+          {badge}
+        </span>
       )}
 
-      <h2 className="text-3xl md:text-4xl font-semibold tracking-tighter">
+      <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
         {title}
         {highlight && (
           <>
@@ -51,7 +48,7 @@ const SectionHeading = ({
       </h2>
 
       {description && (
-        <p className="mt-4 text-base text-black/50 leading-relaxed">
+        <p className="mt-4 text-base text-slate-600 leading-relaxed font-normal">
           {description}
         </p>
       )}

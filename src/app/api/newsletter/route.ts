@@ -53,9 +53,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Something went wrong. Please try again.",
-        ...(process.env.NODE_ENV === "development" && {
-          detail: String(error),
-        }),
       },
       { status: 500 }
     );

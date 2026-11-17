@@ -58,6 +58,10 @@ export default function AdminCrmPage() {
       if (Array.isArray(team)) setSpecialists(team);
     } catch (err) {
       console.error("Failed to fetch CRM leads:", err);
+      notify.error({
+        title: "Load Failed",
+        description: "Unable to load CRM leads. Please try again later.",
+      });
     } finally {
       setIsLoading(false);
     }

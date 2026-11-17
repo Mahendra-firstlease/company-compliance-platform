@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -40,9 +40,9 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword ? (
-            <EyeSlashIcon className="h-5 w-5" />
+            <EyeOff className="h-5 w-5" />
           ) : (
-            <EyeIcon className="h-5 w-5" />
+            <Eye className="h-5 w-5" />
           )}
         </button>
       </div>

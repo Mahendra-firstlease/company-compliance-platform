@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { State } from "country-state-city";
+import { INDIAN_STATE_OPTIONS } from "@/constants";
 import { Building2, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Button from "@/components/common/Button";
 import FormGroup from "@/components/forms/FormGroup";
@@ -64,15 +64,7 @@ export default function BusinessProfileForm({
   onCancel,
 }: BusinessProfileFormProps) {
   const [step, setStep] = useState<1 | 2>(1);
-
-  // Dynamically load Indian States from country-state-city package
-  const stateOptions = useMemo(() => {
-    const indianStates = State.getStatesOfCountry("IN");
-    return indianStates.map((st) => ({
-      label: st.name,
-      value: st.name,
-    }));
-  }, []);
+  const stateOptions = INDIAN_STATE_OPTIONS;
 
   const {
     register,
@@ -274,7 +266,7 @@ export default function BusinessProfileForm({
         {/* STEP 2: state, employeeCount, annualTurnover */}
         {step === 2 && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            {/* State Selection (Populated dynamically via country-state-city) */}
+            {/* State Selection (Populated via INDIAN_STATE_OPTIONS) */}
             <FormGroup
               label="State / Location"
               error={errors.state?.message}

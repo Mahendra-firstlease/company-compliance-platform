@@ -9,7 +9,7 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
-import { MinusIcon, PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { Minus, Plus, X } from "lucide-react";
 import { filters } from "@/constants/filters";
 import Button from "@/components/common/Button";
 
@@ -58,7 +58,7 @@ export default function MobileFilterDrawer({
                 className="relative flex size-9 items-center justify-center rounded-md bg-white p-1 text-slate-400 hover:bg-slate-50 focus:outline-none"
               >
                 <span className="sr-only">Close menu</span>
-                <XMarkIcon aria-hidden="true" className="size-6" />
+                <X aria-hidden="true" className="size-6" />
               </button>
             </div>
           </div>
@@ -72,8 +72,8 @@ export default function MobileFilterDrawer({
                   <DisclosureButton className="group flex w-full items-center justify-between bg-white px-2 py-3 text-slate-400 hover:text-slate-500">
                     <span className="font-semibold text-slate-800 text-sm">{section.title}</span>
                     <span className="ml-6 flex items-center">
-                      <PlusIcon aria-hidden="true" className="size-5 group-data-open:hidden" />
-                      <MinusIcon aria-hidden="true" className="size-5 group-not-data-open:hidden" />
+                      <Plus aria-hidden="true" className="size-5 group-data-open:hidden" />
+                      <Minus aria-hidden="true" className="size-5 group-not-data-open:hidden" />
                     </span>
                   </DisclosureButton>
                 </h3>

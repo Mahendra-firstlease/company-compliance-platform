@@ -627,12 +627,15 @@ export default function ApplicationWorkspacePage({ params }: PageProps) {
                         title: isResolvingQuery ? "Corrections Submitted! 🎉" : "Filing Application Submitted! 🎉",
                         description: isResolvingQuery
                           ? "Your updated details have been submitted to the compliance officer."
-                          : "Updated workspace status to UNDER_REVIEW.",
+                          : "Your application has been submitted for compliance review.",
                       });
                     } catch (err: unknown) {
                       notify.error({
                         title: "Submission Error",
-                        description: err instanceof Error ? err.message : "Failed to submit application.",
+                        description:
+                          err instanceof Error && !err.message.startsWith("HTTP")
+                            ? err.message
+                            : "Failed to submit application. Please try again.",
                       });
                     } finally {
                       setIsFormSubmitting(false);

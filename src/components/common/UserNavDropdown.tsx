@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
-  ArrowRightStartOnRectangleIcon,
-  Squares2X2Icon,
-  UserIcon,
-  BuildingOfficeIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
+  Building,
+  LayoutDashboard,
+  LogOut,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { notify } from "@/lib/notify";
 import { ROUTES } from "@/constants";
@@ -91,7 +91,7 @@ export default function UserNavDropdown() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-primary bg-primary-light hover:bg-primary/10 transition-colors"
             >
-              <ShieldCheckIcon className="size-4 text-primary" />
+              <ShieldCheck className="size-4 text-primary" />
               Backoffice Admin Console
             </Link>
           </MenuItem>
@@ -102,7 +102,7 @@ export default function UserNavDropdown() {
                 href={ROUTES.BUSINESS_PROFILE}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-primary hover:bg-primary-light transition-colors"
               >
-                <BuildingOfficeIcon className="size-4 text-primary" />
+                <Building className="size-4 text-primary" />
                 Business Profile
               </Link>
             </MenuItem>
@@ -112,7 +112,7 @@ export default function UserNavDropdown() {
                 href={ROUTES.PROFILE}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
-                <UserIcon className="size-4 text-slate-400" />
+                <User className="size-4 text-slate-400" />
                 My Account
               </Link>
             </MenuItem>
@@ -124,7 +124,7 @@ export default function UserNavDropdown() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
-                <Squares2X2Icon className="size-4 text-slate-400" />
+                <LayoutDashboard className="size-4 text-slate-400" />
                 Filing Dashboard
               </Link>
             </MenuItem>
@@ -139,7 +139,7 @@ export default function UserNavDropdown() {
             onClick={handleLogout}
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
           >
-            <ArrowRightStartOnRectangleIcon className="size-4 text-red-500" />
+            <LogOut className="size-4 text-red-500" />
             Sign Out
           </button>
         </MenuItem>

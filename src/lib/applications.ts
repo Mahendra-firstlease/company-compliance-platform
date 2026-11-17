@@ -403,7 +403,11 @@ export async function saveApplication(
     return { success: true, data };
   } catch (err: any) {
     console.error("Failed to save application:", err);
-    return { success: false, error: err.message || "Network error" };
+    const rawMsg = typeof err?.message === "string" ? err.message : "";
+    const safeError = rawMsg.startsWith("HTTP") || !rawMsg
+      ? "Unable to save application. Please try again."
+      : rawMsg;
+    return { success: false, error: safeError };
   }
 }
 
@@ -422,6 +426,10 @@ export async function updateApplication(
     return { success: true, data };
   } catch (err: any) {
     console.error(`Failed to update application ${id}:`, err);
-    return { success: false, error: err.message || "Network error" };
+    const rawMsg = typeof err?.message === "string" ? err.message : "";
+    const safeError = rawMsg.startsWith("HTTP") || !rawMsg
+      ? "Unable to update application. Please try again."
+      : rawMsg;
+    return { success: false, error: safeError };
   }
 }

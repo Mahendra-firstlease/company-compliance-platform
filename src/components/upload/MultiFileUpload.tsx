@@ -94,7 +94,9 @@ export default function MultiFileUpload({
         notify.error({ title: "Partial Upload Failure", description: errStr });
       }
     } catch (err: any) {
-      setLocalError(err.message || "Failed to process multi-file upload.");
+      const raw = typeof err?.message === "string" ? err.message : "";
+      const isInternal = /AWS|S3|socket|ECONNREFUSED|ENOTFOUND|500 Internal/i.test(raw);
+      setLocalError(isInternal || !raw ? "Unable to upload files. Please check your connection and try again." : raw);
     } finally {
       setIsUploading(false);
       isUploadingRef.current = false;

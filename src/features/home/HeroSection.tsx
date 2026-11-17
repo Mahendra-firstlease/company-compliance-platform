@@ -31,7 +31,8 @@ function HeroSection({}: Props) {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error ?? "Something went wrong.");
+        const errorMsg = typeof data?.error === "string" ? data.error : "Unable to subscribe. Please try again later.";
+        toast.error(errorMsg);
       } else {
         toast.success(data.message ?? "Successfully subscribed!");
         setEmail("");

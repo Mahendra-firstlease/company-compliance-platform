@@ -10,7 +10,8 @@ import ServiceCard from "@/components/cards/ServicesCard";
 import BusinessProfileForm from "@/components/forms/BusinessProfileForm";
 import MultiServiceCheckoutModal from "@/features/services/detail/MultiServiceCheckoutModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { servicesService } from "@/services/services";
+import apiFetch from "@/lib/apiClient";
+import type { Service } from "@/types";
 import { services as fallbackServices } from "@/data/services";
 import { getUserProfileWithBusinessAction } from "@/lib/actions/profile";
 import { useModal } from "@/components/ui/overlay";
@@ -74,7 +75,7 @@ export default function ProfilePage() {
     queryKey: ["servicesCatalog"],
     queryFn: async () => {
       try {
-        const res = await servicesService.getServices();
+        const res = await apiFetch<Service[]>("/services");
         return res || [];
       } catch {
         return [];

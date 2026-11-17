@@ -105,7 +105,8 @@ export default function AdminDocumentsPage() {
     setDocuments((prev) =>
       prev.map((d) => (d.id === id ? { ...d, status: newStatus } : d))
     );
-    notify.success(`Document marked as ${newStatus}`);
+    const formattedStatus = newStatus === "VERIFIED" ? "Verified" : "Rejected";
+    notify.success(`Document marked as ${formattedStatus}`);
     if (selectedDoc?.id === id) {
       setSelectedDoc((prev) => (prev ? { ...prev, status: newStatus } : null));
     }

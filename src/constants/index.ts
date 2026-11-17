@@ -10,6 +10,7 @@ export * from "./storage";
 export * from "./filters";
 export * from "./notification";
 export * from "./seo";
+export * from "./indian-states";
 
 export const APP_METADATA = {
   name: "Compliance Portal India",

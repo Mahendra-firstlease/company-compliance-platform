@@ -127,21 +127,14 @@ export async function registerUserAction(formData: RegisterFormValues | Register
       if (error.code === "P1001" || error.code === "P1000") {
         return {
           success: false,
-          error: "Database connection failed. Please ensure the database server is running.",
+          error: "Service is temporarily unavailable. Please try again later.",
         };
       }
     }
 
-    const errorMessage =
-      error instanceof Error && error.message
-        ? error.message
-        : typeof error === "string"
-        ? error
-        : "An unexpected server error occurred during registration. Please try again.";
-
     return {
       success: false,
-      error: errorMessage,
+      error: "Unable to complete registration. Please try again later.",
     };
   }
 }

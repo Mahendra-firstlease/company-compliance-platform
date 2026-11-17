@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { ChevronDownIcon, ArrowRightIcon } from "@heroicons/react/20/solid";
-import {
-  SquaresPlusIcon,
-  SparklesIcon,
-} from "@heroicons/react/24/outline";
+import { ChevronDown, ArrowRight, LayoutGrid, Sparkles } from "lucide-react";
 import type { NavItem, NavLink } from "./header.data";
 import { useRef, useEffect, useState } from "react";
 import { MegaMenuSkeleton } from "@/components/ui/skeletons";
@@ -122,7 +118,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
               className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary cursor-pointer"
             >
               <span>{item.label}</span>
-              <ChevronDownIcon
+              <ChevronDown
                 aria-hidden="true"
                 className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
               />
@@ -144,7 +140,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
                         className="group relative flex items-center gap-x-3 rounded-lg p-2.5 hover:bg-primary-light/40 transition-colors"
                       >
                         <div className="flex size-9 flex-none items-center justify-center rounded-lg bg-slate-100 group-hover:bg-white text-slate-500 group-hover:text-primary border border-slate-200/50 transition-colors">
-                          <SquaresPlusIcon aria-hidden="true" className="size-4" />
+                          <LayoutGrid aria-hidden="true" className="size-4" />
                         </div>
                         <div className="flex flex-col">
                           <Link
@@ -171,7 +167,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
                 {/* Footer Action Bar with "View All Services" Button */}
                 <div className="bg-slate-50 border-t border-slate-100 p-4 px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <SparklesIcon className="size-4 text-primary shrink-0" />
+                    <Sparkles className="size-4 text-primary shrink-0" />
                     <span className="text-xs text-slate-500 font-medium">
                       Explore all government registration &amp; compliance services.
                     </span>
@@ -183,7 +179,7 @@ export default function MegaMenu({ item }: MegaMenuProps) {
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition-colors shadow-2xs cursor-pointer"
                   >
                     <span>View All Services</span>
-                    <ArrowRightIcon className="size-3.5" />
+                    <ArrowRight className="size-3.5" />
                   </Link>
                 </div>
               </div>

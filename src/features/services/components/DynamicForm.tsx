@@ -115,7 +115,7 @@ export default function DynamicForm({
 
       notify.success({
         title: "Draft Saved!",
-        description: "Your application progress and uploaded document S3 links have been saved.",
+        description: "Your application progress and uploaded documents have been saved.",
       });
     } catch (err) {
       setSubmitErrorSummary(["Could not write draft to local storage."]);
@@ -133,8 +133,17 @@ export default function DynamicForm({
       await onSubmit(data);
       // Clean up saved draft upon successful submission
       localStorage.removeItem(`draft_${config.serviceSlug}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Submission error:", err);
+      const message =
+        typeof err?.message === "string" && !err.message.startsWith("HTTP")
+          ? err.message
+          : "An unexpected error occurred while saving your application. Please try again.";
+      setSubmitErrorSummary([message]);
+      notify.error({
+        title: "Submission Failed",
+        description: message,
+      });
     }
   };
 

@@ -61,9 +61,17 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       });
 
       if (res?.error) {
+        const authErrorMap: Record<string, string> = {
+          CredentialsSignin: "Invalid email or password. Please try again.",
+          OAuthAccountNotLinked: "An account with this email already exists with another sign-in method.",
+          OAuthSignin: "Could not initiate social login. Please try again.",
+          OAuthCallback: "Social login was interrupted. Please try again.",
+          AccessDenied: "Access denied. Please contact support.",
+        };
+        const description = authErrorMap[res.error] || "Invalid email or password. Please check your credentials.";
         notify.error({
           title: "Sign In Failed",
-          description: res.error || "Please check your email and password.",
+          description,
         });
         return;
       }

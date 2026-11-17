@@ -281,10 +281,13 @@ export default function MultiServiceCheckoutModal({
       razorpayWindow.on("payment.failed", function (response: unknown) {
         const errorPayload = response as { error?: { description?: string; reason?: string }; description?: string; reason?: string } | undefined;
         const errObj = errorPayload?.error || errorPayload || {};
-        const errorDesc =
+        const rawDesc =
           (errObj as { description?: string; reason?: string }).description ||
-          (errObj as { description?: string; reason?: string }).reason ||
-          "Payment was not completed. Please try again with a domestic Indian card (4585 0000 0000 0001) or UPI (success@razorpay).";
+          (errObj as { description?: string; reason?: string }).reason;
+        const errorDesc =
+          rawDesc && !rawDesc.includes("4585")
+            ? rawDesc
+            : "Payment could not be completed. Please check your payment details or try a different payment method.";
 
         console.warn("Razorpay Payment Event [payment.failed]:", errorDesc, errObj);
 
@@ -299,7 +302,7 @@ export default function MultiServiceCheckoutModal({
       razorpayWindow.open();
     } catch (err: unknown) {
       console.error("Batch Razorpay error:", err);
-      const errorMsg = err instanceof Error ? err.message : "Could not process batch applications. Please try again.";
+      const errorMsg = "An error occurred while preparing your checkout. Please refresh the page and try again.";
       setLastError(errorMsg);
       notify.error({
         title: "Checkout Error",

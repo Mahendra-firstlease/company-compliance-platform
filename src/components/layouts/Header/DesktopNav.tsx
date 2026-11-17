@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Disclosure } from "@headlessui/react";
-import { Bars3Icon } from "@heroicons/react/24/outline";
+import { Menu } from "lucide-react";
 import CompanyLogo from "@/components/common/CompanyLogo";
 import Button from "@/components/common/Button";
 import MegaMenu from "@/components/layouts/Header/MegaMenu";
@@ -85,7 +85,7 @@ export default function DesktopNav({ open, setOpen, items }: DesktopNavProps) {
                 className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100"
               >
                 <span className="sr-only">Open menu</span>
-                <Bars3Icon aria-hidden="true" className="h-6 w-6" />
+                <Menu aria-hidden="true" className="h-6 w-6" />
               </button>
             </div>
           </div>

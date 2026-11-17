@@ -6,9 +6,7 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 
-import {
-  ChevronDownIcon,
-} from "@heroicons/react/24/outline";
+import { ChevronDown } from "lucide-react";
 
 import { FilterGroup } from "@/types/filter";
 import FilterCheckbox from "./FilterCheckbox";
@@ -35,7 +33,7 @@ export default function FilterSection({
               {filter.title}
             </span>
 
-            <ChevronDownIcon
+            <ChevronDown
               className={`h-5 w-5 transition ${
                 open ? "rotate-180" : ""
               }`}

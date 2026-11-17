@@ -133,7 +133,11 @@ export default function AdminUserDetailPage() {
           setUser(data);
         }
       } catch (err) {
-        console.error("Failed to load 360-degree user profile:", err);
+        console.error("Failed to load user profile:", err);
+        notify.error({
+          title: "Loading Failed",
+          description: "Unable to retrieve user details. Please try again later.",
+        });
       } finally {
         if (active) setIsLoading(false);
       }
@@ -160,6 +164,10 @@ export default function AdminUserDetailPage() {
       notify.success({ title: "Role Updated", description: `User role changed to ${newRole}.` });
     } catch (err) {
       console.error("Failed to update user role:", err);
+      notify.error({
+        title: "Role Update Failed",
+        description: "Could not update user role. Please try again.",
+      });
     } finally {
       setIsUpdatingRole(false);
     }

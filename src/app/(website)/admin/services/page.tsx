@@ -228,9 +228,13 @@ function ComprehensiveServiceEditor({ service, onBack, onSaveSuccess }: Comprehe
       onSaveSuccess(updated);
     } catch (err: unknown) {
       console.error("[Service Editor Error]:", err);
+      const message =
+        err instanceof Error && !err.message.startsWith("HTTP")
+          ? err.message
+          : "Failed to update service details. Please check your inputs and try again.";
       notify.error({
         title: "Save Failed",
-        description: err instanceof Error ? err.message : "Failed to update service details.",
+        description: message,
       });
     } finally {
       setIsSaving(false);

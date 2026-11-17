@@ -26,7 +26,7 @@ export default function ServiceDetailError({
           Service Not Found
         </h2>
         <p className="text-xs text-slate-500 leading-relaxed">
-          {error.message || "We could not find the requested compliance service details."}
+          We could not find or load the requested compliance service details. Please browse our catalog or try again.
         </p>
         <div className="flex gap-2 pt-2">
           <Button onClick={() => reset()} variant="outline" size="sm" fullWidth>

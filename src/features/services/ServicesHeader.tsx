@@ -1,6 +1,6 @@
 "use client";
 
-import { FunnelIcon } from "@heroicons/react/24/outline";
+import { Filter } from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import Button from "@/components/common/Button";
 
@@ -42,7 +42,7 @@ export default function ServicesHeader({
         <Button
           variant="outline"
           size="sm"
-          leftIcon={<FunnelIcon className="h-4 w-4" />}
+          leftIcon={<Filter className="h-4 w-4" />}
           title="Filters"
           label="Filters"
           className="lg:hidden"

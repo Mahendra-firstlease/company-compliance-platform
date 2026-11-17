@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { handleApiError } from "@/lib/api-response";
 
 interface RouteParams {
   params: Promise<{
@@ -72,11 +73,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("[API/Admin/Team/[id] PUT] Error updating team member:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to update team member." },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to update team member.");
   }
 }
 
@@ -112,10 +109,6 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("[API/Admin/Team/[id] DELETE] Error deleting team member:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to delete team member." },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to delete team member.");
   }
 }

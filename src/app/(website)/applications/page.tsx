@@ -14,6 +14,7 @@ import {
   PlusCircle,
   RefreshCw,
 } from "lucide-react";
+import { notify } from "@/lib/notify";
 import { useSession } from "next-auth/react";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import { useClientPagination } from "@/hooks/useClientPagination";
@@ -34,6 +35,10 @@ export default function UserApplicationsPage() {
       setCases(data);
     } catch (err) {
       console.error("Failed to load user applications:", err);
+      notify.error({
+        title: "Load Failed",
+        description: "Unable to load your compliance applications. Please try again later.",
+      });
     } finally {
       setIsLoading(false);
     }

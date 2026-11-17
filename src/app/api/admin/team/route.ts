@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-response";
 import crypto from "crypto";
 
 // Initial default seed members if table is empty
@@ -162,10 +163,6 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("[API/Admin/Team POST] Error creating team member:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create team member." },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to create team member.");
   }
 }

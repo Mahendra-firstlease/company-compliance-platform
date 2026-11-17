@@ -179,8 +179,9 @@ export async function GET(request: NextRequest) {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   } catch (err: any) {
+    console.error("[Email Template Preview Error]:", err);
     return new NextResponse(
-      `<html><body style="font-family:sans-serif;padding:30px;"><h3>Failed to render template:</h3><pre>${err.message}</pre></body></html>`,
+      `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;padding:40px;color:#333;text-align:center;"><h2>Email Preview Unavailable</h2><p style="color:#666;">Unable to render the selected email template preview. Please check server logs.</p></body></html>`,
       {
         status: 500,
         headers: { "Content-Type": "text/html; charset=utf-8" },

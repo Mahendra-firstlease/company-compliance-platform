@@ -243,11 +243,14 @@ export default function AdminDashboardPage() {
           modal.closeAll();
         } else {
           const data = await res.json().catch(() => ({}));
-          notify.error(data.error || "Failed to upload certificate.");
+          const errMsg = typeof data.error === "string" && !data.error.startsWith("HTTP")
+            ? data.error
+            : "Failed to upload certificate. Please try again.";
+          notify.error(errMsg);
         }
       } catch (err) {
-        console.error(err);
-        notify.error(err instanceof Error ? err.message : "Error uploading certificate.");
+        console.error("Certificate upload error:", err);
+        notify.error("Unable to upload certificate. Please check the file and try again.");
       } finally {
         setIsUploadingCert(false);
       }

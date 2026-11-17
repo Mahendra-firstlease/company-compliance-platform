@@ -16,11 +16,16 @@ export async function GET() {
   const tokenDebug = await debugGraphToken();
   const mailboxCheck = await verifyGraphMailbox();
 
+  // Log detailed claims safely on server-side only
+  if (tokenDebug.success) {
+    console.log("[Test Email Diagnostics] Entra ID Token Claims Verified Server-Side");
+  }
+
   return NextResponse.json({
     config,
-    tokenClaims: tokenDebug.success ? tokenDebug.tokenClaims : null,
-    tokenError: tokenDebug.error || null,
-    mailboxCheck,
+    tokenValid: tokenDebug.success,
+    hasMailSendPermission: tokenDebug.success ? Boolean(tokenDebug.tokenClaims?.hasMailSendRole) : false,
+    mailboxReady: mailboxCheck.success,
   });
 }
 
@@ -38,13 +43,11 @@ export async function POST(req: NextRequest) {
     const targetEmail = body.to || "mahendrasinghddnuk@gmail.com";
     const subject = body.subject || "Microsoft Graph Test Email";
 
-    // 1. Inspect token claims
+    // 1. Inspect token and mailbox status
     const tokenDebug = await debugGraphToken();
-
-    // 2. Verify mailbox accessibility
     const mailboxCheck = await verifyGraphMailbox();
 
-    // 3. Attempt send mail
+    // 2. Attempt send mail
     const sendResult = await sendEmailViaGraph({
       to: targetEmail,
       subject,
@@ -62,15 +65,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: sendResult.success,
-      tokenClaims: tokenDebug.success ? tokenDebug.tokenClaims : null,
-      mailboxVerification: mailboxCheck,
-      sendResult,
+      tokenValid: tokenDebug.success,
+      mailboxReady: mailboxCheck.success,
+      delivered: sendResult.success,
     });
   } catch (error: any) {
+    console.error("[Test Email Error]:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error?.message || String(error),
+        error: "Failed to send diagnostic test email. Please check server logs.",
       },
       { status: 500 }
     );

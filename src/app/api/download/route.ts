@@ -415,7 +415,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: error.message || "Failed to download remote file.",
+        error: "Unable to download the requested file. Please try again later.",
       },
       {
         status: 500,

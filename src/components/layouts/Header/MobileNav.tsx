@@ -12,12 +12,12 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 import {
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowRightStartOnRectangleIcon,
-  SquaresPlusIcon,
-  SparklesIcon,
-} from "@heroicons/react/24/outline";
+  ChevronDown,
+  LayoutGrid,
+  LogOut,
+  Sparkles,
+  X,
+} from "lucide-react";
 import Button from "@/components/common/Button";
 import type { NavItem, NavLink } from "./header.data";
 import CompanyLogo from "@/components/common/CompanyLogo";
@@ -130,7 +130,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                     onClick={() => setOpen(false)}
                     className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                   >
-                    <XMarkIcon className="h-6 w-6" />
+                    <X className="h-6 w-6" />
                   </button>
                 </div>
 
@@ -202,7 +202,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                                 "
                               >
                                 <span>{item.label}</span>
-                                <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""}`} />
+                                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""}`} />
                               </DisclosureButton>
 
                               {/* Accordion Smooth Animated Transition Panel */}
@@ -222,7 +222,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                                         onClick={() => setOpen(false)}
                                       >
                                         <div className="flex size-7 flex-none items-center justify-center rounded-md bg-slate-100 group-hover:bg-white text-slate-500 group-hover:text-indigo-600 border border-slate-200/50 transition-colors mt-0.5">
-                                          <SquaresPlusIcon className="size-3.5" />
+                                          <LayoutGrid className="size-3.5" />
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                           <span className="text-xs font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
@@ -250,7 +250,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                                     onClick={() => setOpen(false)}
                                   >
                                     <span className="flex items-center gap-1.5">
-                                      <SparklesIcon className="size-3.5 text-indigo-600" />
+                                      <Sparkles className="size-3.5 text-indigo-600" />
                                       <span>View All Services Catalog</span>
                                     </span>
                                     <span>→</span>
@@ -283,7 +283,7 @@ export default function MobileNav({ open, setOpen, items }: MobileNavProps) {
                         onClick={handleLogout}
                         className="w-full font-bold text-xs py-2.5 px-4 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
-                        <ArrowRightStartOnRectangleIcon className="size-4" />
+                        <LogOut className="size-4" />
                         <span>Sign Out</span>
                       </button>
                     </div>

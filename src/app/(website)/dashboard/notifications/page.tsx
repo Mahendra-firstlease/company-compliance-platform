@@ -93,6 +93,10 @@ export default function NotificationsPage() {
       });
     } catch (err) {
       console.error("Failed to mark all read:", err);
+      notify.error({
+        title: "Update Failed",
+        description: "Unable to mark notifications as read. Please try again.",
+      });
     }
   };
 

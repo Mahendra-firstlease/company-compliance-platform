@@ -19,7 +19,8 @@ export async function createRazorpayOrderAction({
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!keyId || !keySecret) {
-      return { success: false, error: "Razorpay credentials missing in environment variables." };
+      console.error("[Razorpay Error]: Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in server environment.");
+      return { success: false, error: "Payment service is temporarily unavailable. Please try again later." };
     }
 
     const session = await getServerSession(authOptions);
@@ -64,7 +65,7 @@ export async function createRazorpayOrderAction({
     console.error("Error creating Razorpay Order:", error);
     return {
       success: false,
-      error: error?.error?.description || error?.message || "Failed to create payment order.",
+      error: "Unable to initiate payment order. Please try again later.",
     };
   }
 }
@@ -79,7 +80,8 @@ export async function verifyRazorpayPaymentAction({
   try {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keySecret) {
-      return { success: false, error: "RAZORPAY_KEY_SECRET missing in server environment." };
+      console.error("[Razorpay Error]: Missing RAZORPAY_KEY_SECRET in server environment.");
+      return { success: false, error: "Payment verification service is temporarily unavailable. Please contact support." };
     }
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {

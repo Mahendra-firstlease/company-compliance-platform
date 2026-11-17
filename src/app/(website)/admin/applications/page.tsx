@@ -89,7 +89,11 @@ export default function AdminApplicationsPage() {
       }
       const list = await getApplications();
       setCases(list);
-      notify.success(`Status updated to ${status}`);
+      const statusLabel = status.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+      notify.success(`Status updated to ${statusLabel}`);
+    } catch (err) {
+      console.error("Failed to update application status:", err);
+      notify.error({ title: "Update Failed", description: "Could not update status. Please try again." });
     } finally {
       setIsUpdatingStatus(null);
     }

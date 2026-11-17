@@ -206,6 +206,10 @@ export default function UserDashboardPage() {
       notify.success({ title: "Notifications Read", description: "All notifications marked as read." });
     } catch (err) {
       console.error("Failed to mark notifications read:", err);
+      notify.error({
+        title: "Update Failed",
+        description: "Unable to mark notifications as read. Please try again.",
+      });
     }
   };
 

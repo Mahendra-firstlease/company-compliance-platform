@@ -83,6 +83,10 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
       notify.success({ title: "Notifications Read", description: "All notifications marked as read." });
     } catch (err) {
       console.error("Failed to mark all read:", err);
+      notify.error({
+        title: "Update Failed",
+        description: "Unable to update notifications. Please try again.",
+      });
     }
   };
 
@@ -98,6 +102,10 @@ export default function NotificationBellDropdown({ isAdmin = false }: Notificati
       );
     } catch (err) {
       console.error("Failed to mark notification read:", err);
+      notify.error({
+        title: "Update Failed",
+        description: "Unable to update notification. Please try again.",
+      });
     }
   };
 

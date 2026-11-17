@@ -10,7 +10,7 @@ import {
   DialogBackdrop,
   DialogPanel,
 } from "@headlessui/react";
-import { FunnelIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Filter, X } from "lucide-react";
 
 export default function FilterControls() {
   const router = useRouter();
@@ -101,7 +101,7 @@ export default function FilterControls() {
           className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-2xs hover:border-primary/30 hover:bg-slate-50 transition-all text-xs font-bold text-slate-700"
         >
           <span className="flex items-center gap-2">
-            <FunnelIcon className="size-4 text-primary" />
+            <Filter className="size-4 text-primary" />
             <span>Filter Catalog Services</span>
           </span>
           {activeFilterCount > 0 ? (
@@ -142,7 +142,7 @@ export default function FilterControls() {
                 {/* Header */}
                 <div className="flex items-center justify-between border-b px-5 py-4">
                   <div className="flex items-center gap-2">
-                    <FunnelIcon className="size-5 text-primary" />
+                    <Filter className="size-5 text-primary" />
                     <h3 className="font-bold text-slate-900 text-sm">
                       Filter Services Catalog
                     </h3>
@@ -151,7 +151,7 @@ export default function FilterControls() {
                     onClick={() => setMobileOpen(false)}
                     className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 transition-colors"
                   >
-                    <XMarkIcon className="size-5" />
+                    <X className="size-5" />
                   </button>
                 </div>
 

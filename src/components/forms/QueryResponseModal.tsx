@@ -70,7 +70,10 @@ export default function QueryResponseModal({
         onSuccess();
         onClose();
       } else {
-        notify.error(res.error || "Failed to submit response.");
+        const errorMsg = res.error && !res.error.startsWith("HTTP")
+          ? res.error
+          : "Unable to submit clarification response. Please try again.";
+        notify.error(errorMsg);
       }
     } catch (err) {
       notify.error("An error occurred while submitting your response.");

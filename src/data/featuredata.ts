@@ -1,8 +1,8 @@
 import {
-  ArrowRightIcon,
-  ArrowUpRightIcon,
-  HandRaisedIcon,
-} from "@heroicons/react/24/outline";
+  ArrowRight,
+  ArrowUpRight,
+  Hand,
+} from "lucide-react";
 
 import { Feature } from "../types/feature";
 
@@ -12,41 +12,41 @@ export const featuresData: Feature[] = [
     description:
       "Track performance with real-time insights and make data-driven decisions effortlessly.",
     action: "View Insights",
-    icon: ArrowUpRightIcon,
+    icon: ArrowUpRight,
   },
   {
     title: "Instant Automation",
     description:
       "Automate repetitive tasks and streamline workflows to save time and boost efficiency.",
     action: "Automate Now",
-    icon: ArrowRightIcon,
+    icon: ArrowRight,
   },
   {
     title: "Team Collaboration",
     description:
       "Work seamlessly with your team using shared tools and real-time updates.",
     action: "Collaborate",
-    icon: HandRaisedIcon,
+    icon: Hand,
   },
   {
     title: "Team Collaboration",
     description:
       "Work seamlessly with your team using shared tools and real-time updates.",
     action: "Collaborate",
-    icon: HandRaisedIcon,
+    icon: Hand,
   },
   {
     title: "Team Collaboration",
     description:
       "Work seamlessly with your team using shared tools and real-time updates.",
     action: "Collaborate",
-    icon: HandRaisedIcon,
+    icon: Hand,
   },
   {
     title: "Team Collaboration",
     description:
       "Work seamlessly with your team using shared tools and real-time updates.",
     action: "Collaborate",
-    icon: HandRaisedIcon,
+    icon: Hand,
   },
 ];

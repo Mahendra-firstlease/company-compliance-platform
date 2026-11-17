@@ -1,7 +1,4 @@
-/**
- * Lightweight Native Fetch Client for Next.js App Router
- * Standardized on native browser & Node fetch API (no Axios dependency).
- */
+
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -16,14 +13,6 @@ export async function apiFetch<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  // Inject Authorization Bearer token on client side
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-
   const response = await fetch(url, {
     cache: "no-store",
     ...options,
@@ -32,13 +21,27 @@ export async function apiFetch<T>(
 
   // Global 401 Unauthorized handling on client
   if (response.status === 401 && typeof window !== "undefined") {
-    localStorage.removeItem("token");
     window.location.href = "/login";
   }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+    let message = errorData.error || errorData.message;
+    if (typeof message !== "string") {
+      message = undefined;
+    }
+    if (!message) {
+      if (response.status >= 500) {
+        message = "Service is temporarily unavailable. Please try again later.";
+      } else if (response.status === 403) {
+        message = "You do not have permission to perform this action.";
+      } else if (response.status === 404) {
+        message = "The requested resource could not be found.";
+      } else {
+        message = "Unable to complete request. Please try again.";
+      }
+    }
+    throw new Error(message);
   }
 
   return response.json();

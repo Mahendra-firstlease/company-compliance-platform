@@ -77,7 +77,11 @@ export default function FileUpload({
         description: `Attached: ${uploaded.name}`,
       });
     } catch (err: any) {
-      const message = err?.message || "File upload failed.";
+      const rawMessage = typeof err?.message === "string" ? err.message : "";
+      const isInternal = /AWS|S3|socket|ECONNREFUSED|ENOTFOUND|500 Internal/i.test(rawMessage);
+      const message = isInternal || !rawMessage
+        ? "Unable to upload the file. Please check your connection and try again."
+        : rawMessage;
       setValidationError(message);
       notify.error({
         title: "Upload Failed",

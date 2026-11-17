@@ -25,7 +25,7 @@ export default function ServicesError({
           Failed to Load Catalog
         </h2>
         <p className="text-xs text-slate-500 leading-relaxed">
-          {error.message || "An unexpected network or database error occurred. Please try again."}
+          We&apos;re unable to load the statutory services catalog right now. Please try again in a few moments.
         </p>
         <div className="pt-2">
           <Button onClick={() => reset()} fullWidth size="sm">

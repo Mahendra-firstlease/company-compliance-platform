@@ -1,11 +1,7 @@
 import Link from "next/link";
-import {
-  BuildingOffice2Icon,
-} from "@heroicons/react/24/outline";
-
 import Badge from "@/components/ui/Badge/index";
 import { Service } from "@/types/services";
-import { BadgeCheck, Clock, IndianRupee } from "lucide-react";
+import { BadgeCheck, Building2, Clock, IndianRupee } from "lucide-react";
 
 interface ServiceCardProps {
   service: Service;
@@ -22,7 +18,7 @@ export default function ServiceCard({
       {/* Header */}
       <div className="flex items-start gap-4">
         <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 text-primary transition-colors group-hover:bg-primary-light/50">
-          <BuildingOffice2Icon className="h-6 w-6 text-primary" />
+          <Building2 className="h-6 w-6 text-primary" />
         </div>
 
         <div className="flex-1 min-w-0">

@@ -1,10 +1,92 @@
 "use client";
 
+import React, { useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Button from "@/components/common/Button";
 import PageSizeSelector from "@/components/ui/PageSizeSelector";
-import PaginationControls from "@/components/ui/PaginationControls";
-import { DEFAULT_PAGE_SIZE_OPTIONS } from "@/lib/pagination";
+import { DEFAULT_PAGE_SIZE_OPTIONS, DOTS, getPaginationRange } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
+// --- Pagination Controls ---
+export interface PaginationControlsProps {
+  pageIndex: number;
+  totalPages: number;
+  onPageChange: (pageIndex: number) => void;
+  siblingCount?: number;
+  className?: string;
+}
+
+export function PaginationControls({
+  pageIndex,
+  totalPages,
+  onPageChange,
+  siblingCount = 1,
+  className,
+}: PaginationControlsProps) {
+  const currentPage = pageIndex + 1;
+  const paginationRange = useMemo(
+    () => getPaginationRange(currentPage, totalPages, siblingCount),
+    [currentPage, totalPages, siblingCount],
+  );
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className={cn("flex items-center gap-1.5", className)}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="flex cursor-pointer items-center gap-1 px-2.5 py-1 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={currentPage <= 1}
+        onClick={() => onPageChange(pageIndex - 1)}
+        aria-label="Previous page"
+      >
+        <ChevronLeft size={13} /> Prev
+      </Button>
+
+      <div className="hidden items-center gap-1 md:flex">
+        {paginationRange.map((pageNumber, index) =>
+          pageNumber === DOTS ? (
+            <span
+              key={`dots-${index}`}
+              className="inline-flex size-8 items-center justify-center text-foreground/40"
+            >
+              &#8230;
+            </span>
+          ) : (
+            <button
+              key={pageNumber}
+              type="button"
+              onClick={() => onPageChange((pageNumber as number) - 1)}
+              aria-current={pageNumber === currentPage ? "page" : undefined}
+              className={cn(
+                "inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border text-xs font-bold transition-all",
+                pageNumber === currentPage
+                  ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-xs"
+                  : "border-primary-border bg-background text-foreground/70 hover:bg-primary-light hover:text-foreground",
+              )}
+            >
+              {pageNumber}
+            </button>
+          ),
+        )}
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="flex cursor-pointer items-center gap-1 px-2.5 py-1 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={currentPage >= totalPages}
+        onClick={() => onPageChange(pageIndex + 1)}
+        aria-label="Next page"
+      >
+        Next <ChevronRight size={13} />
+      </Button>
+    </div>
+  );
+}
+
+// --- Table Pagination Toolbar ---
 export interface TablePaginationToolbarProps {
   pageSize: number;
   pageIndex: number;

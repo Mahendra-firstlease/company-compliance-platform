@@ -280,7 +280,8 @@ export default function AdminApplicationDetailPage() {
       });
       if (res.success && res.data) {
         setApplication(res.data);
-        notify.success(`Filing stage updated to ${newStatus}.`);
+        const statusLabel = newStatus.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+        notify.success(`Filing stage updated to ${statusLabel}.`);
       } else {
         notify.error(res.error || "Failed to update filing stage.");
       }

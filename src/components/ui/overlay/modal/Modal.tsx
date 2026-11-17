@@ -1,18 +1,154 @@
 "use client";
 
 import { Dialog, DialogPanel } from "@headlessui/react";
-import React, { useEffect } from "react";
+import React, { createContext, useContext, useEffect } from "react";
+import { X } from "lucide-react";
 import { ModalProps } from "./types";
-import { ModalContext } from "./ModalContext";
-import ModalOverlay from "./ModalOverlay";
-import ModalHeader from "./ModalHeader";
-import ModalTitle from "./ModalTitle";
-import ModalDescription from "./ModalDescription";
-import ModalBody from "./ModalBody";
-import ModalFooter from "./ModalFooter";
-import ModalCloseButton from "./ModalCloseButton";
 import { cn } from "@/lib/utils";
 
+// --- Internal Modal Context ---
+interface ModalContextValue {
+  onClose: () => void;
+  showCloseButton?: boolean;
+}
+
+export const ModalContext = createContext<ModalContextValue | null>(null);
+
+export function useModalContext() {
+  const context = useContext(ModalContext);
+  if (!context) {
+    throw new Error("useModalContext must be used within a Modal");
+  }
+  return context;
+}
+
+// --- Subcomponents ---
+export interface ModalOverlayProps {
+  className?: string;
+}
+
+export function ModalOverlay({ className }: ModalOverlayProps) {
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity",
+        className,
+      )}
+    />
+  );
+}
+
+export interface ModalCloseButtonProps {
+  className?: string;
+}
+
+export function ModalCloseButton({ className }: ModalCloseButtonProps) {
+  const { onClose } = useModalContext();
+
+  return (
+    <button
+      type="button"
+      onClick={onClose}
+      className={cn(
+        "rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer",
+        className,
+      )}
+      aria-label="Close modal"
+    >
+      <X size={18} />
+    </button>
+  );
+}
+
+export interface ModalHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+  showCloseButton?: boolean;
+}
+
+export function ModalHeader({
+  children,
+  className,
+  showCloseButton = true,
+}: ModalHeaderProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-start justify-between px-6 pt-6 pb-2 border-b border-slate-100",
+        className,
+      )}
+    >
+      <div className="flex-1">{children}</div>
+      {showCloseButton && (
+        <ModalCloseButton className="shrink-0 -mt-1 -mr-1 ml-4" />
+      )}
+    </div>
+  );
+}
+
+export interface ModalTitleProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ModalTitle({ children, className }: ModalTitleProps) {
+  return (
+    <h3
+      className={cn(
+        "text-base font-bold text-slate-900 tracking-tight",
+        className,
+      )}
+    >
+      {children}
+    </h3>
+  );
+}
+
+export interface ModalDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ModalDescription({ children, className }: ModalDescriptionProps) {
+  return (
+    <p className={cn("text-xs text-slate-500 mt-1", className)}>
+      {children}
+    </p>
+  );
+}
+
+export interface ModalBodyProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ModalBody({ children, className }: ModalBodyProps) {
+  return (
+    <div className={cn("px-6 py-4 text-sm text-slate-600", className)}>
+      {children}
+    </div>
+  );
+}
+
+export interface ModalFooterProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ModalFooter({ children, className }: ModalFooterProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 border-t border-slate-100 rounded-b-xl",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+// --- Style Maps ---
 const sizeClasses = {
   xs: "max-w-xs",
   sm: "max-w-sm",
@@ -44,6 +180,7 @@ const animationClasses = {
   "slide-right": "transition duration-300 ease-out data-[closed]:translate-x-4 data-[closed]:opacity-0",
 };
 
+// --- Main Modal Component ---
 export default function Modal({
   open,
   onClose,
@@ -88,7 +225,7 @@ export default function Modal({
         <div
           className={cn(
             "fixed inset-0 z-50 flex w-screen overflow-y-auto p-4",
-            positionClasses[position]
+            positionClasses[position],
           )}
           onClick={handleBackdropClick}
         >
@@ -97,7 +234,7 @@ export default function Modal({
             className={cn(
               "w-full bg-white rounded-lg shadow-2xl border border-slate-100 flex flex-col overflow-hidden max-h-[90vh]",
               sizeClasses[size],
-              animationClasses[animation]
+              animationClasses[animation],
             )}
           >
             {children}

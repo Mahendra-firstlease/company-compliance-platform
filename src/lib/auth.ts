@@ -78,6 +78,36 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        try {
+          const cleanEmail = user.email.toLowerCase().trim();
+          let dbUser = await prisma.user.findUnique({
+            where: { email: cleanEmail },
+          });
+
+          if (!dbUser) {
+            dbUser = await prisma.user.create({
+              data: {
+                email: cleanEmail,
+                name: user.name || "Client User",
+                image: user.image || null,
+                role: "CLIENT",
+              },
+            });
+          }
+
+          user.id = dbUser.id;
+          (user as any).role = dbUser.role;
+          (user as any).phone = dbUser.phone;
+          return true;
+        } catch (error) {
+          console.error("Failed to link Google account to database:", error);
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
